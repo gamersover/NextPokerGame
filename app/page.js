@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, JoinModal, BackDrop } from "@/components";
+import { GameButton, RoomNumberInput, Modal } from "@/components";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -63,8 +63,9 @@ export default function Home() {
       <HomeTitle />
       <HomeImage />
       <HomeButton handleJoin={showModal} />
-      {showJoinpop && <JoinModal handleOk={() => { console.log("ok") }} handleCancel={closeModal} />}
-      {showJoinpop && <BackDrop handleClick={closeModal} />}
+      {showJoinpop && <Modal classes='join-modal' closeModal={closeModal}>
+         <RoomNumberInput handleOk={closeModal} handleCancel={closeModal}/>
+        </Modal>}
     </div>
   )
 }
