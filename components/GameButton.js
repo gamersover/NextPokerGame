@@ -8,7 +8,7 @@ export default function GameButton({ title, classes, handleClick, shouldDisable 
             className={`game-button ${classes}`}
             onClick={handleClick}
         >
-            <span className="flex-1">
+            <span className="flex-1 font-normal">
                 {title}
             </span>
         </button>

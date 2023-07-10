@@ -1,10 +1,6 @@
-import { useState } from "react"
-
-export default function GameInput({ placeholder, classes, setHasValue }) {
-    const [inputValue, setInputValue] = useState('')
-
+export default function GameInput({ placeholder, classes, setHasValue, value, setValue }) {
     function inputChangeHandler(e) {
-        setInputValue(e.target.value)
+        setValue(e.target.value)
         setHasValue(e.target.value !== '')
     }
 
@@ -13,7 +9,7 @@ export default function GameInput({ placeholder, classes, setHasValue }) {
             <input
                 className={"join-modal-input"}
                 placeholder={placeholder}
-                value={inputValue}
+                value={value}
                 onChange={(e) => inputChangeHandler(e)}
             />
         </div>
