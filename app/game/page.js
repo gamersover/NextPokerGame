@@ -91,12 +91,12 @@ function HomeButton({ handleJoin }) {
       <GameButton
         title="加入房间"
         classes="bg-cyan-100"
-        handleClick={joinRoom}
+        onClick={joinRoom}
       />
       <GameButton
         title="创建房间"
         classes="bg-red-100"
-        handleClick={createRoom}
+        onClick={createRoom}
       />
     </div>
   )

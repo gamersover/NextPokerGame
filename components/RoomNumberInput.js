@@ -84,11 +84,11 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                 setValue={setInputValue}
             />
             <div className="join-modal-buttons">
-                <GameButton title={"取消"} classes={"bg-red-200"} handleClick={handleCancel} />
+                <GameButton title={"取消"} classes={"bg-red-200"} onClick={handleCancel} />
                 <GameButton
                     title={"确定"}
                     classes={isValidRoomNumber() ? "bg-blue-200" : "bg-gray-200"}
-                    handleClick={setRoomNumber}
+                    onClick={setRoomNumber}
                     shouldDisable={!isValidRoomNumber()}
                 />
             </div>

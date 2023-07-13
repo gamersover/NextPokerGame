@@ -1,5 +1,5 @@
 export default function GameInput({ placeholder, classes, setHasValue, value, setValue }) {
-    function inputChangeHandler(e) {
+    function handleInputChange(e) {
         setValue(e.target.value)
         setHasValue(e.target.value !== '')
     }
@@ -10,7 +10,7 @@ export default function GameInput({ placeholder, classes, setHasValue, value, se
                 className={"join-modal-input"}
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => inputChangeHandler(e)}
+                onChange={(e) => handleInputChange(e)}
             />
         </div>
     )

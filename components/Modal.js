@@ -6,7 +6,7 @@ export default function Modal({ classes, closeModal, children }) {
             <div className={classes}>
                 {children}
             </div>
-            <BackDrop handleClick={closeModal}/>
+            <BackDrop onClick={closeModal}/>
         </>
     )
 }

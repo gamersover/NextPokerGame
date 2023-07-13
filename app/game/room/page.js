@@ -4,7 +4,8 @@ import { CardsPanel, CircleContent, GameButton } from '@/components';
 import SocketProvider, { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { getNowFormatDate } from '@/utils/tool';
 import Image from 'next/image';
-import { useContext } from 'react';
+import { useContext, useId } from 'react';
+import { is_valid_out_cards } from '@/utils/card';
 
 
 function GameAvater({ imgUrl, opacityValue = 'opacity-0', width = 40, height = 40, alt = '' }) {
@@ -128,6 +129,9 @@ function GameMain() {
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const socket = useContext(SocketContext)
 
+    // TODO: userInfo.all_cards 需要记录每个card是否被选中的状态，然后传给CardsPanel
+    // 只有start的时候服务端才会传入all_cards，后续all_cards维护都是在客户端进行
+
     if (userInfo.player_id === gameInfo.curr_player_id) {
         console.log("我是主角")
     }
@@ -139,7 +143,6 @@ function GameMain() {
         else {
             socket.emit("prepare_start", {})
             socket.on("prepare_start", (data) => {
-                // TODO: 同时监听两个事件，setState没办法更新
                 if (data.status === 1) {
                     setUserInfo({
                         ...userInfo,
@@ -153,7 +156,7 @@ function GameMain() {
             socket.on("game_start_global", (data) => {
                 setUserInfo(userInfo => ({
                     ...userInfo,
-                    all_cards: data.all_cards
+                    all_cards: data.all_cards.map((card, i) => ({ id: i, cardName: card, selected: false })) // 不是简单的赋值，需要初始化每个cards的选中状态为false，并未每个card生成一个唯一的id
                 }))
                 setGameInfo(gameInfo => ({
                     ...gameInfo,
@@ -162,6 +165,52 @@ function GameMain() {
                     friend_card: data.friend_card
                 }))
             })
+            socket.on("game_step", (data) => {
+                setGameInfo({
+                    ...gameInfo,
+                    last_valid_cards_info: data.last_valid_cards_info,
+                    is_start: data.is_start
+                })
+            })
+        }
+    }
+
+    function handleCardSelect(id) {
+        let all_cards = userInfo.all_cards
+        all_cards[id].selected = !all_cards[id].selected
+        setUserInfo({
+            ...userInfo,
+            all_cards: all_cards
+        })
+    }
+
+    function handleGo() {
+        if (gameInfo.curr_player_id === userInfo.player_id) {
+            const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.cardName)
+            console.log(selectedCard)
+            const result = is_valid_out_cards(
+                selectedCard,
+                false,
+                gameInfo.last_valid_cards_info,
+                gameInfo.is_start,
+            )
+            if (result.status === -1 || result.status === 0) {
+                alert(result.msg)
+            }
+            else if (result.status === 1) {
+                let has_friend_card = false
+                let all_cards = userInfo.all_cards.filter(card => !card.selected)
+                if (selectedCard.includes(gameInfo.friend_card)) {
+                    has_friend_card = true
+                }
+                setUserInfo({
+                    ...userInfo,
+                    all_cards: all_cards
+                })
+            }
+        }
+        else {
+            alert("非出牌时间")
         }
     }
 
@@ -169,13 +218,13 @@ function GameMain() {
         <div className="flex h-2/5 w-full justify-center mb-7">
             <div className="flex flex-col justify-around items-center w-full">
                 {userInfo.is_prepared && <p>已准备</p>}
-                {(userInfo.player_id && !userInfo.is_prepared) && <GameButton title={"准备"} classes={"bg-red-100 text-sm"} handleClick={handlePrepare} />}
+                {(userInfo.player_id && !userInfo.is_prepared) && <GameButton title={"准备"} classes={"bg-red-100 text-sm"} onClick={handlePrepare} />}
                 <div className="flex w-1/6 justify-between">
                     <GameButton title={"跳过"} classes={"bg-red-100 text-md"} />
-                    <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} />
+                    <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} onClick={handleGo} />
                 </div>
                 <div className="flex justify-center item-end w-screen">
-                    <CardsPanel cards={["2_方块", "3_红桃", "4_黑桃"]} />
+                    <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />
                     {/* {userInfo.all_cards && <CardsPanel cards={["", "", ""]}/>} */}
                 </div>
             </div>
