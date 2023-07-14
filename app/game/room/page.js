@@ -8,7 +8,7 @@ import { useContext, useId } from 'react';
 import { is_valid_out_cards } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, opacityValue = 'opacity-0', width = 40, height = 40, alt = '' }) {
+function GameAvater({ imgUrl, opacityValue = 'opacity-0', width = 30, height = 30, alt = '' }) {
     return (
         <>
             <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full w-auto h-auto ${opacityValue}`} />
@@ -129,15 +129,8 @@ function GameMain() {
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const socket = useContext(SocketContext)
 
-    // TODO: userInfo.all_cards 需要记录每个card是否被选中的状态，然后传给CardsPanel
-    // 只有start的时候服务端才会传入all_cards，后续all_cards维护都是在客户端进行
-
-    if (userInfo.player_id === gameInfo.curr_player_id) {
-        console.log("我是主角")
-    }
-
     function handlePrepare() {
-        if (userInfo.is_prepared) {
+        if (userInfo.state >= 2) {
             alert("已准备")
         }
         else {
@@ -146,7 +139,7 @@ function GameMain() {
                 if (data.status === 1) {
                     setUserInfo({
                         ...userInfo,
-                        is_prepared: true
+                        state: 2
                     })
                 }
                 else {
@@ -156,6 +149,7 @@ function GameMain() {
             socket.on("game_start_global", (data) => {
                 setUserInfo(userInfo => ({
                     ...userInfo,
+                    state: 3,
                     all_cards: data.all_cards.map((card, i) => ({ id: i, cardName: card, selected: false })) // 不是简单的赋值，需要初始化每个cards的选中状态为false，并未每个card生成一个唯一的id
                 }))
                 setGameInfo(gameInfo => ({
@@ -166,11 +160,11 @@ function GameMain() {
                 }))
             })
             socket.on("game_step", (data) => {
-                setGameInfo({
+                setGameInfo(gameInfo => ({
                     ...gameInfo,
                     last_valid_cards_info: data.last_valid_cards_info,
                     is_start: data.is_start
-                })
+                }))
             })
         }
     }
@@ -214,17 +208,30 @@ function GameMain() {
         }
     }
 
+    let content = null;
+    if (userInfo.state === 1) {
+        content = <GameButton title={"准备"} classes={"bg-red-100 text-sm"} onClick={handlePrepare} />
+    }
+    else if (userInfo.state === 2) {
+        content = <span>已准备</span>
+    }
+    else if (userInfo.state === 3 && gameInfo.curr_player_id === userInfo.player_id) {
+        content = (
+            <div className="flex w-full justify-between">
+                <GameButton title={"跳过"} classes={"bg-red-100 text-md"} />
+                <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} onClick={handleGo} />
+            </div>
+        )
+    }
+
     return (
         <div className="flex h-2/5 w-full justify-center mb-7">
             <div className="flex flex-col justify-around items-center w-full">
-                {userInfo.is_prepared && <p>已准备</p>}
-                {(userInfo.player_id && !userInfo.is_prepared) && <GameButton title={"准备"} classes={"bg-red-100 text-sm"} onClick={handlePrepare} />}
-                <div className="flex w-1/6 justify-between">
-                    <GameButton title={"跳过"} classes={"bg-red-100 text-md"} />
-                    <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} onClick={handleGo} />
+                <div className="flex w-2/12 justify-center">
+                    {content}
                 </div>
                 <div className="flex justify-center item-end w-screen">
-                    <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />
+                    {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
                     {/* {userInfo.all_cards && <CardsPanel cards={["", "", ""]}/>} */}
                 </div>
             </div>
@@ -237,6 +244,7 @@ function GameFooter() {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
+    console.log(gameInfo.players_info)
     let state = 0
     if (gameInfo.players_info) {
         state = gameInfo.players_info[userInfo.player_id].state
@@ -246,14 +254,12 @@ function GameFooter() {
 
     return (
         <>
-            <div className=" bg-black bg-opacity-5 w-screen h-8 fixed left-0 bottom-0 z-0">
-            </div>
+            <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-10 z-10 mb-1">
-                <div className="flex items-end justify-around w-1/3">
-                    <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} />
-                    {/* <Image src="/avater.png" width={35} height={35} alt='图像' className={`rounded-full w-auto h-auto ${opacityValue}`} /> */}
-                    <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} />
-                    <CircleContent circleTitle={"分"} circleChild={userInfo.score} titleBgColor={'bg-cyan-100'} />
+                <div className="flex items-end justify-around w-1/4 item-center">
+                    <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} width={35} height={35} />
+                    <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} size={"small"} />
+                    <CircleContent circleTitle={"分"} circleChild={userInfo.score} titleBgColor={'bg-cyan-100'} size={"small"}/>
                 </div>
             </div>
         </>

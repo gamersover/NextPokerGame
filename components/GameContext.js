@@ -13,7 +13,9 @@ function SocketProvider({ children }) {
         player_id: null,
         is_prepared: false,
         score: 0,
-        all_cards: ["2_方块", "3_红桃", "4_黑桃"].map((card, i) => ({cardName: card, selected: false})),
+        all_cards: null,
+        state: 0,  // 0: 未加入房间，1: 加入房间 2: 已准备 3: 游戏开始 4: 出牌结束
+        // [].map((card, i) => ({cardName: card, selected: false})),
     })
 
     const [gameInfo, setGameInfo] = useState({

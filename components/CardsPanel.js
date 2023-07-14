@@ -16,7 +16,7 @@ function GameCard({ id, cardName, isSelected, onCardSelect }) {
             width={60}
             height={60}
             alt={`${cardName}`}
-            className={`shadow-md -ml-5 ${isSelected ? '-translate-y-3' : ''}`}
+            className={`shadow-md -ml-10 ${isSelected ? '-translate-y-3' : ''}`}
             onClick={(e) => handleSelect(e)}
         />
     )

@@ -50,7 +50,7 @@ function HomeButton({ handleJoin }) {
             room_number: data.room_number,
             player_name: data.player_name,
             player_id: data.player_id,
-            is_prepared: false
+            state: 1
           })
           router.push("/game/room")
         }
