@@ -1,9 +1,11 @@
 import { createContext, useState } from "react";
+import { GameState } from "@/utils/tool";
 
 export const SocketContext = createContext(null)
 export const SetSocketContext = createContext(null)
 export const UserInfoContext = createContext(null)
 export const GameInfoContext = createContext(null)
+
 
 function SocketProvider({ children }) {
     const [socket, setSocket] = useState(null)
@@ -13,9 +15,8 @@ function SocketProvider({ children }) {
         player_id: null,
         is_prepared: false,
         score: 0,
-        all_cards: null,
-        state: 0,  // 0: 未加入房间，1: 加入房间 2: 已准备 3: 游戏开始 4: 出牌结束
-        // [].map((card, i) => ({cardName: card, selected: false})),
+        all_cards: [].map((card) => ({cardName: card, selected: false})),
+        state: GameState.OutGame
     })
 
     const [gameInfo, setGameInfo] = useState({

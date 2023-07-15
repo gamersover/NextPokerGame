@@ -13,6 +13,16 @@ function getNowFormatDate() {
     return currentdate;
 }
 
+const GameState = {
+    "OutGame": 0,
+    "InGame": 1,
+    "Prepared": 2,
+    "GameStart": 3,
+    "RoundStart": 4,
+    "RoundEnd": 5,
+}
+
 export {
-    getNowFormatDate
+    getNowFormatDate,
+    GameState
 }

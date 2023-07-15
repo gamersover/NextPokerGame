@@ -1,30 +1,31 @@
 "use client";
 
 import { CardsPanel, CircleContent, GameButton } from '@/components';
-import SocketProvider, { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
-import { getNowFormatDate } from '@/utils/tool';
+import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
+import { GameState, getNowFormatDate } from '@/utils/tool';
 import Image from 'next/image';
-import { useContext, useId } from 'react';
+import { useContext } from 'react';
 import { is_valid_out_cards } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, opacityValue = 'opacity-0', width = 30, height = 30, alt = '' }) {
+function GameAvater({ imgUrl, opacityValue = 'opacity-0', actived=false, width = 30, height = 30, alt = '' }) {
     return (
         <>
-            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full w-auto h-auto ${opacityValue}`} />
+            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
         </>
     )
 }
 
 
-function GameBasicInfo({ playerName, playerScore, playerState = 1 }) {
+function GameBasicInfo({ playerName, playerScore, playerState, actived }) {
+    // 注意：其他用户的状态不能使用GameState管理，因为GameState是客户端管理自己的，而其他用户的状态是服务端管理的
     const opacityValue = playerState === 1 ? 'opacity-100' : 'opacity-60'
 
     return (
-        <div className="flex flex-col items-center justify-between bg-slate-200 p-1 w-3/5">
-            <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} />
+        <div className="flex flex-col items-center justify-between bg-slate-200">
+            <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} actived={actived}/>
             <div className="flex justify-center items-center my-1">
-                <span className=" text-xs">
+                <span className="text-xs">
                     {playerName || '无名称'}
                 </span>
             </div>
@@ -42,30 +43,10 @@ function GameCardInfo() {
                     <span className="text-white font-medium">27</span>
                 </div>
             </div>
-            <div className="flex w-full h-full flex-1 justify-center items-center">
-                <Image src="/2_方块.svg" width={33} height={35} alt='图像' />
+            <div className="flex w-full flex-1 justify-center items-center">
+                <Image src="/DW.svg" width={26} height={30} alt='图像' />
             </div>
         </div>
-    )
-}
-
-
-function GamePlayerLeft({ playerName, playerScore, playerState }) {
-    return (
-        <>
-            <GameBasicInfo playerName={playerName} playerScore={playerScore} playerState={playerState} />
-            <GameCardInfo />
-        </>
-    )
-}
-
-
-function GamePlayerRight({ playerName, playerScore, playerState }) {
-    return (
-        <>
-            <GameCardInfo />
-            <GameBasicInfo playerName={playerName} playerScore={playerScore} playerState={playerState} />
-        </>
     )
 }
 
@@ -79,6 +60,7 @@ function GameHeader() {
     if (gameInfo.players_info) {
         player_info = gameInfo.players_info[player_id]
     }
+    const actived = player_id === gameInfo.curr_player_id
 
     return (
         <div className="flex mt-2 px-5 w-screen justify-between">
@@ -87,8 +69,18 @@ function GameHeader() {
                 <CircleContent circleTitle={'朋'} circleChild={''} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
-                <div className="flex w-24">
-                    {player_info && <GamePlayerLeft playerName={player_info.player_name} playerScore={player_info.score} playerState={player_info.state} />}
+                <div className="flex w-20">
+                    {player_info && (
+                        <>
+                            <GameBasicInfo
+                                playerName={player_info.player_name}
+                                playerScore={player_info.score}
+                                playerState={player_info.state}
+                                actived={actived}
+                            />
+                            <GameCardInfo />
+                        </>
+                    )}
                 </div>
             </div>
             <div className='w-1/4 flex justify-end'>
@@ -113,11 +105,31 @@ function GameNeck() {
 
     return (
         <div className="flex justify-between items-center w-full px-2">
-            <div className="flex w-24">
-                {left_player_info && <GamePlayerLeft playerName={left_player_info.player_name} playerScore={left_player_info.score} playerState={left_player_info.state} />}
+            <div className="flex w-20">
+                {left_player_info && (
+                    <>
+                        <GameBasicInfo
+                            playerName={left_player_info.player_name}
+                            playerScore={left_player_info.score}
+                            playerState={left_player_info.state}
+                            actived={left_player_id === gameInfo.curr_player_id}
+                        />
+                        <GameCardInfo />
+                    </>
+                )}
             </div>
-            <div className="flex w-24">
-                {right_player_info && <GamePlayerRight playerName={right_player_info.player_name} playerScore={right_player_info.score} playerState={right_player_info.state} />}
+            <div className="flex w-20">
+                {right_player_info && (
+                    <>
+                        <GameBasicInfo
+                            playerName={right_player_info.player_name}
+                            playerScore={right_player_info.score}
+                            playerState={right_player_info.state}
+                            actived={right_player_id === gameInfo.curr_player_id}
+                        />
+                        <GameCardInfo />
+                    </>
+                )}
             </div>
         </div>
     )
@@ -130,7 +142,7 @@ function GameMain() {
     const socket = useContext(SocketContext)
 
     function handlePrepare() {
-        if (userInfo.state >= 2) {
+        if (userInfo.state >= GameState.Prepared) {
             alert("已准备")
         }
         else {
@@ -139,7 +151,7 @@ function GameMain() {
                 if (data.status === 1) {
                     setUserInfo({
                         ...userInfo,
-                        state: 2
+                        state: GameState.Prepared
                     })
                 }
                 else {
@@ -149,7 +161,7 @@ function GameMain() {
             socket.on("game_start_global", (data) => {
                 setUserInfo(userInfo => ({
                     ...userInfo,
-                    state: 3,
+                    state: data.first_player_id === userInfo.player_id ? GameState.RoundStart : GameState.GameStart,
                     all_cards: data.all_cards.map((card, i) => ({ id: i, cardName: card, selected: false })) // 不是简单的赋值，需要初始化每个cards的选中状态为false，并未每个card生成一个唯一的id
                 }))
                 setGameInfo(gameInfo => ({
@@ -179,7 +191,7 @@ function GameMain() {
     }
 
     function handleGo() {
-        if (gameInfo.curr_player_id === userInfo.player_id) {
+        if (userInfo.state === GameState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.cardName)
             console.log(selectedCard)
             const result = is_valid_out_cards(
@@ -209,13 +221,13 @@ function GameMain() {
     }
 
     let content = null;
-    if (userInfo.state === 1) {
+    if (userInfo.state === GameState.InGame) {
         content = <GameButton title={"准备"} classes={"bg-red-100 text-sm"} onClick={handlePrepare} />
     }
-    else if (userInfo.state === 2) {
+    else if (userInfo.state === GameState.Prepared) {
         content = <span>已准备</span>
     }
-    else if (userInfo.state === 3 && gameInfo.curr_player_id === userInfo.player_id) {
+    else if (userInfo.state === GameState.RoundStart) {
         content = (
             <div className="flex w-full justify-between">
                 <GameButton title={"跳过"} classes={"bg-red-100 text-md"} />
@@ -232,7 +244,6 @@ function GameMain() {
                 </div>
                 <div className="flex justify-center item-end w-screen">
                     {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
-                    {/* {userInfo.all_cards && <CardsPanel cards={["", "", ""]}/>} */}
                 </div>
             </div>
         </div>
@@ -244,22 +255,17 @@ function GameFooter() {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
-    console.log(gameInfo.players_info)
-    let state = 0
-    if (gameInfo.players_info) {
-        state = gameInfo.players_info[userInfo.player_id].state
-    }
-
-    const opacityValue = state == 1 ? "opacity-100" : "opacity-60"
+    const opacityValue = userInfo.state >= GameState.Prepared ? "opacity-100" : "opacity-60"
+    const actived = userInfo.state === GameState.RoundStart
 
     return (
         <>
             <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
-            <div className="fixed bottom-0 flex w-screen px-10 z-10 mb-1">
+            <div className="fixed bottom-0 flex w-screen px-5 z-10 mb-1">
                 <div className="flex items-end justify-around w-1/4 item-center">
-                    <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} width={35} height={35} />
+                    <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} width={35} height={35} actived={actived} />
                     <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} size={"small"} />
-                    <CircleContent circleTitle={"分"} circleChild={userInfo.score} titleBgColor={'bg-cyan-100'} size={"small"}/>
+                    <CircleContent circleTitle={"分"} circleChild={userInfo.score} titleBgColor={'bg-cyan-100'} size={"small"} />
                 </div>
             </div>
         </>

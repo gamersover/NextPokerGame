@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react"
 import { UserInfoContext, SetSocketContext, GameInfoContext } from "./GameContext"
 import { io } from "socket.io-client"
 import { SERVER_ADDR } from "@/utils/conf"
+import { GameState } from "@/utils/tool"
 
 export default function RoomNumberInput({ handleCancel, handleOk }) {
     const [hasValue, setHasValue] = useState(false)
@@ -34,7 +35,7 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                         room_number: data.room_number,
                         player_name: data.player_name,
                         player_id: data.player_id,
-                        state: 1
+                        state: GameState.InGame
                     })
                     setGameInfo({
                         ...gameInfo,
