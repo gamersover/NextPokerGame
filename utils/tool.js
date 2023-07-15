@@ -17,9 +17,9 @@ const GameState = {
     "OutGame": 0,
     "InGame": 1,
     "Prepared": 2,
-    "GameStart": 3,
+    "GameStart": 3, // or RoundEnd
     "RoundStart": 4,
-    "RoundEnd": 5,
+    "RoundSkip": 5,
 }
 
 export {

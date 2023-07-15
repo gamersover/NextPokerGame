@@ -307,5 +307,6 @@ function get_cards_value(raw_cards) {
 
 
 export {
-    is_valid_out_cards
+    is_valid_out_cards,
+    OutState
 }

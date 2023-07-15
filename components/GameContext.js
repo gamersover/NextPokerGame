@@ -16,7 +16,8 @@ function SocketProvider({ children }) {
         is_prepared: false,
         score: 0,
         all_cards: [].map((card) => ({cardName: card, selected: false})),
-        state: GameState.OutGame
+        state: GameState.OutGame,
+        out_cards: []
     })
 
     const [gameInfo, setGameInfo] = useState({

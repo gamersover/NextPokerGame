@@ -1,7 +1,7 @@
-function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft }) {
+function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft, imageWidth }) {
 
     function handleSelect() {
-        onCardSelect(id)
+        onCardSelect && onCardSelect(id)
     }
 
     return (
@@ -9,7 +9,7 @@ function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft }) {
             <img
                 id={id}
                 src={`/${cardName}.svg`}
-                className={`shadow-md w-16 ${marginLeft} ${isSelected ? '-translate-y-3' : ''}`}
+                className={`shadow-md ${imageWidth} ${marginLeft} ${isSelected ? '-translate-y-3' : ''}`}
                 onClick={handleSelect}
                 style={{zIndex:  id}}
             />
@@ -18,7 +18,15 @@ function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft }) {
 }
 
 
-export default function CardsPanel({ cards, onCardSelect }) {
+export default function CardsPanel({ cards, onCardSelect = null, size="normal"}) {
+    let imageWidth = null;
+    if (size == "normal") {
+        imageWidth = "w-16"
+    }
+    else if (size == "small"){
+        imageWidth = "w-10"
+    }
+
     let marginLeft = "-ml-0"
     if (cards.length >= 23) {
         marginLeft = "-ml-10"
@@ -45,6 +53,7 @@ export default function CardsPanel({ cards, onCardSelect }) {
                 isSelected={card.selected}
                 onCardSelect={onCardSelect}
                 marginLeft={marginLeft}
+                imageWidth={imageWidth}
             />)}
         </div>
     )

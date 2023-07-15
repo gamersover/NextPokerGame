@@ -6,6 +6,7 @@ import { GameState, getNowFormatDate } from '@/utils/tool';
 import Image from 'next/image';
 import { useContext } from 'react';
 import { is_valid_out_cards } from '@/utils/card';
+import { OutState } from '@/utils/card';
 
 
 function GameAvater({ imgUrl, opacityValue = 'opacity-0', actived=false, width = 30, height = 30, alt = '' }) {
@@ -62,11 +63,12 @@ function GameHeader() {
     }
     const actived = player_id === gameInfo.curr_player_id
 
+    // TODO 朋友牌显示完善
     return (
         <div className="flex mt-2 px-5 w-screen justify-between">
             <div className="flex w-1/4 justify-between">
                 <CircleContent circleTitle={'房'} circleChild={userInfo.room_number} titleBgColor={'bg-cyan-100'} />
-                <CircleContent circleTitle={'朋'} circleChild={''} titleBgColor={'bg-red-100'} />
+                <CircleContent circleTitle={'朋'} circleChild={gameInfo.friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
                 <div className="flex w-20">
@@ -178,6 +180,18 @@ function GameMain() {
                     is_start: data.is_start
                 }))
             })
+            socket.on("game_step_global", (data) => {
+                // TODO render_last_player_state 
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    curr_player_id: data.curr_player_id,
+                    curr_player_name: data.curr_player_name
+                }))
+                setUserInfo(userInfo => ({
+                    ...userInfo,
+                    state: data.curr_player_id === userInfo.player_id ? GameState.RoundStart : GameState.GameStart
+                }))
+            })
         }
     }
 
@@ -193,7 +207,6 @@ function GameMain() {
     function handleGo() {
         if (userInfo.state === GameState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.cardName)
-            console.log(selectedCard)
             const result = is_valid_out_cards(
                 selectedCard,
                 false,
@@ -211,8 +224,47 @@ function GameMain() {
                 }
                 setUserInfo({
                     ...userInfo,
-                    all_cards: all_cards
+                    all_cards: all_cards,
+                    state: GameState.GameStart,
+                    out_cards: userInfo.all_cards.filter(card => card.selected)
                 })
+                socket.emit("game_step", {
+                    raw_out_cards: selectedCard,
+                    raw_cards: result.raw_cards,
+                    cards_info: result.cards_info,
+                    cards_value: result.cards_value,
+                    all_cards: all_cards,
+                    out_state: OutState.VALID,
+                    has_friend_card: has_friend_card
+                })
+
+            }
+        }
+        else {
+            alert("非出牌时间")
+        }
+    }
+
+    function handlePass() {
+        if(userInfo.state === GameState.RoundStart) {
+            const result = is_valid_out_cards(
+                null,
+                true,
+                gameInfo.last_valid_cards_info,
+                gameInfo.is_start,
+            )
+            if (result.status === 2) {
+                setUserInfo({
+                    ...userInfo,
+                    state: GameState.RoundSkip,
+                    out_cards: []
+                })
+                socket.emit("game_step", {
+                    out_state: OutState.PASS,
+                })
+            }
+            else if (result.status === -1) {
+                alert("无法跳过，请选择出牌")
             }
         }
         else {
@@ -229,17 +281,27 @@ function GameMain() {
     }
     else if (userInfo.state === GameState.RoundStart) {
         content = (
-            <div className="flex w-full justify-between">
-                <GameButton title={"跳过"} classes={"bg-red-100 text-md"} />
+            <div className="flex w-2/12 justify-between">
+                <GameButton title={"跳过"} classes={"bg-red-100 text-md"} onClick={handlePass}/>
                 <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} onClick={handleGo} />
             </div>
         )
+    }
+    else if (userInfo.state === GameState.GameStart) {
+        content = (
+            <>
+                <CardsPanel cards={userInfo.out_cards} size="small"/>
+            </>
+        )
+    }
+    else if (userInfo.state === GameState.RoundSkip) {
+        content = <span>跳过</span>
     }
 
     return (
         <div className="flex h-2/5 w-full justify-center mb-7">
             <div className="flex flex-col justify-around items-center w-full">
-                <div className="flex w-2/12 justify-center">
+                <div className="flex w-full justify-center">
                     {content}
                 </div>
                 <div className="flex justify-center item-end w-screen">
