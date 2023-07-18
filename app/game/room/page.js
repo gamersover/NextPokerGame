@@ -9,7 +9,7 @@ import { is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, opacityValue = 'opacity-0', actived=false, width = 30, height = 30, alt = '' }) {
+function GameAvater({ imgUrl, opacityValue = 'opacity-0', actived = false, width = 30, height = 30, alt = '' }) {
     return (
         <>
             <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
@@ -24,7 +24,7 @@ function GameBasicInfo({ playerName, playerScore, playerState, actived }) {
 
     return (
         <div className="flex flex-col items-center justify-between bg-slate-200">
-            <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} actived={actived}/>
+            <GameAvater imgUrl={"/avater.png"} opacityValue={opacityValue} actived={actived} />
             <div className="flex justify-center items-center my-1">
                 <span className="text-xs">
                     {playerName || '无名称'}
@@ -41,7 +41,7 @@ function GameCardInfo() {
         <div className="flex flex-col justify-between flex-1">
             <div className="h-1/2 flex justify-center items-center">
                 <div className="w-full h-full bg-[url('/red.svg')] bg-center bg-contain bg-no-repeat flex justify-center items-center">
-                    <span className="text-white font-medium">27</span>
+                    <span className="text-white font-medium">?</span>
                 </div>
             </div>
             <div className="flex w-full flex-1 justify-center items-center">
@@ -52,7 +52,24 @@ function GameCardInfo() {
 }
 
 
-function GameHeader() {
+function GameCardsOut({ right, left, top }) {
+    return (
+        <>
+            <div className='w-1/3 flex flex-col justify-center'>
+                {left && left.valid_cards && <CardsPanel cards={left.valid_cards.map(card => ({ cardName: card }))} size='small' />}
+            </div>
+            <div className='w-1/3 flex flex-col justify-start items-center'>
+                {top && top.valid_cards && <CardsPanel cards={top.valid_cards.map(card => ({ cardName: card }))} size='small' />}
+            </div>
+            <div className='w-1/3 flex flex-col justify-center items-end'>
+                {right && right.valid_cards && <CardsPanel cards={right.valid_cards.map(card => ({ cardName: card }))} size='small' />}
+            </div>
+        </>
+    )
+}
+
+
+function GameHeader({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
@@ -62,13 +79,22 @@ function GameHeader() {
         player_info = gameInfo.players_info[player_id]
     }
     const actived = player_id === gameInfo.curr_player_id
+    const friend_card = gameInfo.friend_card && (
+        <div className="flex items-center justify-around w-full">
+            <img
+                src={`/${gameInfo.friend_card}_small.svg`}
+                className="h-5"
+            />
+            <img src="/times.svg" className="h-3" />
+            <span className="font-black text-violet-800 text-lg flex items-center justify-center">{gameInfo.friend_card_cnt}</span>
+        </div>
+    )
 
-    // TODO 朋友牌显示完善
     return (
-        <div className="flex mt-2 px-5 w-screen justify-between">
+        <div className={`flex mt-1 px-5 w-screen justify-between ${height}`}>
             <div className="flex w-1/4 justify-between">
                 <CircleContent circleTitle={'房'} circleChild={userInfo.room_number} titleBgColor={'bg-cyan-100'} />
-                <CircleContent circleTitle={'朋'} circleChild={gameInfo.friend_card} titleBgColor={'bg-red-100'} />
+                <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
                 <div className="flex w-20">
@@ -92,21 +118,23 @@ function GameHeader() {
     )
 }
 
-function GameNeck() {
+function GameNeck({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
-    const left_player_id = (userInfo.player_id + 3) % 4
     const right_player_id = (userInfo.player_id + 1) % 4
+    const top_player_id = (userInfo.player_id + 2) % 4
+    const left_player_id = (userInfo.player_id + 3) % 4
 
-    let left_player_info = null, right_player_info = null
+    let left_player_info = null, right_player_info = null, top_player_info = null
     if (gameInfo.players_info) {
         left_player_info = gameInfo.players_info[left_player_id]
         right_player_info = gameInfo.players_info[right_player_id]
+        top_player_info = gameInfo.players_info[top_player_id]
     }
 
     return (
-        <div className="flex justify-between items-center w-full px-2">
+        <div className={`flex justify-between items-center w-full px-2 ${height}`}>
             <div className="flex w-20">
                 {left_player_info && (
                     <>
@@ -120,16 +148,23 @@ function GameNeck() {
                     </>
                 )}
             </div>
+            <div className="flex-1 h-full mx-1 flex pt-2">
+                <GameCardsOut
+                    left={left_player_info}
+                    right={right_player_info}
+                    top={top_player_info}
+                />
+            </div>
             <div className="flex w-20">
                 {right_player_info && (
                     <>
+                        <GameCardInfo />
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
                             playerScore={right_player_info.score}
                             playerState={right_player_info.state}
                             actived={right_player_id === gameInfo.curr_player_id}
                         />
-                        <GameCardInfo />
                     </>
                 )}
             </div>
@@ -138,7 +173,7 @@ function GameNeck() {
 }
 
 
-function GameMain() {
+function GameMain({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const socket = useContext(SocketContext)
@@ -181,12 +216,30 @@ function GameMain() {
                 }))
             })
             socket.on("game_step_global", (data) => {
-                // TODO render_last_player_state 
-                setGameInfo(gameInfo => ({
-                    ...gameInfo,
-                    curr_player_id: data.curr_player_id,
-                    curr_player_name: data.curr_player_name
-                }))
+                console.log(data)
+                // TODO render_last_player_state
+                if (data.status === 1) {
+                    // 有出牌
+                    setGameInfo(gameInfo => ({
+                        ...gameInfo,
+                        curr_player_id: data.curr_player_id,
+                        curr_player_name: data.curr_player_name,
+                        friend_card_cnt: gameInfo.friend_card_cnt - data.has_friend_card ? 1 : 0,
+                        players_info: {
+                            ...gameInfo.players_info,
+                            [data.last_player_id]: {
+                                ...gameInfo.players_info[data.last_player_id],
+                                valid_cards: data.last_valid_cards,
+                                rank: data.rank,
+                                value_cards: data.value_cards,
+                                num_cards: data.num_cards
+                            }
+                        }
+                    }))
+                }
+                else if (data.status === 2) {
+                    // 跳过
+                }
                 setUserInfo(userInfo => ({
                     ...userInfo,
                     state: data.curr_player_id === userInfo.player_id ? GameState.RoundStart : GameState.GameStart
@@ -246,7 +299,7 @@ function GameMain() {
     }
 
     function handlePass() {
-        if(userInfo.state === GameState.RoundStart) {
+        if (userInfo.state === GameState.RoundStart) {
             const result = is_valid_out_cards(
                 null,
                 true,
@@ -282,16 +335,14 @@ function GameMain() {
     else if (userInfo.state === GameState.RoundStart) {
         content = (
             <div className="flex w-2/12 justify-between">
-                <GameButton title={"跳过"} classes={"bg-red-100 text-md"} onClick={handlePass}/>
+                <GameButton title={"跳过"} classes={"bg-red-100 text-md"} onClick={handlePass} />
                 <GameButton title={"出牌"} classes={"bg-blue-100 text-md"} onClick={handleGo} />
             </div>
         )
     }
     else if (userInfo.state === GameState.GameStart) {
         content = (
-            <>
-                <CardsPanel cards={userInfo.out_cards} size="small"/>
-            </>
+            <CardsPanel cards={userInfo.out_cards} size="small" />
         )
     }
     else if (userInfo.state === GameState.RoundSkip) {
@@ -299,7 +350,7 @@ function GameMain() {
     }
 
     return (
-        <div className="flex h-2/5 w-full justify-center mb-7">
+        <div className={`flex ${height} w-full justify-center mb-7`}>
             <div className="flex flex-col justify-around items-center w-full">
                 <div className="flex w-full justify-center">
                     {content}
@@ -336,12 +387,11 @@ function GameFooter() {
 
 
 export default function Page() {
-    // TODO 每个组件必须设定固定高度
     return (
         <div className="flex flex-col justify-between items-center h-screen">
-            <GameHeader />
-            <GameNeck />
-            <GameMain />
+            <GameHeader height='h-1/5' />
+            <GameNeck height='flex-1' />
+            <GameMain height='h-40' />
             <GameFooter />
         </div>
     )

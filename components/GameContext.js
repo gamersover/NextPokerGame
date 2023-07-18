@@ -26,7 +26,13 @@ function SocketProvider({ children }) {
         curr_player_id: null,
         curr_player_name: null,
         friend_card: null,
+        friend_card_cnt: 2,
+        last_player_id: null,
+        last_player_num_cards: null,
+        last_valid_cards: [],
         last_valid_cards_info: null,
+        last_player_rank: null,
+        last_player_value_cards: null,
         is_start: null,
     })
 
