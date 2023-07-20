@@ -46,12 +46,17 @@ function HomeButton({ handleJoin }) {
 
             socket.on("create_room", (data) => {
                 if (data.status == 1) {
+                    const player_id = data.player_id
                     setUserInfo({
                         ...userInfo,
-                        room_number: data.room_number,
-                        player_name: data.player_name,
-                        player_id: data.player_id,
-                        state: GameState.InGame
+                        room_number: data.room_info.room_number,
+                        player_id: player_id,
+                        player_name: data.players_info[player_id].player_name,
+                    })
+                    setGameInfo({
+                        ...gameInfo,
+                        host_id: data.room_info.host_id,
+                        players_info: data.players_info
                     })
                     router.push("/game/room")
                 }
@@ -63,7 +68,7 @@ function HomeButton({ handleJoin }) {
             socket.on("join_room_others", (data) => {
                 setGameInfo({
                     ...gameInfo,
-                    host_id: data.host_id,
+                    host_id: data.room_info.host_id,
                     players_info: data.players_info
                 })
             })

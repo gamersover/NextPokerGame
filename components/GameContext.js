@@ -17,23 +17,19 @@ function SocketProvider({ children }) {
         score: 0,
         all_cards: [].map((card) => ({cardName: card, selected: false})),
         state: GameState.OutGame,
-        out_cards: []
+        out_cards: [],
     })
 
     const [gameInfo, setGameInfo] = useState({
         host_id: null,
         players_info: null,
         curr_player_id: null,
-        curr_player_name: null,
         friend_card: null,
         friend_card_cnt: 2,
-        last_player_id: null,
-        last_player_num_cards: null,
-        last_valid_cards: [],
         last_valid_cards_info: null,
-        last_player_rank: null,
-        last_player_value_cards: null,
         is_start: null,
+        show_joker_cards: {'0': [], '1': [], '2': [], '3': []},
+        show_sum_value: {'0': 0, '1': 0, '2': 0, '3': 0}
     })
 
     return (
