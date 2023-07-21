@@ -5,7 +5,7 @@ export default function GameButton({ title, classes, onClick, shouldDisable = fa
         <button
             disabled={shouldDisable}
             type={"button"}
-            className={`game-button ${classes}`}
+            className={classes}
             onClick={onClick}
         >
             <span className="flex-1 font-normal">

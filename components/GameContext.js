@@ -28,8 +28,6 @@ function SocketProvider({ children }) {
         friend_card_cnt: 2,
         last_valid_cards_info: null,
         is_start: null,
-        show_joker_cards: {'0': [], '1': [], '2': [], '3': []},
-        show_sum_value: {'0': 0, '1': 0, '2': 0, '3': 0}
     })
 
     return (

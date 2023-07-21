@@ -96,12 +96,12 @@ function HomeButton({ handleJoin }) {
         <div className="flex w-1/4 justify-between">
             <GameButton
                 title="加入房间"
-                classes="bg-cyan-100"
+                classes="game-button bg-cyan-100"
                 onClick={joinRoom}
             />
             <GameButton
                 title="创建房间"
-                classes="bg-red-100"
+                classes="game-button bg-red-100"
                 onClick={createRoom}
             />
         </div>

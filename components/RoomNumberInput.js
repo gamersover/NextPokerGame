@@ -7,7 +7,7 @@ import { GameState } from "@/utils/tool"
 
 export default function RoomNumberInput({ handleCancel, handleOk }) {
     const [hasValue, setHasValue] = useState(false)
-    const [inputValue, setInputValue] = useState("")
+    const [inputValue, setInputValue] = useState("000000") // TODO: 初始化，方便测试
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const setSocket = useContext(SetSocketContext)
@@ -85,10 +85,10 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                 setValue={setInputValue}
             />
             <div className="join-modal-buttons">
-                <GameButton title={"取消"} classes={"bg-red-200"} onClick={handleCancel} />
+                <GameButton title={"取消"} classes={"game-button bg-red-200"} onClick={handleCancel} />
                 <GameButton
                     title={"确定"}
-                    classes={isValidRoomNumber() ? "bg-blue-200" : "bg-gray-200"}
+                    classes={isValidRoomNumber() ? "game-button bg-blue-200" : "game-button bg-gray-200"}
                     onClick={setRoomNumber}
                     shouldDisable={!isValidRoomNumber()}
                 />
