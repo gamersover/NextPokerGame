@@ -15,8 +15,8 @@ function SocketProvider({ children }) {
         player_id: null,
         is_prepared: false,
         score: 0,
-        all_cards: [].map((card) => ({cardName: card, selected: false})),
-        state: GameState.OutGame,
+        all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
+        // state: GameState.OutGame,
         out_cards: [],
     })
 

@@ -1,12 +1,15 @@
 import BackDrop from "./BackDrop"
 
-export default function Modal({ classes, closeModal, children }) {
+export default function Modal({ contentStyle, backdropStyle, onClose, children }) {
+    function hanleBackDropClicked() {
+        onClose && onClose()
+    }
     return (
         <>
-            <div className={classes}>
+            <div className={contentStyle}>
                 {children}
             </div>
-            <BackDrop onClick={closeModal}/>
+            <BackDrop classes={backdropStyle} onClick={hanleBackDropClicked} />
         </>
     )
 }

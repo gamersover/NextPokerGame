@@ -131,7 +131,7 @@ export default function Home() {
             <HomeImage />
             <HomeButton handleJoin={showModal} />
             {showJoinpop && (
-                <Modal classes='join-modal' closeModal={closeModal}>
+                <Modal contentStyle='join-modal' backdropStyle='backdrop backdrop-blur-md' closeModal={closeModal}>
                     <RoomNumberInput
                         handleOk={handleOk}
                         handleCancel={closeModal}

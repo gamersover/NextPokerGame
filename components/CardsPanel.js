@@ -1,4 +1,4 @@
-function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft, imageWidth }) {
+function GameCard({ id, name, isSelected, onCardSelect, marginLeft, imageWidth }) {
 
     function handleSelect() {
         onCardSelect && onCardSelect(id)
@@ -8,17 +8,17 @@ function GameCard({ id, cardName, isSelected, onCardSelect, marginLeft, imageWid
         <>
             <img
                 id={id}
-                src={`/${cardName}.svg`}
+                src={`/${name}.svg`}
                 className={`shadow-md ${imageWidth} ${marginLeft} h-auto ${isSelected ? '-translate-y-3' : ''}`}
                 onClick={handleSelect}
-                style={{zIndex:  id}}
+                style={{ zIndex: id }}
             />
         </>
     )
 }
 
 
-export default function CardsPanel({ cards, onCardSelect = null, size="normal"}) {
+export default function CardsPanel({ cards, onCardSelect = null, size = "normal" }) {
     let cards_len_level = 0
     if (cards.length >= 23) {
         cards_len_level = 4
@@ -38,7 +38,7 @@ export default function CardsPanel({ cards, onCardSelect = null, size="normal"})
 
     const imageWidth = {
         normal: "w-16",
-        small: "w-10",
+        small: "w-9",
     }
 
     const marginLeft = {
@@ -49,9 +49,9 @@ export default function CardsPanel({ cards, onCardSelect = null, size="normal"})
     return (
         <div className={"flex"}>
             {cards.map((card, i) => <GameCard
-                key={i}
+                key={card.id || i}
                 id={i}
-                cardName={card.cardName}
+                name={card.showName}
                 isSelected={card.selected}
                 onCardSelect={onCardSelect}
                 marginLeft={i == 0 ? '' : marginLeft[size][cards_len_level]}

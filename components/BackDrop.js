@@ -1,5 +1,5 @@
-export default function BackDrop({ onClick }) {
+export default function BackDrop({ classes, onClick }) {
     return (
-        <div className="backdrop" onClick={onClick}></div>
+        <div className={classes} onClick={onClick}></div>
     )
 }
