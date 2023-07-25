@@ -43,11 +43,11 @@ export default function CardsPanel({ cards, onCardSelect = null, size = "normal"
 
     const marginLeft = {
         normal: ["-ml-3", "-ml-5", "-ml-7", "-ml-9", "-ml-10"],
-        small: ["-ml-6", "-ml-6", "-ml-7", "-ml-7", "-ml-18"]
+        small: ["-ml-6", "-ml-6", "-ml-7", "-ml-7", "-ml-7"]
     }
 
     return (
-        <div className={"flex"}>
+        <div className={"flex flex-wrap justify-center"}>
             {cards.map((card, i) => <GameCard
                 key={card.id || i}
                 id={i}
