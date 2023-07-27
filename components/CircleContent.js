@@ -1,24 +1,31 @@
-export default function CircleContent({circleTitle, circleChild, titleBgColor, size='normal'}) {
-    const styleConfig = {
+export default function CircleContent({circleTitle, circleChild, titleBgColor, circleSize='normal', contentSize='normal'}) {
+    const circlestyleConfig = {
         normal: {
-            cicleHeight: "h-6",
-            circleWidth: "w-6",
-            contentWidth: "w-16",
+            height: "h-6",
+            width: "w-6",
             fontSize: "text-sm"
         },
         small: {
-            cicleHeight: "h-5",
-            circleWidth: "w-5",
-            contentWidth: "w-8",
+            height: "h-5",
+            width: "w-5",
             fontSize: "text-xs"
+        }
+    }
+
+    const contentStyleConfig = {
+        normal: {
+            width: "w-16"
+        },
+        small: {
+            width: "w-8"
         }
     }
 
 
     return (
-        <div className={`flex ${styleConfig[size].cicleHeight}`}>
-            <div className={`${titleBgColor} ${styleConfig[size].fontSize} rounded-full flex justify-center items-center ${styleConfig[size].cicleHeight} ${styleConfig[size].circleWidth} text-sm`}>{circleTitle}</div>
-            <div className={`bg-white bg-opacity-60 ${styleConfig[size].fontSize} rounded-md px-1 flex justify-center items-center ${styleConfig[size].contentWidth}`}>{circleChild}</div>
+        <div className={`flex ${circlestyleConfig[circleSize].height}`}>
+            <div className={`${titleBgColor} ${circlestyleConfig[circleSize].fontSize} rounded-full flex justify-center items-center ${circlestyleConfig[circleSize].height} ${circlestyleConfig[circleSize].width} text-sm`}>{circleTitle}</div>
+            <div className={`bg-white bg-opacity-60 ${circlestyleConfig[circleSize].fontSize} rounded-md px-1 flex justify-center items-center ${contentStyleConfig[contentSize].width}`}>{circleChild}</div>
         </div>
     )
 }

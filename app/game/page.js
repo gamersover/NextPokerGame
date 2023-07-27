@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { io } from "socket.io-client";
 import { SERVER_ADDR } from "@/utils/conf";
-import { GameState } from "@/utils/tool";
 
 function HomeTitle() {
     return (
@@ -65,7 +64,7 @@ function HomeButton({ handleJoin }) {
                 }
             })
 
-            socket.on("join_room_others", (data) => {
+            socket.on("join_room_global", (data) => {
                 setGameInfo({
                     ...gameInfo,
                     host_id: data.room_info.host_id,
@@ -93,15 +92,15 @@ function HomeButton({ handleJoin }) {
     }
 
     return (
-        <div className="flex w-1/4 justify-between">
+        <div className="flex w-1/2 md:w-1/4 justify-between">
             <GameButton
                 title="加入房间"
-                classes="game-button bg-cyan-100"
+                classes="w-20 bg-cyan-100"
                 onClick={joinRoom}
             />
             <GameButton
                 title="创建房间"
-                classes="game-button bg-red-100"
+                classes="w-20 bg-red-100"
                 onClick={createRoom}
             />
         </div>

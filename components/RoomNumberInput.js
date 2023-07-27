@@ -36,11 +36,6 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                         player_id: player_id,
                         player_name: data.players_info[player_id].player_name,
                     })
-                    setGameInfo({
-                        ...gameInfo,
-                        host_id: data.room_info.host_id,
-                        players_info: data.players_info
-                    })
                     handleOk()
                 }
                 else {
@@ -48,7 +43,7 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                 }
             })
 
-            socket.on("join_room_others", (data) => {
+            socket.on("join_room_global", (data) => {
                 setGameInfo({
                     ...gameInfo,
                     host_id: data.room_info.host_id,
@@ -84,10 +79,10 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                 setValue={setInputValue}
             />
             <div className="join-modal-buttons">
-                <GameButton title={"取消"} classes={"game-button bg-red-200"} onClick={handleCancel} />
+                <GameButton title={"取消"} classes={"bg-red-200"} onClick={handleCancel} />
                 <GameButton
                     title={"确定"}
-                    classes={isValidRoomNumber() ? "game-button bg-blue-200" : "game-button bg-gray-200"}
+                    classes={isValidRoomNumber() ? "bg-blue-200" : "bg-gray-200"}
                     onClick={setRoomNumber}
                     shouldDisable={!isValidRoomNumber()}
                 />

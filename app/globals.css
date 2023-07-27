@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -20,21 +21,19 @@ html {
     font-size: 16px;
 }
 
-/* 在小屏幕（宽度小于 640px）时，设置根元素的字体大小为 14px */
 @media (max-width: 749px) {
 html {
     font-size: 12px;
 }
 }
 
-/* 在中等屏幕（宽度大于等于 640px）时，设置根元素的字体大小为 16px */
 @media (min-width: 750px) {
 html {
     font-size: 16px;
 }
 }
 
-/* 在大屏幕（宽度大于等于 1024px）时，设置根元素的字体大小为 18px */
+
 @media (min-width: 1024px) {
 html {
     font-size: 20px;

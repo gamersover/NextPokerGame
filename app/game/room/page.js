@@ -15,7 +15,7 @@ function GameAvater({ imgUrl, playerState, width = 30, height = 30, alt = '' }) 
 
     return (
         <>
-            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
+            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full shadow-md border-white border-[1px] w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
         </>
     )
 }
@@ -44,14 +44,14 @@ function ScoreContent({ playerCurrScore, playerState, finalScore }) {
         </>
     )
     return (
-        <CircleContent circleTitle={"分"} circleChild={scoreContent} titleBgColor={'bg-cyan-100'} size="small" />
+        <CircleContent circleTitle={"分"} circleChild={scoreContent} titleBgColor={'bg-cyan-100'} circleSize="small" contentSize="small" />
     )
 }
 
 
 function GameBasicInfo({ playerName, playerCurrScore, playerState, finalScore }) {
     return (
-        <div className="flex flex-col items-center justify-between bg-slate-200">
+        <div className="flex flex-col items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
             <GameAvater imgUrl={"/avater.png"} playerState={playerState} />
             <div className="flex justify-center items-center my-1">
                 <span className="text-xs">
@@ -258,6 +258,7 @@ function GameMain({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const socket = useContext(SocketContext)
+    const [selectAll, setSelectAll] = useState(false)
 
     console.log("gameInfo", gameInfo)
 
@@ -343,12 +344,29 @@ function GameMain({ height }) {
     function handleGo() {
         if (gameInfo.players_info[userInfo.player_id].state === GameState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
-            const result = is_valid_out_cards(
+            if (selectedCard.length == 0) {
+                alert("未选择任何牌")
+                return
+            }
+
+            let result = is_valid_out_cards(
                 selectedCard,
                 false,
                 gameInfo.last_valid_cards_info,
                 gameInfo.is_start,
             )
+
+
+            // TODO: 方便快速测试
+            if (selectedCard.length >= 21) {
+                result = {
+                    status: 1,
+                    raw_cards: [],
+                    cards_info: [],
+                    cards_value: 0
+                }
+            }
+
             if (result.status === -1 || result.status === 0) {
                 alert(result.msg)
             }
@@ -409,20 +427,37 @@ function GameMain({ height }) {
         }
     }
 
+    function handleSelectAll() {
+        let all_cards = userInfo.all_cards.map(card => ({
+            ...card,
+            selected: !selectAll
+        }))
+        setSelectAll(!selectAll)
+        setUserInfo({
+            ...userInfo,
+            all_cards: all_cards
+        })
+    }
+
+    function handleNextRound() {
+        socket.emit("next_round")
+    }
+
     let content = null;
-    const player_info = gameInfo.players_info[userInfo.player_id]
+    const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {};
     // TODO: switch 语法？
     if (player_info.state === GameState.InGame) {
-        content = <GameButton title={"准备"} classes={"rounded-md text-sm px-2 py-1 bg-red-100 text-sm"} onClick={handlePrepare} />
+        content = <GameButton title={"准备"} classes={"bg-red-200"} onClick={handlePrepare} />
     }
     else if (player_info.state === GameState.Prepared) {
         content = <span>已准备</span>
     }
     else if (player_info.state === GameState.RoundStart) {
         content = (
-            <div className="flex w-2/12 justify-between">
-                <GameButton title={"跳过"} classes={"bg-red-100 rounded-md text-sm px-2 py-1"} onClick={handlePass} />
-                <GameButton title={"出牌"} classes={"bg-blue-100 rounded-md text-sm px-2 py-1"} onClick={handleGo} />
+            <div className="flex w-4/12 justify-between">
+                <GameButton title={"全选"} classes={"bg-gray-100"} onClick={handleSelectAll} />
+                <GameButton title={"跳过"} classes={"bg-red-200"} onClick={handlePass} />
+                <GameButton title={"出牌"} classes={"bg-blue-300"} onClick={handleGo} />
             </div>
         )
     }
@@ -443,7 +478,7 @@ function GameMain({ height }) {
         )
     }
     else if (player_info.state === GameState.GameEnd) {
-        content = <GameButton title={"再来一局"} classes={"rounded-md text-sm px-2 py-1 bg-red-100 text-sm"} />
+        content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound}/>
     }
 
     return (
@@ -474,7 +509,7 @@ function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
                 <GameButton
                     key={i}
                     title={number ? number : "重置"}
-                    classes={`${number ? 'w-8' : 'w-28'} h-8 m-1 rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
+                    classes={`${number ? 'w-8' : 'w-28'} !h-8 m-1 !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
                     onClick={() => onNumberSelected(number)}
                 />)
             )}
@@ -534,8 +569,8 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
                 <div className="flex justify-center w-1/2">
                     <span className="text-sm">替换王牌</span>
                 </div>
-                <div className="flex justify-end w-1/4">
-                    <button className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-red-300 to-gray-300 shadow-md" onClick={handleCloseModal}>
+                <div className="flex justify-end items-center w-1/4">
+                    <button className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-red-300 to-gray-300 shadow-md" onClick={handleCloseModal}>
                         <span className="text-black font-md">&times;</span>
                     </button>
                 </div>
@@ -558,7 +593,7 @@ function GameFooter() {
     const [showJokerSubs, setShowJokerSubs] = useState(false)
     const [showEndModal, setShowEndModal] = useState(false)
 
-    const player_info = gameInfo.players_info[userInfo.player_id]
+    const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
     const selected_joker_cards = userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
     let game_result = []
     if (player_info.state == GameState.GameEnd) {
@@ -618,7 +653,7 @@ function GameFooter() {
                 <div className="flex items-end w-full item-center justify-between">
                     <div className="flex w-1/4 justify-around items-end">
                         <GameAvater imgUrl={"/avater.png"} playerState={player_info.state} width={35} height={35} />
-                        <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} size={"small"} />
+                        <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerState={player_info.state} playerCurrScore={player_info.cards_value || 0} finalScore={player_info.final_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
@@ -635,7 +670,7 @@ function GameFooter() {
                             <GameButton
                                 title={"显示结果"}
                                 onClick={handleshowEndModal}
-                                classes="flex justify-center items-center rounded-md h-5 px-2 py-1 text-xs bg-gradient-to-br from-blue-100 via-indigo-300 to-blue-100"
+                                classes="flex justify-center items-center !h-5 px-2 py-1 text-xs text-white bg-gradient-to-br from-blue-200 via-indigo-400 to-blue-200"
                             />
                         </div>
                     )}
@@ -648,7 +683,7 @@ function GameFooter() {
             )}
             {showEndModal && (
                 <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur-md">
-                    <div className="flex flex-col h-5/6 rounded-lg bg-gradient-to-br from-blue-100 via-indigo-300 to-blue-100  justify-center items-center w-full">
+                    <div className="flex flex-col h-5/6 rounded-lg bg-gradient-to-br from-blue-200 via-indigo-400 to-blue-200  justify-center items-center w-full">
                         <div className="flex h-[5%]">
                             {
                                 player_info.normal_score == 2 ? <span className=" text-amber-300 font-medium -mt-3 text-2xl">胜利</span>
@@ -689,7 +724,7 @@ function GameFooter() {
 
 export default function Page() {
     return (
-        <div className="flex flex-col justify-between items-center h-screen">
+        <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
             <GameHeader height='h-1/5' />
             <GameNeck height='flex-1' />
             <GameMain height='h-40' />
