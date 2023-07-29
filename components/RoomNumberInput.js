@@ -17,7 +17,6 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
 
     function setRoomNumber() {
         if (/^[0-9]{6}$/.exec(inputValue)) {
-            setUserInfo({ ...userInfo, room_number: inputValue })
             const socket = io(SERVER_ADDR, {
                 transports: ['websocket']
             });
@@ -28,6 +27,7 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
             })
 
             socket.on("join_room", (data) => {
+                console.log(data)
                 if (data.status == 1) {
                     const player_id = data.player_id
                     setUserInfo({
@@ -39,23 +39,18 @@ export default function RoomNumberInput({ handleCancel, handleOk }) {
                     handleOk()
                 }
                 else {
-                    alert(`房间${data.room_number}加入失败，原因${data.msg}`)
+                    alert(`房间${data.room_info.room_number}加入失败，原因${data.msg}`)
                 }
             })
 
             socket.on("join_room_global", (data) => {
-                setGameInfo({
-                    ...gameInfo,
-                    host_id: data.room_info.host_id,
-                    players_info: data.players_info
-                })
-            })
-
-            socket.on("prepare_start_global", (data) => {
-                setGameInfo({
-                    ...gameInfo,
-                    players_info: data.players_info
-                })
+                if (data.status == 1) {
+                    setGameInfo({
+                        ...gameInfo,
+                        host_id: data.room_info.host_id,
+                        players_info: data.players_info
+                    })
+                }
             })
         }
         else {

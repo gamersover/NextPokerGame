@@ -170,7 +170,7 @@ function GameHeader({ height }) {
                                 playerName={player_info.player_name}
                                 playerCurrScore={player_info.cards_value || 0}
                                 playerState={player_info.state}
-                                finalScore={player_info.final_score}
+                                finalScore={player_info.global_score}
                             />
                             <GameCardInfo
                                 num_cards={player_info.num_cards}
@@ -215,7 +215,7 @@ function GameNeck({ height }) {
                             playerName={left_player_info.player_name}
                             playerCurrScore={left_player_info.cards_value || 0}
                             playerState={left_player_info.state}
-                            finalScore={left_player_info.final_score}
+                            finalScore={left_player_info.global_score}
                         />
                         <GameCardInfo
                             num_cards={left_player_info.num_cards}
@@ -244,7 +244,7 @@ function GameNeck({ height }) {
                             playerName={right_player_info.player_name}
                             playerCurrScore={right_player_info.cards_value || 0}
                             playerState={right_player_info.state}
-                            finalScore={right_player_info.final_score}
+                            finalScore={right_player_info.global_score}
                         />
                     </>
                 )}
@@ -261,6 +261,66 @@ function GameMain({ height }) {
     const [selectAll, setSelectAll] = useState(false)
 
     console.log("gameInfo", gameInfo)
+    useEffect(() => {
+        socket.on("prepare_start_global", (data) => {
+            if (data.status == 1) {
+                setGameInfo({
+                    ...gameInfo,
+                    players_info: data.players_info
+                })
+            }
+        })
+        socket.on("game_start_global", (data) => {
+            setUserInfo(userInfo => ({
+                ...userInfo,
+                all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
+            }))
+            setGameInfo(gameInfo => ({
+                ...gameInfo,
+                players_info: data.players_info,
+                curr_player_id: data.game_info.first_player_id,
+                friend_card: data.game_info.friend_card,
+                num_rounds: data.game_info.num_rounds
+            }))
+        })
+        socket.on("game_step", (data) => {
+            setGameInfo(gameInfo => ({
+                ...gameInfo,
+                last_valid_cards_info: data.last_valid_cards_info,
+                is_start: data.is_start
+            }))
+        })
+        socket.on("game_step_global", (data) => {
+            console.log("game_step_global data", data)
+            console.log("game_step_global user info", userInfo)
+            if (data.status === 1) {
+                // 有出牌
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    curr_player_id: data.game_info.curr_player_id,
+                    friend_card_cnt: data.game_info.friend_card_cnt,
+                    players_info: data.players_info,
+                    is_friend_help: data.game_info.is_friend_help
+                }))
+            }
+            else if (data.status === 2) {
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    curr_player_id: data.game_info.curr_player_id,
+                    friend_card_cnt: data.game_info.friend_card_cnt,
+                    players_info: data.players_info,
+                }))
+            }
+            else if (data.status === 3) {
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    friend_card_cnt: data.game_info.friend_card_cnt,
+                    winners_order: data.game_info.winners_order,
+                    players_info: data.players_info
+                }))
+            }
+        })
+    })
 
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= GameState.Prepared) {
@@ -268,67 +328,6 @@ function GameMain({ height }) {
         }
         else {
             socket.emit("prepare_start", {})
-            socket.on("prepare_start", (data) => {
-                if (data.status === 1) {
-                    setGameInfo(gameInfo => ({
-                        ...gameInfo,
-                        players_info: data.players_info
-                    }))
-                }
-                else {
-                    alert(`准备失败，${data.msg}`)
-                }
-            })
-            socket.on("game_start_global", (data) => {
-                setUserInfo(userInfo => ({
-                    ...userInfo,
-                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
-                }))
-                setGameInfo(gameInfo => ({
-                    ...gameInfo,
-                    players_info: data.players_info,
-                    curr_player_id: data.game_info.first_player_id,
-                    friend_card: data.game_info.friend_card,
-                    num_rounds: data.game_info.num_rounds
-                }))
-            })
-            socket.on("game_step", (data) => {
-                setGameInfo(gameInfo => ({
-                    ...gameInfo,
-                    last_valid_cards_info: data.last_valid_cards_info,
-                    is_start: data.is_start
-                }))
-            })
-            socket.on("game_step_global", (data) => {
-                console.log("game_step_global data", data)
-                console.log("game_step_global user info", userInfo)
-                if (data.status === 1) {
-                    // 有出牌
-                    setGameInfo(gameInfo => ({
-                        ...gameInfo,
-                        curr_player_id: data.game_info.curr_player_id,
-                        friend_card_cnt: data.game_info.friend_card_cnt,
-                        players_info: data.players_info,
-                        is_friend_help: data.game_info.is_friend_help
-                    }))
-                }
-                else if (data.status === 2) {
-                    setGameInfo(gameInfo => ({
-                        ...gameInfo,
-                        curr_player_id: data.game_info.curr_player_id,
-                        friend_card_cnt: data.game_info.friend_card_cnt,
-                        players_info: data.players_info,
-                    }))
-                }
-                else if (data.status === 3) {
-                    setGameInfo(gameInfo => ({
-                        ...gameInfo,
-                        friend_card_cnt: data.game_info.friend_card_cnt,
-                        winners_order: data.game_info.winners_order,
-                        players_info: data.players_info
-                    }))
-                }
-            })
         }
     }
 
@@ -440,6 +439,11 @@ function GameMain({ height }) {
     }
 
     function handleNextRound() {
+        setUserInfo({
+            ...userInfo,
+            all_cards: [],
+            out_cards: []
+        })
         socket.emit("next_round")
     }
 
@@ -478,7 +482,7 @@ function GameMain({ height }) {
         )
     }
     else if (player_info.state === GameState.GameEnd) {
-        content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound}/>
+        content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound} />
     }
 
     return (
@@ -597,18 +601,19 @@ function GameFooter() {
     const selected_joker_cards = userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
     let game_result = []
     if (player_info.state == GameState.GameEnd) {
-        for(let i of gameInfo.winners_order) {
+        for (let i of gameInfo.winners_order) {
             game_result.push({
                 player_id: i,
                 player_name: gameInfo.players_info[i].player_name,
                 normal_score: gameInfo.players_info[i].normal_score,
                 value_score: gameInfo.players_info[i].value_score,
-                final_score: gameInfo.players_info[i].final_score
+                final_score: gameInfo.players_info[i].final_score,
+                global_score: gameInfo.players_info[i].global_score
             })
         }
     }
 
-    useEffect(()=> {
+    useEffect(() => {
         setShowEndModal(player_info.state == GameState.GameEnd)
     }, [player_info.state])
 
@@ -654,7 +659,7 @@ function GameFooter() {
                     <div className="flex w-1/4 justify-around items-end">
                         <GameAvater imgUrl={"/avater.png"} playerState={player_info.state} width={35} height={35} />
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
-                        <ScoreContent playerState={player_info.state} playerCurrScore={player_info.cards_value || 0} finalScore={player_info.final_score} />
+                        <ScoreContent playerState={player_info.state} playerCurrScore={player_info.cards_value || 0} finalScore={player_info.global_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
                         <div className="flex items-end">
@@ -692,17 +697,18 @@ function GameFooter() {
                         </div>
                         <div className="flex flex-col justify-evenly flex-1 w-4/6">
                             <div className="flex w-full">
-                                {["昵称", "输赢", "赏值", "分数"].map(title => (
+                                {["昵称", "输赢", "赏值", "分数", "总分"].map(title => (
                                     <span key={title} className="flex w-1/4 justify-center text-amber-100 text-sm">{title}</span>
                                 ))}
                             </div>
                             {game_result.map(
                                 player => (
-                                    <div key={player.player_id} className={`flex w-full ${player.player_id==userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-orange-100" : "text-white"}`}>
-                                        <span className={`flex w-1/4 justify-center text-sm`}>{player.player_name}</span>
-                                        <span className={`flex w-1/4 justify-center text-sm`}>{player.normal_score}</span>
-                                        <span className={`flex w-1/4 justify-center text-sm`}>{player.value_score}</span>
-                                        <span className={`flex w-1/4 justify-center text-sm`}>{player.final_score}</span>
+                                    <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-orange-100" : "text-white"}`}>
+                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.player_name}</span>
+                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.normal_score}</span>
+                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.value_score}</span>
+                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.final_score}</span>
+                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.global_score}</span>
                                     </div>
                                 )
                             )}

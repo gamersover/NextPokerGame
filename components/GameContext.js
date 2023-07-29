@@ -13,7 +13,6 @@ function SocketProvider({ children }) {
         room_number: null,
         player_name: 'zs',
         player_id: null,
-        is_prepared: false,
         score: 0,
         all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
         // state: GameState.OutGame,

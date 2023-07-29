@@ -65,20 +65,14 @@ function HomeButton({ handleJoin }) {
             })
 
             socket.on("join_room_global", (data) => {
-                setGameInfo({
-                    ...gameInfo,
-                    host_id: data.room_info.host_id,
-                    players_info: data.players_info
-                })
+                if (data.status == 1) {
+                    setGameInfo({
+                        ...gameInfo,
+                        host_id: data.room_info.host_id,
+                        players_info: data.players_info
+                    })
+                }
             })
-
-            socket.on("prepare_start_global", (data) => {
-                setGameInfo({
-                    ...gameInfo,
-                    players_info: data.players_info
-                })
-            })
-
         }
     }
 
