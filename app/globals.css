@@ -40,6 +40,32 @@ html {
 }
 }
 
+@keyframes slip_in {
+  from {
+      transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slip-in {
+  animation: slip_in 0.5s;
+}
+
+@keyframes fade_out {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fade_out 0.5s;
+}
+
 
 .game-body {
   @apply bg-blue-50

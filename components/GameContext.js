@@ -11,7 +11,8 @@ function SocketProvider({ children }) {
     const [socket, setSocket] = useState(null)
     const [userInfo, setUserInfo] = useState({
         room_number: null,
-        player_name: 'zs',
+        player_name: '',
+        player_avatar: -1,
         player_id: null,
         score: 0,
         all_cards: [].map((card) => ({name: card, showName: card, selected: false})),

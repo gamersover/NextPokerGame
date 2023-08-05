@@ -1,1 +1,1 @@
-export const SERVER_ADDR = "ws://192.168.31.81:3001"
+export const SERVER_ADDR = "ws://localhost:3001"

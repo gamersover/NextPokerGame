@@ -1,6 +1,6 @@
 "use client";
 
-import { CardsPanel, CircleContent, GameButton, Modal } from '@/components';
+import { CardsPanel, CircleContent, GameButton, Modal, Toast } from '@/components';
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, getNowFormatDate } from '@/utils/tool';
 import Image from 'next/image';
@@ -49,10 +49,10 @@ function ScoreContent({ playerCurrScore, playerState, finalScore }) {
 }
 
 
-function GameBasicInfo({ playerName, playerCurrScore, playerState, finalScore }) {
+function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerState, finalScore }) {
     return (
         <div className="flex flex-col items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
-            <GameAvater imgUrl={"/avater.png"} playerState={playerState} />
+            <GameAvater imgUrl={playerAvatar} playerState={playerState} />
             <div className="flex justify-center items-center my-1">
                 <span className="text-xs">
                     {playerName || '无名称'}
@@ -168,6 +168,7 @@ function GameHeader({ height }) {
                         <>
                             <GameBasicInfo
                                 playerName={player_info.player_name}
+                                playerAvatar={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`}
                                 playerCurrScore={player_info.cards_value || 0}
                                 playerState={player_info.state}
                                 finalScore={player_info.global_score}
@@ -213,6 +214,7 @@ function GameNeck({ height }) {
                     <>
                         <GameBasicInfo
                             playerName={left_player_info.player_name}
+                            playerAvatar={`/avatars/Avatars Set Flat Style-${String(left_player_info.player_avatar).padStart(2, '0')}.png`}
                             playerCurrScore={left_player_info.cards_value || 0}
                             playerState={left_player_info.state}
                             finalScore={left_player_info.global_score}
@@ -242,6 +244,7 @@ function GameNeck({ height }) {
                         />
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
+                            playerAvatar={`/avatars/Avatars Set Flat Style-${String(right_player_info.player_avatar).padStart(2, '0')}.png`}
                             playerCurrScore={right_player_info.cards_value || 0}
                             playerState={right_player_info.state}
                             finalScore={right_player_info.global_score}
@@ -257,6 +260,7 @@ function GameNeck({ height }) {
 function GameMain({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
+    const [message, setMessage] = useState({msg: null, key: 0})
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
 
@@ -324,7 +328,7 @@ function GameMain({ height }) {
 
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= GameState.Prepared) {
-            alert("已准备")
+            setMessage(() => ({msg: "已准备", key: 0}))
         }
         else {
             socket.emit("prepare_start", {})
@@ -344,7 +348,7 @@ function GameMain({ height }) {
         if (gameInfo.players_info[userInfo.player_id].state === GameState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
             if (selectedCard.length == 0) {
-                alert("未选择任何牌")
+                setMessage(() => ({msg: "未选择任何牌", key: 0}))
                 return
             }
 
@@ -357,17 +361,17 @@ function GameMain({ height }) {
 
 
             // TODO: 方便快速测试
-            if (selectedCard.length >= 21) {
-                result = {
-                    status: 1,
-                    raw_cards: [],
-                    cards_info: [],
-                    cards_value: 0
-                }
-            }
+            // if (selectedCard.length >= 21) {
+            //     result = {
+            //         status: 1,
+            //         raw_cards: [],
+            //         cards_info: [],
+            //         cards_value: 0
+            //     }
+            // }
 
             if (result.status === -1 || result.status === 0) {
-                alert(result.msg)
+                setMessage(() => ({msg: result.msg, key: 0}))
             }
             else if (result.status === 1) {
                 let all_cards = userInfo.all_cards.filter(card => !card.selected)
@@ -389,7 +393,7 @@ function GameMain({ height }) {
             }
         }
         else {
-            alert("非出牌时间")
+            setMessage(() => ({msg: "非出牌时间", key: 0}))
         }
     }
 
@@ -418,11 +422,11 @@ function GameMain({ height }) {
                 })
             }
             else if (result.status === -1) {
-                alert("无法跳过，请选择出牌")
+                setMessage(() => ({msg: "无法跳过，请选择出牌", key: 0}))
             }
         }
         else {
-            alert("非出牌时间")
+            setMessage(() => ({msg: "非出牌时间", key: 0}))
         }
     }
 
@@ -449,40 +453,43 @@ function GameMain({ height }) {
 
     let content = null;
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {};
-    // TODO: switch 语法？
-    if (player_info.state === GameState.InGame) {
-        content = <GameButton title={"准备"} classes={"bg-red-200"} onClick={handlePrepare} />
-    }
-    else if (player_info.state === GameState.Prepared) {
-        content = <span>已准备</span>
-    }
-    else if (player_info.state === GameState.RoundStart) {
-        content = (
-            <div className="flex w-4/12 justify-between">
-                <GameButton title={"全选"} classes={"bg-gray-100"} onClick={handleSelectAll} />
-                <GameButton title={"跳过"} classes={"bg-red-200"} onClick={handlePass} />
-                <GameButton title={"出牌"} classes={"bg-blue-300"} onClick={handleGo} />
-            </div>
-        )
-    }
-    else if (player_info.state === GameState.GameStart) {
-        content = (
-            <CardsPanel cards={userInfo.out_cards} size="small" />
-        )
-    }
-    else if (player_info.state === GameState.RoundSkip) {
-        content = <span>跳过</span>
-    }
-    else if (player_info.state === GameState.PlayerEnd) {
-        content = (
-            <div>
+    switch(player_info.state) {
+        case GameState.InGame:
+            content = <GameButton title={"准备"} classes={"bg-red-200"} onClick={handlePrepare} />
+            break
+        case GameState.Prepared:
+            content = <span>已准备</span>
+            break
+        case GameState.RoundStart:
+            content = (
+                <div className="flex w-4/12 justify-between">
+                    <GameButton title={"全选"} classes={"bg-gray-100"} onClick={handleSelectAll} />
+                    <GameButton title={"跳过"} classes={"bg-red-200"} onClick={handlePass} />
+                    <GameButton title={"出牌"} classes={"bg-blue-300"} onClick={handleGo} />
+                </div>
+            )
+            break
+        case GameState.GameStart:
+            content = (
                 <CardsPanel cards={userInfo.out_cards} size="small" />
-                <span>{`你的排名：${player_info.rank}`}</span>
-            </div>
-        )
-    }
-    else if (player_info.state === GameState.GameEnd) {
-        content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound} />
+            )
+            break
+        case GameState.RoundSkip:
+            content = <span>跳过</span>
+            break
+        case GameState.PlayerEnd:
+            content = (
+                <div>
+                    <CardsPanel cards={userInfo.out_cards} size="small" />
+                    <span>{`你的排名：${player_info.rank}`}</span>
+                </div>
+            )
+            break
+        case GameState.GameEnd:
+            content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound} />
+            break
+        default:
+            content = null
     }
 
     return (
@@ -500,6 +507,7 @@ function GameMain({ height }) {
             <div className="flex flex-1 justify-start items-end mb-1">
                 <JokerCards playerState={player_info.state} new_joker_cards={player_info.joker_cards || []} />
             </div>
+            {message.msg && <Toast message={message} duration={4000}/>}
         </div>
     )
 }
@@ -657,7 +665,7 @@ function GameFooter() {
             <div className="fixed bottom-0 flex w-screen px-5 z-10 mb-1">
                 <div className="flex items-end w-full item-center justify-between">
                     <div className="flex w-1/4 justify-around items-end">
-                        <GameAvater imgUrl={"/avater.png"} playerState={player_info.state} width={35} height={35} />
+                        <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} width={35} height={35} />
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerState={player_info.state} playerCurrScore={player_info.cards_value || 0} finalScore={player_info.global_score} />
                     </div>
