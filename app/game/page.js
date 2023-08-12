@@ -1,7 +1,7 @@
 "use client";
 
 import { GameButton, Modal, Toast } from "@/components";
-import { GameInfoContext, SetSocketContext, UserInfoContext } from "@/components/GameContext";
+import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
@@ -25,7 +25,7 @@ function HomeButton({ handleJoin, setMessage }) {
 
     function createRoom() {
         if (userInfo.room_number !== null) {
-            setMessage({msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0})
+            setMessage({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
         }
         else {
             const socket = io(SERVER_ADDR, { transports: ['websocket'] })
@@ -35,44 +35,45 @@ function HomeButton({ handleJoin, setMessage }) {
                 player_avatar: userInfo.player_avatar
             })
 
-            setSocket(socket)
-
             socket.on("create_room", (data) => {
+                console.log("收到了create_room消息")
                 if (data.status == 1) {
                     const player_id = data.player_id
                     setUserInfo({
                         ...userInfo,
-                        room_number: data.room_info.room_number,
+                        room_number: data.game_info.room_number,
                         player_id: player_id,
                         player_name: data.players_info[player_id].player_name,
                     })
                     setGameInfo({
                         ...gameInfo,
-                        host_id: data.room_info.host_id,
+                        host_id: data.game_info.host_id,
                         players_info: data.players_info
                     })
                     router.push("/game/room")
                 }
                 else {
-                    setMessage({msg: `服务端错误，创建房间失败。${data.msg}`, key: 0})
+                    setMessage({ msg: data.msg, key: 0 })
                 }
             })
 
             socket.on("join_room_global", (data) => {
+                console.log("收到了join_room_global消息")
                 if (data.status == 1) {
                     setGameInfo({
                         ...gameInfo,
-                        host_id: data.room_info.host_id,
+                        host_id: data.game_info.host_id,
                         players_info: data.players_info
                     })
                 }
             })
+            setSocket(socket)
         }
     }
 
     function joinRoom() {
         if (userInfo.room_number !== null) {
-            setMessage({msg: `你已在${userInfo.room_number}房间，无法加入其他房间`, key: 0})
+            setMessage({ msg: `你已在${userInfo.room_number}房间，无法加入其他房间`, key: 0 })
         }
         else {
             handleJoin()
@@ -89,7 +90,7 @@ function HomeButton({ handleJoin, setMessage }) {
                 </div>
             </div>
             <div className="bg-[url('/frog.svg')] bg-cover w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
-            <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
+                <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-red-200 font-bold mb-2">
                         创建房间
                     </span>
@@ -101,7 +102,7 @@ function HomeButton({ handleJoin, setMessage }) {
 
 
 function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
-    const [roomNumber, setRoomNumber] = useState([])
+    const [roomNumber, setRoomNumber] = useState([0,0,0,0,0,0]) // TODO: 测试用
 
     function handleNumberInput(number) {
         if (roomNumber.length <= 5) {
@@ -201,16 +202,57 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
 }
 
 
+function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSubsJoin }) {
+    const [selectedPlayer, setSelectedPlayer] = useState(subsPlayersID[0])
+    return (
+        <div className="flex flex-col items-center justify-around">
+            <div className="w-10/12 flex justify-center items-center">
+                {
+                    subsPlayersID.length == 1 ? (
+                        <span>你加入的游戏已经开始，确认承接该用户的游戏状态？</span>
+                    ) : (
+                        <span>你加入的游戏已经开始，请选择一个要承接的用户</span>
+                    )
+                }
+            </div>
+            <div className="w-full flex justify-evenly">
+                {
+                    subsPlayersID.map(player_id => (
+                        <div key={player_id} className={`${selectedPlayer==player_id ? "bg-white shadow-md" : "bg-white opacity-50"}  p-1 rounded-md flex flex-col items-center`} onClick={() => setSelectedPlayer(player_id)}>
+                            <Image
+                                src={`/avatars/Avatars Set Flat Style-${String(subsPlayers[player_id].player_avatar).padStart(2, '0')}.png`}
+                                width={50}
+                                height={50}
+                                alt=""
+                            />
+                            <span>{subsPlayers[player_id].player_name}</span>
+                        </div>
+                    ))
+                }
+            </div>
+            <div className="w-10/12 flex justify-end">
+                <GameButton title={"不加入"} classes="w-16 !h-10 mx-2 font-bold text-red-400" onClick={handleNotJoin}/>
+                <GameButton title={"加入"} classes="w-16 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300" onClick={() => handleSubsJoin(selectedPlayer)}/>
+            </div>
+        </div>
+    )
+}
+
+
 export default function Home() {
     const [showJoinpop, setShowJoinpop] = useState(false)
     const setSocket = useContext(SetSocketContext)
+    const socket = useContext(SocketContext)
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [message, setMessage] = useState({msg: null, key: 0})
+    const [message, setMessage] = useState({ msg: null, key: 0 })
+    const [subsPlayers, setSubsPlayers] = useState({})
+    const [subsPlayersID, setSubsPlayersID] = useState([])
+    const [joiningRoomNumber, setJoiningRoomNumber] = useState("")
     const router = useRouter()
 
     useLayoutEffect(() => {
-        setUserInfo(()=>({
+        setUserInfo(() => ({
             ...userInfo,
             player_name: Cookies.get("username"),
             player_avatar: Cookies.get("avatarID"),
@@ -230,11 +272,24 @@ export default function Home() {
         router.push("/game/room")
     }
 
+    function handleNotJoin() {
+        setSubsPlayers({})
+        setSubsPlayersID([])
+    }
+
+    function handleSubsJoin(subsPlayerID) {
+        socket.emit("join_room_second", {
+            room_number: joiningRoomNumber,
+            player_id: subsPlayerID,
+            player_name: userInfo.player_name,
+            player_avatar: userInfo.player_avatar
+        })
+    }
+
     const handleJoinRoom = useCallback((roomNumber) => {
         const socket = io(SERVER_ADDR, {
             transports: ['websocket']
         });
-        setSocket(socket)
         socket.emit("join_room", {
             room_number: roomNumber.join(""),
             player_name: userInfo.player_name,
@@ -242,42 +297,84 @@ export default function Home() {
         })
 
         socket.on("join_room", (data) => {
+            console.log("收到了join_room消息")
             if (data.status == 1) {
                 const player_id = data.player_id
                 setUserInfo({
                     ...userInfo,
-                    room_number: data.room_info.room_number,
+                    room_number: data.game_info.room_number,
                     player_id: player_id,
                     player_name: data.players_info[player_id].player_name,
                 })
                 handleOk()
             }
+            else if (data.status == 2) {
+                closeModal()
+                setSubsPlayers(data.exited_players_info)
+                setSubsPlayersID(data.exited_players_id)
+                setJoiningRoomNumber(roomNumber.join(""))
+            }
             else {
-                setMessage(`房间${data.room_info.room_number}加入失败，原因${data.msg}`)
+                setMessage(`房间${data.game_info.room_number}加入失败，原因${data.msg}`)
             }
         })
 
         socket.on("join_room_global", (data) => {
+            console.log("收到了join_room_global消息")
             if (data.status == 1) {
                 setGameInfo({
                     ...gameInfo,
-                    host_id: data.room_info.host_id,
+                    host_id: data.game_info.host_id,
                     players_info: data.players_info
                 })
             }
         })
+
+        socket.on("player_reconnect", data=> {
+            console.log("收到了player_reconnect消息")
+            if (data.status == 1) {
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    players_info: data.players_info,
+                    state: data.game_info.state,
+                    curr_player_id: data.game_info.curr_player_id,
+                    friend_card: data.game_info.friend_card,
+                    friend_card_cnt: data.game_info.friend_card_cnt,
+                    num_games: data.game_info.num_games,
+                    host_id: data.game_info.host_id,
+                }))
+                setUserInfo(userInfo => ({
+                    ...userInfo,
+                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false })),
+                    player_id: data.user_info.player_id,
+                    player_name: data.players_info[data.user_info.player_id].player_name,
+                    room_number: data.game_info.room_number
+                }))
+                handleOk()
+            }
+            else {
+                handleNotJoin()
+                setMessage(() => ({"msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0}))
+            }
+        })
+        setSocket(socket)
     }, [userInfo])
 
-return (
-    <div className="flex flex-col justify-evenly items-center h-screen">
-        <HomeTitle />
-        <HomeButton handleJoin={showModal} setMessage={setMessage} />
-        {showJoinpop && (
-            <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
-                <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal}/>
-            </Modal>
-        )}
-        {message.msg && <Toast message={message} duration={4000}/>}
-    </div>
-)
+    return (
+        <div className="flex flex-col justify-evenly items-center h-screen">
+            <HomeTitle />
+            <HomeButton handleJoin={showModal} setMessage={setMessage} />
+            {showJoinpop && (
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                    <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
+                </Modal>
+            )}
+            {message.msg && <Toast message={message} duration={4000} />}
+            {subsPlayersID.length > 0 && (
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                    <SubstituePlayers subsPlayers={subsPlayers} subsPlayersID={subsPlayersID} handleNotJoin={handleNotJoin} handleSubsJoin={handleSubsJoin} />
+                </Modal>
+            )}
+        </div>
+    )
 }

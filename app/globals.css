@@ -40,30 +40,60 @@ html {
 }
 }
 
-@keyframes slip_in {
+
+@keyframes flash-alert {
+  0% {
+    transform: scale(4);
+    opacity: 0.5;
+  }
+  10% {
+    transform: scale(2);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(1);
+    opacity: 1;
+    background-color: white;
+  }
+  90% {
+    transform: scale(1);
+    opacity: 1;
+    background-color: white;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-flash-alert {
+  animation: flash-alert 3s linear forwards;
+}
+
+@keyframes right-in {
   from {
       transform: translateX(100%);
   }
   to {
+      transform: translateX(0);
+  }
+}
+
+@keyframes right-out {
+  from {
     transform: translateX(0);
   }
-}
-
-.animate-slip-in {
-  animation: slip_in 0.5s;
-}
-
-@keyframes fade_out {
-  from {
-      opacity: 1;
-  }
   to {
-      opacity: 0;
+    transform: translateX(100%);
   }
 }
 
-.animate-fade-out {
-  animation: fade_out 0.5s;
+.animate-right-out {
+  animation: right-out .5s forwards;
+}
+
+.animate-right-in {
+  animation: right-in .5s forwards;
 }
 
 

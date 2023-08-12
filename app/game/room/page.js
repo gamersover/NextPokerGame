@@ -1,17 +1,18 @@
 "use client";
 
-import { CardsPanel, CircleContent, GameButton, Modal, Toast } from '@/components';
+import { BackDrop, CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from '@/components';
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
-import { GameState, getNowFormatDate } from '@/utils/tool';
+import { GameState, PlayerState, getNowFormatDate } from '@/utils/tool';
 import Image from 'next/image';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
+import { useRouter } from 'next/navigation';
 
 
 function GameAvater({ imgUrl, playerState, width = 30, height = 30, alt = '' }) {
-    const opacityValue = playerState >= GameState.Prepared ? 'opacity-100' : 'opacity-60'
-    const actived = playerState == GameState.RoundStart
+    const opacityValue = playerState >= PlayerState.Prepared ? 'opacity-100' : 'opacity-60'
+    const actived = playerState == PlayerState.RoundStart
 
     return (
         <>
@@ -26,10 +27,10 @@ function ScoreContent({ playerCurrScore, playerState, finalScore }) {
     const [totalScore, setTotalScore] = useState(0)
 
     useEffect(() => {
-        if (playerState === GameState.RoundStart) {
+        if (playerState === PlayerState.RoundStart) {
             setTotalScore((prevTotalScore) => prevTotalScore + currScore);
             setCurrScore(0);
-        } else if (playerState === GameState.GameEnd) {
+        } else if (playerState === PlayerState.GameEnd) {
             setTotalScore(finalScore);
             setCurrScore(0);
         } else {
@@ -67,7 +68,7 @@ function JokerCards({ playerState, new_joker_cards }) {
     const [jokerCards, setJokerCards] = useState([])
 
     useEffect(() => {
-        if (playerState === GameState.RoundStart) {
+        if (playerState === PlayerState.RoundStart) {
             setJokerCards((prevJokerCards) =>
                 [...prevJokerCards,
                 ...new_joker_cards]
@@ -91,7 +92,7 @@ function GameCardInfo({ num_cards, new_joker_cards, playerState }) {
     return (
         <div className="flex flex-col justify-between flex-1">
             <div className="h-1/2 flex justify-center items-center">
-                {playerState >= GameState.GameStart && (
+                {playerState >= PlayerState.GameStart && (
                     <div className="w-full h-full bg-[url('/red.svg')] bg-center bg-contain bg-no-repeat flex justify-center items-center">
                         <span className="text-white font-medium">{num_cards != null ? num_cards : '?'}</span>
                     </div>
@@ -104,22 +105,28 @@ function GameCardInfo({ num_cards, new_joker_cards, playerState }) {
     )
 }
 
-function PlayerOut({ style, state, valid_cards }) {
+function PlayerOut({ style, state, valid_cards, scoreObj, is_exited }) {
     let content = null;
-    if (state == GameState.Prepared) {
-        content = <span>已准备</span>
-    }
-    else if (state == GameState.RoundSkip) {
-        content = <span>跳过</span>
-    }
-    else if (state == GameState.RoundStart) {
-        content = <span>出牌中...</span>
+    if (is_exited) {
+        content = <span>重连中...</span>
     }
     else {
-        content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card }))} size='small' />
+        if (state == PlayerState.Prepared) {
+            content = <span>已准备</span>
+        }
+        else if (state == PlayerState.RoundSkip) {
+            content = <span>跳过</span>
+        }
+        else if (state == PlayerState.RoundStart) {
+            content = <span>出牌中...</span>
+        }
+        else {
+            content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card }))} size='small' />
+        }
     }
     return (
-        <div className={`w-1/3 flex flex-col ${style}`}>
+        <div className={`w-1/3 flex flex-col relative ${style}`}>
+            <ScoreAlert scoreObj={scoreObj} duration={4000} />
             {content}
         </div>
     )
@@ -128,10 +135,66 @@ function PlayerOut({ style, state, valid_cards }) {
 function GameCardsOut({ right, left, top }) {
     return (
         <>
-            <PlayerOut style={'justify-center items-start mr-1'} state={left ? left.state : null} valid_cards={left ? left.valid_cards : []} />
-            <PlayerOut style={'justify-start items-center mr-1'} state={top ? top.state : null} valid_cards={top ? top.valid_cards : []} />
-            <PlayerOut style={'justify-center items-end'} state={right ? right.state : null} valid_cards={right ? right.valid_cards : []} />
+            <PlayerOut
+                style={'justify-center items-start mr-1'}
+                state={left ? left.state : null}
+                valid_cards={left ? left.valid_cards : []}
+                scoreObj={{ score: left ? left.cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
+                is_exited={left ? left.is_exited==1 : 0}
+            />
+            <PlayerOut
+                style={'justify-start items-center mr-1'}
+                state={top ? top.state : null}
+                valid_cards={top ? top.valid_cards : []}
+                scoreObj={{ score: top ? top.cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
+                is_exited={top ? top.is_exited==1 : 0}
+            />
+            <PlayerOut
+                style={'justify-center items-end'}
+                state={right ? right.state : null}
+                valid_cards={right ? right.valid_cards : []}
+                scoreObj={{ score: right ? right.cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
+                is_exited={right ? right.is_exited==1 : 0}
+            />
         </>
+    )
+}
+
+
+function PlayerExitModal() {
+    const [showMoreButton, setShowMoreButton] = useState(false)
+
+    function handleMainButtonClicked() {
+        setShowMoreButton(true)
+    }
+
+    function handleCancel() {
+        setShowMoreButton(false)
+    }
+
+    function handleOk() {
+        window.location.reload()
+    }
+
+    return (
+        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75">
+            <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
+                <div className="w-11/12 text-red-400 h-1/3 flex items-center">
+                    ❗️用户离线
+                </div>
+                <div className="w-10/12 text-xs h-1/3">
+                    {showMoreButton ? "退出房间后游戏信息都会丢失，确定退出吗？" : "房间其他用户已断开连接，等待重连中..."}
+                </div>
+                <div className="w-10/12 flex items-center justify-center h-1/3">
+                    {showMoreButton ? (
+                        <div className="flex w-7/12 justify-between">
+                            <GameButton title={"否"} classes="bg-white border-2 border-gray-400 !h-7 w-12" onClick={handleCancel}/>
+                            <GameButton title={"是"} classes="bg-red-400 text-white !h-7 w-12" onClick={handleOk}/>
+                        </div>
+                    ) : <GameButton title={"不等待，退出房间"} classes="!text-sm bg-red-400 text-white !h-7 w-32" onClick={handleMainButtonClicked}/>}
+                </div>
+            </div>
+        </Modal>
     )
 }
 
@@ -140,7 +203,7 @@ function GameHeader({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
-    const player_id = (userInfo.player_id + 2) % 4
+    const player_id = (parseInt(userInfo.player_id) + 2) % 4
     let player_info = null
     if (gameInfo.players_info) {
         player_info = gameInfo.players_info[player_id]
@@ -193,19 +256,24 @@ function GameNeck({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
-    const right_player_id = (userInfo.player_id + 1) % 4
-    const top_player_id = (userInfo.player_id + 2) % 4
-    const left_player_id = (userInfo.player_id + 3) % 4
+    const [left_player_info, right_player_info, top_player_info] = useMemo(() => {
+        let left_player_info = null, right_player_info = null, top_player_info = null
+        let my_player_id = parseInt(userInfo.player_id)
+        let right_player_id = (my_player_id+ 1) % 4
+        let top_player_id = (my_player_id + 2) % 4
+        let left_player_id = (my_player_id + 3) % 4
 
-    let left_player_info = null, right_player_info = null, top_player_info = null
-    if (gameInfo.players_info) {
-        left_player_info = gameInfo.players_info[left_player_id]
-        right_player_info = gameInfo.players_info[right_player_id]
-        top_player_info = gameInfo.players_info[top_player_id]
-    }
-    console.log("left", left_player_info)
-    console.log("right", right_player_info)
-    console.log("top", top_player_info)
+        if (gameInfo.players_info) {
+            left_player_info = gameInfo.players_info[left_player_id]
+            right_player_info = gameInfo.players_info[right_player_id]
+            top_player_info = gameInfo.players_info[top_player_id]
+        }
+        console.log("left", left_player_info)
+        console.log("right", right_player_info)
+        console.log("top", top_player_info)
+        return [left_player_info, right_player_info, top_player_info]
+    }, [gameInfo.players_info, userInfo.player_id])
+
 
     return (
         <div className={`flex justify-between items-center w-full px-2 ${height}`}>
@@ -260,75 +328,104 @@ function GameNeck({ height }) {
 function GameMain({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [message, setMessage] = useState({msg: null, key: 0})
+    const [message, setMessage] = useState({ msg: null, key: 0 })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
+    const router = useRouter()
 
-    console.log("gameInfo", gameInfo)
+    console.log('game_info', gameInfo)
+
     useEffect(() => {
-        socket.on("prepare_start_global", (data) => {
-            if (data.status == 1) {
-                setGameInfo({
-                    ...gameInfo,
-                    players_info: data.players_info
-                })
-            }
-        })
-        socket.on("game_start_global", (data) => {
-            setUserInfo(userInfo => ({
-                ...userInfo,
-                all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
-            }))
-            setGameInfo(gameInfo => ({
-                ...gameInfo,
-                players_info: data.players_info,
-                curr_player_id: data.game_info.first_player_id,
-                friend_card: data.game_info.friend_card,
-                num_rounds: data.game_info.num_rounds
-            }))
-        })
-        socket.on("game_step", (data) => {
-            setGameInfo(gameInfo => ({
-                ...gameInfo,
-                last_valid_cards_info: data.last_valid_cards_info,
-                is_start: data.is_start
-            }))
-        })
-        socket.on("game_step_global", (data) => {
-            console.log("game_step_global data", data)
-            console.log("game_step_global user info", userInfo)
-            if (data.status === 1) {
-                // 有出牌
+        if (socket) {
+            socket.on("prepare_start_global", (data) => {
+                console.log("收到了prepare_start_global消息")
+                if (data.status == 1) {
+                    setGameInfo({
+                        ...gameInfo,
+                        players_info: data.players_info
+                    })
+                }
+            })
+            socket.on("game_start_global", (data) => {
+                console.log("收到了game_start_global消息")
+                setUserInfo(userInfo => ({
+                    ...userInfo,
+                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
+                }))
                 setGameInfo(gameInfo => ({
                     ...gameInfo,
-                    curr_player_id: data.game_info.curr_player_id,
-                    friend_card_cnt: data.game_info.friend_card_cnt,
                     players_info: data.players_info,
-                    is_friend_help: data.game_info.is_friend_help
-                }))
-            }
-            else if (data.status === 2) {
-                setGameInfo(gameInfo => ({
-                    ...gameInfo,
                     curr_player_id: data.game_info.curr_player_id,
-                    friend_card_cnt: data.game_info.friend_card_cnt,
-                    players_info: data.players_info,
+                    friend_card: data.game_info.friend_card,
+                    num_games: data.game_info.num_games
                 }))
-            }
-            else if (data.status === 3) {
+            })
+            socket.on("game_step", (data) => {
+                console.log("收到了game_step消息")
                 setGameInfo(gameInfo => ({
                     ...gameInfo,
-                    friend_card_cnt: data.game_info.friend_card_cnt,
-                    winners_order: data.game_info.winners_order,
-                    players_info: data.players_info
+                    last_valid_cards_info: data.last_valid_cards_info,
+                    is_start: data.is_start
                 }))
-            }
-        })
-    })
+            })
+            socket.on("game_step_global", (data) => {
+                console.log("收到了game_step_global消息")
+                console.log("game_step_global data", data)
+                console.log("game_step_global user info", userInfo)
+                if (data.status === 1) {
+                    // 有出牌
+                    setGameInfo(gameInfo => ({
+                        ...gameInfo,
+                        curr_player_id: data.game_info.curr_player_id,
+                        friend_card_cnt: data.game_info.friend_card_cnt,
+                        players_info: data.players_info,
+                        is_friend_help: data.game_info.is_friend_help
+                    }))
+                }
+                else if (data.status === 2) {
+                    setGameInfo(gameInfo => ({
+                        ...gameInfo,
+                        curr_player_id: data.game_info.curr_player_id,
+                        friend_card_cnt: data.game_info.friend_card_cnt,
+                        players_info: data.players_info,
+                    }))
+                }
+                else if (data.status === 3) {
+                    setGameInfo(gameInfo => ({
+                        ...gameInfo,
+                        friend_card_cnt: data.game_info.friend_card_cnt,
+                        winners_order: data.game_info.winners_order
+                    }))
+                }
+            })
+            socket.on("player_exit", data => {
+                console.log("收到了player_exit消息")
+                if (data.status == 1) {
+                    setGameInfo(gameInfo => ({
+                        ...gameInfo,
+                        players_info: data.players_info,
+                        host_id: data.game_info.host_id,
+                        state: data.game_info.state
+                    }))
+                }
+            })
+            socket.on("player_reconnect_global", data => {
+                console.log("收到了player_reconnect_global消息")
+                setGameInfo(gameInfo => ({
+                    ...gameInfo,
+                    players_info: data.players_info,
+                    state: data.game_info.state
+                }))
+            })
+        }
+        else{
+            router.back()
+        }
+    }, [])
 
     function handlePrepare() {
-        if (gameInfo.players_info[userInfo.player_id].state >= GameState.Prepared) {
-            setMessage(() => ({msg: "已准备", key: 0}))
+        if (gameInfo.players_info[userInfo.player_id].state >= PlayerState.Prepared) {
+            setMessage(() => ({ msg: "已准备", key: 0 }))
         }
         else {
             socket.emit("prepare_start", {})
@@ -345,10 +442,10 @@ function GameMain({ height }) {
     }
 
     function handleGo() {
-        if (gameInfo.players_info[userInfo.player_id].state === GameState.RoundStart) {
+        if (gameInfo.players_info[userInfo.player_id].state === PlayerState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
             if (selectedCard.length == 0) {
-                setMessage(() => ({msg: "未选择任何牌", key: 0}))
+                setMessage(() => ({ msg: "未选择任何牌", key: 0 }))
                 return
             }
 
@@ -371,14 +468,14 @@ function GameMain({ height }) {
             // }
 
             if (result.status === -1 || result.status === 0) {
-                setMessage(() => ({msg: result.msg, key: 0}))
+                setMessage(() => ({ msg: result.msg, key: 0 }))
             }
             else if (result.status === 1) {
                 let all_cards = userInfo.all_cards.filter(card => !card.selected)
                 setUserInfo({
                     ...userInfo,
                     all_cards: all_cards,
-                    state: GameState.GameStart,
+                    state: PlayerState.GameStart,
                     out_cards: userInfo.all_cards.filter(card => card.selected)
                 })
                 socket.emit("game_step", {
@@ -393,12 +490,12 @@ function GameMain({ height }) {
             }
         }
         else {
-            setMessage(() => ({msg: "非出牌时间", key: 0}))
+            setMessage(() => ({ msg: "非出牌时间", key: 0 }))
         }
     }
 
     function handlePass() {
-        if (gameInfo.players_info[userInfo.player_id].state === GameState.RoundStart) {
+        if (gameInfo.players_info[userInfo.player_id].state === PlayerState.RoundStart) {
             const result = is_valid_out_cards(
                 null,
                 true,
@@ -414,7 +511,7 @@ function GameMain({ height }) {
                 setUserInfo({
                     ...userInfo,
                     all_cards: all_cards,
-                    state: GameState.RoundSkip,
+                    state: PlayerState.RoundSkip,
                     out_cards: []
                 })
                 socket.emit("game_step", {
@@ -422,11 +519,11 @@ function GameMain({ height }) {
                 })
             }
             else if (result.status === -1) {
-                setMessage(() => ({msg: "无法跳过，请选择出牌", key: 0}))
+                setMessage(() => ({ msg: "无法跳过，请选择出牌", key: 0 }))
             }
         }
         else {
-            setMessage(() => ({msg: "非出牌时间", key: 0}))
+            setMessage(() => ({ msg: "非出牌时间", key: 0 }))
         }
     }
 
@@ -451,16 +548,24 @@ function GameMain({ height }) {
         socket.emit("next_round")
     }
 
-    let content = null;
-    const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {};
-    switch(player_info.state) {
-        case GameState.InGame:
+    let content = null
+    const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
+    let render_out_cards = []
+    if (player_info.valid_cards) {
+        render_out_cards = player_info.valid_cards.map(card => ({showName: card}))
+    }
+    else {
+        render_out_cards = userInfo.out_cards
+    }
+
+    switch (player_info.state) {
+        case PlayerState.InGame:
             content = <GameButton title={"准备"} classes={"bg-red-200"} onClick={handlePrepare} />
             break
-        case GameState.Prepared:
+        case PlayerState.Prepared:
             content = <span>已准备</span>
             break
-        case GameState.RoundStart:
+        case PlayerState.RoundStart:
             content = (
                 <div className="flex w-4/12 justify-between">
                     <GameButton title={"全选"} classes={"bg-gray-100"} onClick={handleSelectAll} />
@@ -469,23 +574,23 @@ function GameMain({ height }) {
                 </div>
             )
             break
-        case GameState.GameStart:
+        case PlayerState.GameStart:
             content = (
-                <CardsPanel cards={userInfo.out_cards} size="small" />
+                <CardsPanel cards={render_out_cards} size="small" />
             )
             break
-        case GameState.RoundSkip:
+        case PlayerState.RoundSkip:
             content = <span>跳过</span>
             break
-        case GameState.PlayerEnd:
+        case PlayerState.PlayerEnd:
             content = (
                 <div>
-                    <CardsPanel cards={userInfo.out_cards} size="small" />
+                    <CardsPanel cards={render_out_cards} size="small" />
                     <span>{`你的排名：${player_info.rank}`}</span>
                 </div>
             )
             break
-        case GameState.GameEnd:
+        case PlayerState.GameEnd:
             content = <GameButton title={"再来一局"} classes={"w-20 bg-red-100"} onClick={handleNextRound} />
             break
         default:
@@ -497,8 +602,9 @@ function GameMain({ height }) {
             <div className="flex flex-1">
             </div>
             <div className="flex flex-col justify-around items-center w-10/12">
-                <div className="flex w-full justify-center">
+                <div className="flex w-full justify-center relative">
                     {content}
+                    <ScoreAlert scoreObj={{ score: player_info.cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
                 </div>
                 <div className="flex justify-center item-end w-screen">
                     {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
@@ -507,7 +613,10 @@ function GameMain({ height }) {
             <div className="flex flex-1 justify-start items-end mb-1">
                 <JokerCards playerState={player_info.state} new_joker_cards={player_info.joker_cards || []} />
             </div>
-            {message.msg && <Toast message={message} duration={4000}/>}
+            {message.msg && <Toast message={message} duration={4000} />}
+            {gameInfo.state == GameState.GameStop && (
+                <PlayerExitModal />
+            )}
         </div>
     )
 }
@@ -606,9 +715,10 @@ function GameFooter() {
     const [showEndModal, setShowEndModal] = useState(false)
 
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
+    console.log('player_info', player_info)
     const selected_joker_cards = userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
     let game_result = []
-    if (player_info.state == GameState.GameEnd) {
+    if (player_info.state == PlayerState.GameEnd) {
         for (let i of gameInfo.winners_order) {
             game_result.push({
                 player_id: i,
@@ -622,7 +732,7 @@ function GameFooter() {
     }
 
     useEffect(() => {
-        setShowEndModal(player_info.state == GameState.GameEnd)
+        setShowEndModal(player_info.state == PlayerState.GameEnd)
     }, [player_info.state])
 
     function handleShowJokerSubstitute() {
@@ -661,7 +771,7 @@ function GameFooter() {
 
     return (
         <>
-            <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 text- bottom-0 z-0"></div>
+            <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-5 z-10 mb-1">
                 <div className="flex items-end w-full item-center justify-between">
                     <div className="flex w-1/4 justify-around items-end">
@@ -678,7 +788,7 @@ function GameFooter() {
                             />
                         </div>
                     )}
-                    {player_info.state == GameState.GameEnd && (
+                    {player_info.state == PlayerState.GameEnd && (
                         <div className="flex items-end">
                             <GameButton
                                 title={"显示结果"}

@@ -52,7 +52,7 @@ function UserProfilePanel({ avatarID, username, handleUserNameChanged, handleAva
             </div>
             {
                 showAvatars && (
-                    <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-0 h-full left-1/2 bg-white w-1/2 z-[100]" backdropStyle=''>
+                    <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-0 h-full left-0 bg-white w-full z-[100]" backdropStyle=''>
                         <div className="flex justify-center items-center w-11/12 mt-14 mb-8 flex-wrap overflow-y-auto">
                             {
                                 imageList.map((path, i) => {
@@ -138,13 +138,13 @@ export default function Home() {
     return (
         <>
             {isLoading && (
-                <div className="fixed top-0 left-0 w-full h-full bg-slate-100 flex items-center justify-center z-50">
+                <div className="fixed top-0 left-0 w-full h-full bg-slate-100 flex items-center justify-center z-[200]">
                     <div className="text-red-500 text-2xl">加载中...</div>
                 </div>
             )}
             <div className="flex justify-evenly items-center h-screen">
                 <div className={`fixed top-3 right-4 ${showUserPanel ? 'z-[101]' : ''}`}>
-                    <Image src={showUserPanel ? "/close.svg" : "/user-setting.svg"} width={10} height={10} alt="" className="w-8 !h-8 !rounded-full active:scale-90" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel} />
+                    <Image src={showUserPanel ? "/close.svg" : "/user-setting.svg"} width={10} height={10} alt="" className="w-8 !h-8 !rounded-full" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel} />
                 </div>
                 <div className="flex flex-col justify-evenly items-center flex-1 h-full">
                     <HomeTitle />
@@ -152,9 +152,9 @@ export default function Home() {
                     <HomeButton shouldStartDisable={username.length == 0 || avatarID < 0} handleShowUserPanel={handleShowUserPanel} />
                 </div>
                 {
-                    showUserPanel && (
+                    (
                         <>
-                            <div className="fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]">
+                            <div className={`${showUserPanel ? "animate-right-in": "animate-right-out"} fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]`}>
                                 <UserProfilePanel
                                     avatarID={avatarID}
                                     username={username}
@@ -164,7 +164,7 @@ export default function Home() {
                                     handleShowAvatars={handleShowAvatars}
                                 />
                             </div>
-                            <BackDrop classes={"backdrop backdrop-brightness-50"} onClick={handleCloseUserPanel} />
+                            {showUserPanel && <BackDrop classes={"backdrop backdrop-brightness-50"} onClick={handleCloseUserPanel} />}
                         </>
                     )
                 }

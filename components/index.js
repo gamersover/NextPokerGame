@@ -5,6 +5,7 @@ import Modal from "./Modal";
 import CircleContent from "./CircleContent";
 import CardsPanel from "./CardsPanel";
 import Toast from "./Toast";
+import ScoreAlert from "./ScoreAlert";
 
 
 export {
@@ -14,5 +15,6 @@ export {
     Modal,
     CircleContent,
     CardsPanel,
-    Toast
+    Toast,
+    ScoreAlert,
 }

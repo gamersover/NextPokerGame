@@ -1,6 +1,3 @@
-const os = require('os');
-
-
 function getNowFormatDate() {
     const date = new Date();
     const year = date.getFullYear();
@@ -16,7 +13,7 @@ function getNowFormatDate() {
     return currentdate;
 }
 
-const GameState = {
+const PlayerState = {
     "OutGame": 0,
     "InGame": 1,
     "Prepared": 2,
@@ -24,10 +21,18 @@ const GameState = {
     "RoundStart": 4,
     "RoundSkip": 5,
     "PlayerEnd": 6,
-    "GameEnd": 7
+    "GameEnd": 7,
+    "GameExit": 8
+}
+
+const GameState = {
+    "GameNotStart": 0,
+    "GameStart": 1,
+    "GameStop": 2,
 }
 
 export {
     getNowFormatDate,
-    GameState,
+    PlayerState,
+    GameState
 }

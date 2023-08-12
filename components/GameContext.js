@@ -1,5 +1,5 @@
-import { createContext, useState } from "react";
 import { GameState } from "@/utils/tool";
+import { createContext, useState } from "react";
 
 export const SocketContext = createContext(null)
 export const SetSocketContext = createContext(null)
@@ -16,7 +16,6 @@ function SocketProvider({ children }) {
         player_id: null,
         score: 0,
         all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
-        // state: GameState.OutGame,
         out_cards: [],
     })
 
@@ -27,7 +26,8 @@ function SocketProvider({ children }) {
         friend_card: null,
         friend_card_cnt: 2,
         last_valid_cards_info: null,
-        is_start: null,
+        is_start: null, // 是否为首个出牌用户
+        state: GameState.GameNotStart
     })
 
     return (

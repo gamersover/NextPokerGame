@@ -158,6 +158,10 @@ function get_cards_info(cards) {
         return new CardsInfo(CardsType.FEIJI, first_card_rank, cards_len)
     }
 
+    if (cards_len == 3 && cards.every(card => SPECIAL_CARDS.has(get_card_name(card)))) {
+        return new CardsInfo(CardsType.FEIJI, CARDS_RANK["XW"], cards_len);
+    }
+
     if (cards_len >= 4 && cards.every(card => get_card_name(card) == first_card_name)) {
         return new CardsInfo(CardsType.ZHADAN, first_card_rank, cards_len);
     }
