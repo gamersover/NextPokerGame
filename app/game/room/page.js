@@ -1,8 +1,8 @@
 "use client";
 
-import { BackDrop, CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from '@/components';
+import { CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from '@/components';
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
-import { GameState, PlayerState, getNowFormatDate } from '@/utils/tool';
+import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
 import { useContext, useState, useEffect, useMemo } from 'react';
 import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 
 function GameAvater({ imgUrl, playerState, width = 30, height = 30, alt = '' }) {
-    const opacityValue = playerState >= PlayerState.Prepared ? 'opacity-100' : 'opacity-60'
+    const opacityValue = playerState < PlayerState.Prepared || playerState == PlayerState.PlayerEnd ? 'opacity-60' : 'opacity-100'
     const actived = playerState == PlayerState.RoundStart
 
     return (
@@ -22,25 +22,10 @@ function GameAvater({ imgUrl, playerState, width = 30, height = 30, alt = '' }) 
 }
 
 
-function ScoreContent({ playerCurrScore, playerState, finalScore }) {
-    const [currScore, setCurrScore] = useState(0)
-    const [totalScore, setTotalScore] = useState(0)
-
-    useEffect(() => {
-        if (playerState === PlayerState.RoundStart) {
-            setTotalScore((prevTotalScore) => prevTotalScore + currScore);
-            setCurrScore(0);
-        } else if (playerState === PlayerState.GameEnd) {
-            setTotalScore(finalScore);
-            setCurrScore(0);
-        } else {
-            setCurrScore(playerCurrScore);
-        }
-    }, [playerState, playerCurrScore, currScore, finalScore]);
-
+function ScoreContent({ currScore, totalScore, playerState, finalScore }) {
     const scoreContent = (
         <>
-            <span className="text-yellow-600">{totalScore}</span>
+            <span className="text-yellow-600">{playerState === PlayerState.GameEnd ? finalScore : totalScore}</span>
             {currScore > 0 && <div><span className="text-green-500">+</span><span className="text-green-500">{currScore}</span></div>}
         </>
     )
@@ -50,7 +35,7 @@ function ScoreContent({ playerCurrScore, playerState, finalScore }) {
 }
 
 
-function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerState, finalScore }) {
+function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerTotalScore, playerState, finalScore }) {
     return (
         <div className="flex flex-col items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
             <GameAvater imgUrl={playerAvatar} playerState={playerState} />
@@ -59,36 +44,47 @@ function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerState,
                     {playerName || '无名称'}
                 </span>
             </div>
-            <ScoreContent playerCurrScore={playerCurrScore} playerState={playerState} finalScore={finalScore} />
+            <ScoreContent currScore={playerCurrScore} totalScore={playerTotalScore} playerState={playerState} finalScore={finalScore} />
         </div>
     )
 }
 
-function JokerCards({ playerState, new_joker_cards }) {
-    const [jokerCards, setJokerCards] = useState([])
+function ValueCards({ playerState, valueCards }) {
+    const [showAll, setShowAll] = useState(false)
 
-    useEffect(() => {
-        if (playerState === PlayerState.RoundStart) {
-            setJokerCards((prevJokerCards) =>
-                [...prevJokerCards,
-                ...new_joker_cards]
-            )
-        }
-    }, [new_joker_cards, playerState])
+    function handleShowAll() {
+        setShowAll(true)
+    }
+
+    const last_value_cards = valueCards[valueCards.length-1]
 
     return (
-        <div className="flex flex-col mt-8 shadow-md">
-            {
-                jokerCards.map((card, i) => (
-                    <img key={i} src={`/${card}.svg`} width={25} className="-mt-8" />
-                ))
-            }
-        </div>
+        <>
+            <div className="flex flex-col shadow-md" onClick={handleShowAll}>
+                {last_value_cards && (
+                    last_value_cards.slice(-2).map((card, i) => (
+                        <Image key={i} src={`/${card}.svg`} width={25} height={25} alt='' className="-mt-8" />
+                    ))
+                )}
+            </div>
+            {showAll && (
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-100 bg-opacity-80 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur" onClose={() => setShowAll(false)}>
+                    <div className='flex flex-wrap justify-start items-center w-full'>
+                        {valueCards.map((cards, i) => (
+                            <div className="mx-1" key={i} >
+                                <CardsPanel cards={cards.map((card) => ({showName: card}))} size="small"/>
+                            </div>
+                        ))}
+                    </div>
+                </Modal>
+            )}
+        </>
+
     )
 }
 
 
-function GameCardInfo({ num_cards, new_joker_cards, playerState }) {
+function GameCardInfo({ num_cards, value_cards, playerState }) {
     return (
         <div className="flex flex-col justify-between flex-1">
             <div className="h-1/2 flex justify-center items-center">
@@ -98,8 +94,8 @@ function GameCardInfo({ num_cards, new_joker_cards, playerState }) {
                     </div>
                 )}
             </div>
-            <div className="flex w-full flex-1 justify-center items-center">
-                <JokerCards playerState={playerState} new_joker_cards={new_joker_cards} />
+            <div className="flex w-full flex-1 justify-center items-end">
+                <ValueCards playerState={playerState} valueCards={value_cards} />
             </div>
         </div>
     )
@@ -140,21 +136,21 @@ function GameCardsOut({ right, left, top }) {
                 state={left ? left.state : null}
                 valid_cards={left ? left.valid_cards : []}
                 scoreObj={{ score: left ? left.cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
-                is_exited={left ? left.is_exited==1 : 0}
+                is_exited={left ? left.is_exited == 1 : 0}
             />
             <PlayerOut
                 style={'justify-start items-center mr-1'}
                 state={top ? top.state : null}
                 valid_cards={top ? top.valid_cards : []}
                 scoreObj={{ score: top ? top.cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
-                is_exited={top ? top.is_exited==1 : 0}
+                is_exited={top ? top.is_exited == 1 : 0}
             />
             <PlayerOut
                 style={'justify-center items-end'}
                 state={right ? right.state : null}
                 valid_cards={right ? right.valid_cards : []}
                 scoreObj={{ score: right ? right.cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
-                is_exited={right ? right.is_exited==1 : 0}
+                is_exited={right ? right.is_exited == 1 : 0}
             />
         </>
     )
@@ -188,10 +184,10 @@ function PlayerExitModal() {
                 <div className="w-10/12 flex items-center justify-center h-1/3">
                     {showMoreButton ? (
                         <div className="flex w-7/12 justify-between">
-                            <GameButton title={"否"} classes="bg-white border-2 border-gray-400 !h-7 w-12" onClick={handleCancel}/>
-                            <GameButton title={"是"} classes="bg-red-400 text-white !h-7 w-12" onClick={handleOk}/>
+                            <GameButton title={"否"} classes="bg-white border-2 border-gray-400 !h-7 w-12" onClick={handleCancel} />
+                            <GameButton title={"是"} classes="bg-red-400 text-white !h-7 w-12" onClick={handleOk} />
                         </div>
-                    ) : <GameButton title={"不等待，退出房间"} classes="!text-sm bg-red-400 text-white !h-7 w-32" onClick={handleMainButtonClicked}/>}
+                    ) : <GameButton title={"不等待，退出房间"} classes="!text-sm bg-red-400 text-white !h-7 w-32" onClick={handleMainButtonClicked} />}
                 </div>
             </div>
         </Modal>
@@ -220,8 +216,8 @@ function GameHeader({ height }) {
     )
 
     return (
-        <div className={`flex mt-1 px-5 w-screen items-center justify-between ${height}`}>
-            <div className="flex w-1/4 justify-between self-start">
+        <div className={`flex mt-1 px-5 w-screen items-start justify-between ${height}`}>
+            <div className="flex w-1/4 justify-between">
                 <CircleContent circleTitle={'房'} circleChild={userInfo.room_number} titleBgColor={'bg-cyan-100'} />
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
@@ -232,21 +228,25 @@ function GameHeader({ height }) {
                             <GameBasicInfo
                                 playerName={player_info.player_name}
                                 playerAvatar={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`}
-                                playerCurrScore={player_info.cards_value || 0}
+                                playerCurrScore={player_info.curr_cards_value || 0}
+                                playerTotalScore={player_info.total_cards_value || 0}
                                 playerState={player_info.state}
                                 finalScore={player_info.global_score}
                             />
                             <GameCardInfo
                                 num_cards={player_info.num_cards}
-                                new_joker_cards={player_info.joker_cards || []}
+                                value_cards={player_info.show_value_cards || []}
                                 playerState={player_info.state}
                             />
                         </>
                     )}
                 </div>
             </div>
-            <div className='w-1/4 flex justify-end self-start'>
-                {getNowFormatDate()}
+            <div className='w-1/4 flex justify-end'>
+                {/* {getNowFormatDate()} */}
+                <button className='flex items-center bg-white border-2 border-lime-500 rounded-md px-2 active:scale-95' onClick={() => window.location.reload()}>
+                    <Image src="/logout.svg" width={20} height={20} alt="" />退出
+                </button>
             </div>
         </div>
     )
@@ -259,7 +259,7 @@ function GameNeck({ height }) {
     const [left_player_info, right_player_info, top_player_info] = useMemo(() => {
         let left_player_info = null, right_player_info = null, top_player_info = null
         let my_player_id = parseInt(userInfo.player_id)
-        let right_player_id = (my_player_id+ 1) % 4
+        let right_player_id = (my_player_id + 1) % 4
         let top_player_id = (my_player_id + 2) % 4
         let left_player_id = (my_player_id + 3) % 4
 
@@ -283,13 +283,14 @@ function GameNeck({ height }) {
                         <GameBasicInfo
                             playerName={left_player_info.player_name}
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(left_player_info.player_avatar).padStart(2, '0')}.png`}
-                            playerCurrScore={left_player_info.cards_value || 0}
+                            playerCurrScore={left_player_info.curr_cards_value || 0}
+                            playerTotalScore={left_player_info.total_cards_value || 0}
                             playerState={left_player_info.state}
                             finalScore={left_player_info.global_score}
                         />
                         <GameCardInfo
                             num_cards={left_player_info.num_cards}
-                            new_joker_cards={left_player_info.joker_cards || []}
+                            value_cards={left_player_info.show_value_cards || []}
                             playerState={left_player_info.state}
                         />
                     </>
@@ -307,13 +308,14 @@ function GameNeck({ height }) {
                     <>
                         <GameCardInfo
                             num_cards={right_player_info.num_cards}
-                            new_joker_cards={right_player_info.joker_cards || []}
+                            value_cards={right_player_info.show_value_cards || []}
                             playerState={right_player_info.state}
                         />
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(right_player_info.player_avatar).padStart(2, '0')}.png`}
-                            playerCurrScore={right_player_info.cards_value || 0}
+                            playerCurrScore={right_player_info.curr_cards_value || 0}
+                            playerTotalScore={right_player_info.total_cards_value || 0}
                             playerState={right_player_info.state}
                             finalScore={right_player_info.global_score}
                         />
@@ -394,7 +396,8 @@ function GameMain({ height }) {
                     setGameInfo(gameInfo => ({
                         ...gameInfo,
                         friend_card_cnt: data.game_info.friend_card_cnt,
-                        winners_order: data.game_info.winners_order
+                        winners_order: data.game_info.winners_order,
+                        players_info: data.players_info,
                     }))
                 }
             })
@@ -417,8 +420,11 @@ function GameMain({ height }) {
                     state: data.game_info.state
                 }))
             })
+            socket.on("disconnect", data => {
+                setMessage(() => ({ msg: "服务端断开连接", "key": 0 }))
+            })
         }
-        else{
+        else {
             router.back()
         }
     }, [])
@@ -540,6 +546,7 @@ function GameMain({ height }) {
     }
 
     function handleNextRound() {
+        console.log("handleNextRound")
         setUserInfo({
             ...userInfo,
             all_cards: [],
@@ -552,7 +559,7 @@ function GameMain({ height }) {
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
     let render_out_cards = []
     if (player_info.valid_cards) {
-        render_out_cards = player_info.valid_cards.map(card => ({showName: card}))
+        render_out_cards = player_info.valid_cards.map(card => ({ showName: card }))
     }
     else {
         render_out_cards = userInfo.out_cards
@@ -610,8 +617,8 @@ function GameMain({ height }) {
                     {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
                 </div>
             </div>
-            <div className="flex flex-1 justify-start items-end mb-1">
-                <JokerCards playerState={player_info.state} new_joker_cards={player_info.joker_cards || []} />
+            <div className="flex flex-1 justify-center items-end mb-1">
+                <ValueCards playerState={player_info.state} valueCards={player_info.show_value_cards || []} />
             </div>
             {message.msg && <Toast message={message} duration={4000} />}
             {gameInfo.state == GameState.GameStop && (
@@ -622,6 +629,7 @@ function GameMain({ height }) {
 }
 
 function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
+    // TODO: 使用grid布局，或者每行4个
     const numbers = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', null];
 
     return (
@@ -687,12 +695,12 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
         <div className="flex flex-col justify-center h-full">
             <div className="flex w-full flex-1 items-center justify-center pr-1">
                 <div className="flex-1"></div>
-                <div className="flex justify-center w-1/2">
-                    <span className="text-sm">替换王牌</span>
+                <div className="flex justify-center w-2/3">
+                    <span className="text-lg">替换王牌</span>
                 </div>
-                <div className="flex justify-end items-center w-1/4">
-                    <button className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-red-300 to-gray-300 shadow-md" onClick={handleCloseModal}>
-                        <span className="text-black font-md">&times;</span>
+                <div className="flex justify-end items-center flex-1">
+                    <button className="flex items-center justify-end" onClick={handleCloseModal}>
+                        <Image src="/close.svg" width={20} height={20} alt="" className="w-5/12"/>
                     </button>
                 </div>
             </div>
@@ -777,7 +785,7 @@ function GameFooter() {
                     <div className="flex w-1/4 justify-around items-end">
                         <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} width={35} height={35} />
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
-                        <ScoreContent playerState={player_info.state} playerCurrScore={player_info.cards_value || 0} finalScore={player_info.global_score} />
+                        <ScoreContent playerState={player_info.state} currScore={player_info.curr_cards_value || 0} totalScore={player_info.total_cards_value || 0} finalScore={player_info.global_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
                         <div className="flex items-end">
@@ -800,7 +808,7 @@ function GameFooter() {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}

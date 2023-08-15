@@ -5,7 +5,7 @@ export default function GameButton({ title, classes, onClick, shouldDisable = fa
         <button
             disabled={shouldDisable}
             type={"button"}
-            className={`w-16 h-9 rounded-xl ${shouldDisable ? '' : "active:scale-[0.9]"} text-md flex justify-center items-center ${classes}`}
+            className={`w-16 h-9 rounded-xl ${shouldDisable ? '' : "active:scale-95"} text-md flex justify-center items-center ${classes}`}
             onClick={onClick}
         >
             {title}

@@ -29,6 +29,12 @@ function HomeButton({ handleJoin, setMessage }) {
         }
         else {
             const socket = io(SERVER_ADDR, { transports: ['websocket'] })
+
+            socket.on('connect_error', (error) => {
+                setMessage({ msg: "服务异常，请稍后重试", key: 0 })
+                setTimeout(() => window.location.reload(), 1000)
+            });
+
             socket.emit("create_room", {
                 room_number: userInfo.room_number,
                 player_name: userInfo.player_name,
@@ -82,14 +88,14 @@ function HomeButton({ handleJoin, setMessage }) {
 
     return (
         <div className="flex w-8/12 h-5/6 justify-evenly items-center">
-            <div className="bg-[url('/fish.svg')] bg-cover w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={joinRoom}>
+            <div className="bg-[url('/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={joinRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-blue-200 font-bold mb-2">
                         加入房间
                     </span>
                 </div>
             </div>
-            <div className="bg-[url('/frog.svg')] bg-cover w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
+            <div className="bg-[url('/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-red-200 font-bold mb-2">
                         创建房间
@@ -102,7 +108,7 @@ function HomeButton({ handleJoin, setMessage }) {
 
 
 function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
-    const [roomNumber, setRoomNumber] = useState([0,0,0,0,0,0]) // TODO: 测试用
+    const [roomNumber, setRoomNumber] = useState([]) // TODO: 测试用
 
     function handleNumberInput(number) {
         if (roomNumber.length <= 5) {
@@ -134,8 +140,8 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                     <span className="font-bold text-xl text-red-400">加入房间</span>
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
-                    <button className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-red-300 to-gray-300 shadow-md" onClick={handleCloseModal}>
-                        <span className="text-black font-md">&times;</span>
+                    <button className="flex items-center justify-center active:scale-95" onClick={handleCloseModal}>
+                        <Image src="/close.svg" width={20} height={20} className="w-full" alt=""/>
                     </button>
                 </div>
             </div>
@@ -148,7 +154,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                     <div className="flex w-full justify-evenly items-center">
                         {
                             [...roomNumber, ...Array(6 - roomNumber.length).fill("")].map((name, i) => (
-                                <div key={i} className="flex justify-center items-center w-1/4 text-lg font-bold">
+                                <div key={i} className="flex justify-center items-center w-1/6 text-3xl font-bold">
                                     {name}
                                 </div>
                             ))
@@ -290,6 +296,13 @@ export default function Home() {
         const socket = io(SERVER_ADDR, {
             transports: ['websocket']
         });
+
+        socket.on('connect_error', (error) => {
+            closeModal()
+            setMessage({ msg: "服务异常，请稍后重试", key: 0 })
+            setTimeout(() => window.location.reload(), 1000)
+        });
+
         socket.emit("join_room", {
             room_number: roomNumber.join(""),
             player_name: userInfo.player_name,
@@ -315,7 +328,8 @@ export default function Home() {
                 setJoiningRoomNumber(roomNumber.join(""))
             }
             else {
-                setMessage(`房间${data.game_info.room_number}加入失败，原因${data.msg}`)
+                // closeModal()
+                setMessage({msg: `房间${data.game_info.room_number}加入失败，原因${data.msg}`, key: 0})
             }
         })
 
@@ -342,6 +356,7 @@ export default function Home() {
                     friend_card_cnt: data.game_info.friend_card_cnt,
                     num_games: data.game_info.num_games,
                     host_id: data.game_info.host_id,
+                    winners_order: data.game_info.winners_order
                 }))
                 setUserInfo(userInfo => ({
                     ...userInfo,
@@ -365,13 +380,13 @@ export default function Home() {
             <HomeTitle />
             <HomeButton handleJoin={showModal} setMessage={setMessage} />
             {showJoinpop && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
                 </Modal>
             )}
             {message.msg && <Toast message={message} duration={4000} />}
             {subsPlayersID.length > 0 && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] md:h-[70%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <SubstituePlayers subsPlayers={subsPlayers} subsPlayersID={subsPlayersID} handleNotJoin={handleNotJoin} handleSubsJoin={handleSubsJoin} />
                 </Modal>
             )}
