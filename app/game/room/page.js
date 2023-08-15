@@ -63,18 +63,31 @@ function ValueCards({ playerState, valueCards }) {
             <div className="flex flex-col shadow-md" onClick={handleShowAll}>
                 {last_value_cards && (
                     last_value_cards.slice(-2).map((card, i) => (
-                        <Image key={i} src={`/${card}.svg`} width={25} height={25} alt='' className="-mt-8" />
+                        <Image key={i} src={`/pokers/${card}.svg`} width={25} height={25} alt='' className="-mt-8" />
                     ))
                 )}
             </div>
             {showAll && (
                 <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-100 bg-opacity-80 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur" onClose={() => setShowAll(false)}>
-                    <div className='flex flex-wrap justify-start items-center w-full'>
-                        {valueCards.map((cards, i) => (
-                            <div className="mx-1" key={i} >
-                                <CardsPanel cards={cards.map((card) => ({showName: card}))} size="small"/>
+                    <div className='w-full h-full flex flex-col justify-between items-center'>
+                        <div className="flex w-full h-[18%] items-center justify-center pr-1">
+                            <div className="flex-1"></div>
+                            <div className="flex justify-center w-2/3">
+                                <span className="text-lg">赏牌</span>
                             </div>
-                        ))}
+                            <div className="flex justify-end items-center flex-1">
+                                <button className="flex items-center justify-end" onClick={() => setShowAll(false)}>
+                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-1/3"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div className='flex flex-wrap justify-center items-center w-[95%] flex-1'>
+                            {valueCards.map((cards, i) => (
+                                <div className="mx-1" key={i} >
+                                    <CardsPanel cards={cards.map((card) => ({showName: card}))} size="small"/>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </Modal>
             )}
@@ -89,7 +102,7 @@ function GameCardInfo({ num_cards, value_cards, playerState }) {
         <div className="flex flex-col justify-between flex-1">
             <div className="h-1/2 flex justify-center items-center">
                 {playerState >= PlayerState.GameStart && (
-                    <div className="w-full h-full bg-[url('/red.svg')] bg-center bg-contain bg-no-repeat flex justify-center items-center">
+                    <div className="w-full h-full bg-[url('/pokers/red.svg')] bg-center bg-contain bg-no-repeat flex justify-center items-center">
                         <span className="text-white font-medium">{num_cards != null ? num_cards : '?'}</span>
                     </div>
                 )}
@@ -207,7 +220,7 @@ function GameHeader({ height }) {
     const friend_card = gameInfo.friend_card && (
         <div className="flex items-center justify-around w-full">
             <img
-                src={`/${gameInfo.friend_card}_small.svg`}
+                src={`/pokers/${gameInfo.friend_card}_small.svg`}
                 className="h-5"
             />
             <img src="/times.svg" className="h-2" />
@@ -659,7 +672,7 @@ function SubstituteJokerCards({ jokerCards, selectedCard, handleCardChange }) {
                         onChange={() => handleCardChange(card)}
                     />
                     <img
-                        src={`/${card.showName}.svg`}
+                        src={`/pokers/${card.showName}.svg`}
                         className={`w-12 my-1 ${selectedCard.id === card.id ? 'opacity-100 shadow-md' : 'opacity-50'}`}
                     />
                 </label>

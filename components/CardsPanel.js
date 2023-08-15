@@ -8,7 +8,7 @@ function GameCard({ id, name, isSelected, onCardSelect, marginLeft, imageWidth }
         <>
             <img
                 id={id}
-                src={`/${name}.svg`}
+                src={`/pokers/${name}.svg`}
                 className={`shadow-md ${imageWidth} ${marginLeft} h-auto ${isSelected ? '-translate-y-3' : ''}`}
                 onClick={handleSelect}
                 style={{ zIndex: id }}

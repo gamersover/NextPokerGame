@@ -88,14 +88,14 @@ function HomeButton({ handleJoin, setMessage }) {
 
     return (
         <div className="flex w-8/12 h-5/6 justify-evenly items-center">
-            <div className="bg-[url('/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={joinRoom}>
+            <div className="bg-[url('/pokers/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={joinRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-blue-200 font-bold mb-2">
                         加入房间
                     </span>
                 </div>
             </div>
-            <div className="bg-[url('/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
+            <div className="bg-[url('/pokers/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-red-200 font-bold mb-2">
                         创建房间
