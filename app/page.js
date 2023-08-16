@@ -142,7 +142,7 @@ export default function Home() {
                     <div className="text-red-500 text-2xl">加载中...</div>
                 </div>
             )}
-            <div className="flex justify-evenly items-center h-screen">
+            <div className="flex justify-evenly items-center h-screen w-screen">
                 <div className={`fixed top-3 right-4 ${showUserPanel ? 'z-[101]' : ''}`}>
                     <Image src={showUserPanel ? "/close.svg" : "/user-setting.svg"} width={10} height={10} alt="" className="w-8 !h-8 !rounded-full" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel} />
                 </div>
