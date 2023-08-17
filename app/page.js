@@ -25,12 +25,26 @@ function HomeImage() {
 
 
 function UserProfilePanel({ avatarID, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars }) {
+    const [showInputError, setShowInputError] = useState(false)
+
     const imageList = Array.from(new Array(50)).map((_, index) => {
         return `/avatars/Avatars Set Flat Style-${String(index + 1).padStart(2, '0')}.png`
     })
 
+    function handleInputChanged(e) {
+        const userName = e.target.value
+        const sanitizedValue = userName.replace(/[\u4e00-\u9fa5]/g, '__')
+        if (sanitizedValue.length <= 10) {
+            handleUserNameChanged(userName)
+            setShowInputError(false)
+        }
+        else {
+            setShowInputError(true)
+        }
+    }
+
     return (
-        <div className="flex flex-col items-center justify-evenly h-5/6 w-full">
+        <div className="flex flex-col items-center justify-evenly h-[90%] w-full">
             <div className="text-2xl h-10">用户设置</div>
             <div className="flex flex-col justify-evenly items-center w-full flex-1">
                 <div className="flex justify-center items-center rounded-full h-20 w-20 border-2 border-slate-100" onClick={handleShowAvatars}>
@@ -40,20 +54,22 @@ function UserProfilePanel({ avatarID, username, handleUserNameChanged, handleAva
                         ) : "选择头像"
                     }
                 </div>
-                <div className="w-2/3 h-10 flex justify-center">
+                <div className="w-2/3 h-10 flex flex-col items-center justify-center">
                     <input
                         type="text"
                         placeholder="请输入用户名"
                         value={username}
-                        onChange={(e) => handleUserNameChanged(e.target.value)}
-                        className="w-2/3 h-full text-lg p-2 border-b-2 text-center border-blue-100 focus:border-blue-500 focus:outline-none bg-transparent rounded"
+                        onChange={(e) => handleInputChanged(e)}
+                        className="w-2/3 h-2/3 text-lg p-2 border-b-2 text-center border-blue-100 focus:border-blue-500 focus:outline-none bg-transparent"
                     />
+                    <span className="text-red-500 text-xs h-1/3 pt-1">{showInputError ? "用户名长度已至限" : ""}</span>
                 </div>
             </div>
             {
                 showAvatars && (
-                    <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-0 h-full left-0 bg-white w-full z-[100]" backdropStyle=''>
-                        <div className="flex justify-center items-center w-11/12 mt-14 mb-8 flex-wrap overflow-y-auto">
+                    <Modal contentStyle="fixed flex flex-col items-center rounded-lg justify-center shadow-md top-0 h-full left-0 bg-white w-full z-[100]" backdropStyle=''>
+                        <div className="flex items-center text-xl h-[15%]">头像选择</div>
+                        <div className="flex justify-center items-center w-11/12 flex-1 mb-5 flex-wrap overflow-y-auto border-slate-100 border-y-[1px] shadow-inner">
                             {
                                 imageList.map((path, i) => {
                                     return (
