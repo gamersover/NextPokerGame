@@ -70,6 +70,18 @@ html {
   animation: flash-alert 3s linear forwards;
 }
 
+@keyframes fade-in {
+  0% {
+      opacity: 0;
+  }
+  10% {
+      opacity: 1;
+  }
+  100% {
+    opacity: 1;
+}
+}
+
 @keyframes right-in {
   from {
       transform: translateX(100%);
@@ -96,6 +108,9 @@ html {
   animation: right-in .5s forwards;
 }
 
+.animate-fade-in {
+  animation: fade-in 5s;
+}
 
 .game-body {
   @apply bg-blue-50

@@ -10,13 +10,21 @@ import { OutState } from '@/utils/card';
 import { useRouter } from 'next/navigation';
 
 
-function GameAvater({ imgUrl, playerState, width = 30, height = 30, alt = '' }) {
+function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, alt = '' }) {
     const opacityValue = playerState < PlayerState.Prepared || playerState == PlayerState.PlayerEnd ? 'opacity-60' : 'opacity-100'
     const actived = playerState == PlayerState.RoundStart
+    const border_color = useMemo(() => {
+        if (playerTeam) {
+            return playerTeam === 'red' ? 'border-red-500' : 'border-blue-500'
+        }
+        else {
+            return "border-white"
+        }
+    }, [playerTeam])
 
     return (
         <>
-            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full shadow-md border-white border-[1px] w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
+            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
         </>
     )
 }
@@ -35,10 +43,10 @@ function ScoreContent({ currScore, totalScore, playerState, finalScore }) {
 }
 
 
-function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerTotalScore, playerState, finalScore }) {
+function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerTotalScore, playerState, playerTeam, finalScore }) {
     return (
         <div className="flex flex-col items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
-            <GameAvater imgUrl={playerAvatar} playerState={playerState} />
+            <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} />
             <div className="flex justify-center items-center my-1">
                 <span className="text-xs">
                     {playerName || '无名称'}
@@ -148,21 +156,21 @@ function GameCardsOut({ right, left, top }) {
                 style={'justify-center items-start mr-1'}
                 state={left ? left.state : null}
                 valid_cards={left ? left.valid_cards : []}
-                scoreObj={{ score: left ? left.cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
+                scoreObj={{ score: left ? left.curr_cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
                 is_exited={left ? left.is_exited == 1 : 0}
             />
             <PlayerOut
                 style={'justify-start items-center mr-1'}
                 state={top ? top.state : null}
                 valid_cards={top ? top.valid_cards : []}
-                scoreObj={{ score: top ? top.cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
+                scoreObj={{ score: top ? top.curr_cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
                 is_exited={top ? top.is_exited == 1 : 0}
             />
             <PlayerOut
                 style={'justify-center items-end'}
                 state={right ? right.state : null}
                 valid_cards={right ? right.valid_cards : []}
-                scoreObj={{ score: right ? right.cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
+                scoreObj={{ score: right ? right.curr_cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
                 is_exited={right ? right.is_exited == 1 : 0}
             />
         </>
@@ -244,6 +252,7 @@ function GameHeader({ height }) {
                                 playerCurrScore={player_info.curr_cards_value || 0}
                                 playerTotalScore={player_info.total_cards_value || 0}
                                 playerState={player_info.state}
+                                playerTeam={player_info.team}
                                 finalScore={player_info.global_score}
                             />
                             <GameCardInfo
@@ -256,7 +265,9 @@ function GameHeader({ height }) {
                 </div>
             </div>
             <div className='w-1/4 flex justify-end'>
-                {/* {getNowFormatDate()} */}
+                <button className='flex items-center px-2 active:scale-95 mr-2'>
+                    <Image src="/message.svg" width={20} height={20} alt="" />
+                </button>
                 <button className='flex items-center bg-white border-2 border-lime-500 rounded-md px-2 active:scale-95' onClick={() => window.location.reload()}>
                     <Image src="/logout.svg" width={20} height={20} alt="" />退出
                 </button>
@@ -299,6 +310,7 @@ function GameNeck({ height }) {
                             playerCurrScore={left_player_info.curr_cards_value || 0}
                             playerTotalScore={left_player_info.total_cards_value || 0}
                             playerState={left_player_info.state}
+                            playerTeam={left_player_info.team}
                             finalScore={left_player_info.global_score}
                         />
                         <GameCardInfo
@@ -330,6 +342,7 @@ function GameNeck({ height }) {
                             playerCurrScore={right_player_info.curr_cards_value || 0}
                             playerTotalScore={right_player_info.total_cards_value || 0}
                             playerState={right_player_info.state}
+                            playerTeam={right_player_info.team}
                             finalScore={right_player_info.global_score}
                         />
                     </>
@@ -403,6 +416,7 @@ function GameMain({ height }) {
                         curr_player_id: data.game_info.curr_player_id,
                         friend_card_cnt: data.game_info.friend_card_cnt,
                         players_info: data.players_info,
+                        is_friend_help: data.game_info.is_friend_help
                     }))
                 }
                 else if (data.status === 3) {
@@ -477,14 +491,14 @@ function GameMain({ height }) {
 
 
             // TODO: 方便快速测试
-            // if (selectedCard.length >= 21) {
-            //     result = {
-            //         status: 1,
-            //         raw_cards: [],
-            //         cards_info: [],
-            //         cards_value: 0
-            //     }
-            // }
+            if (selectedCard.length >= 21) {
+                result = {
+                    status: 1,
+                    raw_cards: [],
+                    cards_info: [],
+                    cards_value: 0
+                }
+            }
 
             if (result.status === -1 || result.status === 0) {
                 setMessage(() => ({ msg: result.msg, key: 0 }))
@@ -559,7 +573,6 @@ function GameMain({ height }) {
     }
 
     function handleNextRound() {
-        console.log("handleNextRound")
         setUserInfo({
             ...userInfo,
             all_cards: [],
@@ -624,7 +637,7 @@ function GameMain({ height }) {
             <div className="flex flex-col justify-around items-center w-10/12">
                 <div className="flex w-full justify-center relative">
                     {content}
-                    <ScoreAlert scoreObj={{ score: player_info.cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
+                    <ScoreAlert scoreObj={{ score: player_info.curr_cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
                 </div>
                 <div className="flex justify-center item-end w-screen">
                     {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
@@ -636,6 +649,11 @@ function GameMain({ height }) {
             {message.msg && <Toast message={message} duration={4000} />}
             {gameInfo.state == GameState.GameStop && (
                 <PlayerExitModal />
+            )}
+            {gameInfo.is_friend_help && (
+                <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-red-400">
+                    由于朋友牌都已出，从而触发了朋友保护机制
+                </div>
             )}
         </div>
     )
@@ -743,6 +761,7 @@ function GameFooter() {
         for (let i of gameInfo.winners_order) {
             game_result.push({
                 player_id: i,
+                player_avatar: gameInfo.players_info[i].player_avatar,
                 player_name: gameInfo.players_info[i].player_name,
                 normal_score: gameInfo.players_info[i].normal_score,
                 value_score: gameInfo.players_info[i].value_score,
@@ -796,7 +815,7 @@ function GameFooter() {
             <div className="fixed bottom-0 flex w-screen px-5 z-10 mb-1">
                 <div className="flex items-end w-full item-center justify-between">
                     <div className="flex w-1/4 justify-around items-end">
-                        <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} width={35} height={35} />
+                        <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} width={35} height={35} />
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerState={player_info.state} currScore={player_info.curr_cards_value || 0} totalScore={player_info.total_cards_value || 0} finalScore={player_info.global_score} />
                     </div>
@@ -827,27 +846,31 @@ function GameFooter() {
             )}
             {showEndModal && (
                 <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur-md">
-                    <div className="flex flex-col h-5/6 rounded-lg bg-gradient-to-br from-blue-200 via-indigo-400 to-blue-200  justify-center items-center w-full">
+                    <div className="flex flex-col h-5/6 rounded-lg bg-gradient-to-br from-blue-200 via-indigo-300 to-blue-200  justify-center items-center w-full">
                         <div className="flex h-[5%]">
                             {
-                                player_info.normal_score == 2 ? <span className=" text-amber-300 font-medium -mt-3 text-2xl">胜利</span>
-                                    : <span className="text-gray-400 font-medium -mt-3 text-2xl">失败</span>
+                                player_info.normal_score == 2 ? <span className=" text-amber-500 font-medium -mt-3 text-2xl">胜利</span>
+                                    : <span className="text-gray-700 font-medium -mt-3 text-2xl">失败</span>
                             }
                         </div>
-                        <div className="flex flex-col justify-evenly flex-1 w-4/6">
+                        <div className="flex flex-col justify-evenly flex-1 w-5/6">
                             <div className="flex w-full">
+                                <span className="flex flex-1"></span>
                                 {["昵称", "输赢", "赏值", "分数", "总分"].map(title => (
-                                    <span key={title} className="flex w-1/4 justify-center text-amber-100 text-sm">{title}</span>
+                                    <span key={title} className="flex w-[18%] justify-center text-amber-100 text-sm">{title}</span>
                                 ))}
                             </div>
                             {game_result.map(
                                 player => (
                                     <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-orange-100" : "text-white"}`}>
-                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.player_name}</span>
-                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.normal_score}</span>
-                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.value_score}</span>
-                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.final_score}</span>
-                                        <span className={`flex w-1/5 justify-center text-sm`}>{player.global_score}</span>
+                                        <span className='flex flex-1 justify-end items-center text-sm'>
+                                            <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={10} height={10} alt="" className="w-6 h-6" />
+                                        </span>
+                                        <span className={`flex w-[18%] justify-center items-center text-sm`}>{player.player_name}</span>
+                                        <span className={`flex w-[18%] justify-center items-center text-sm`}>{player.normal_score}</span>
+                                        <span className={`flex w-[18%] justify-center items-center text-sm`}>{player.value_score}</span>
+                                        <span className={`flex w-[18%] justify-center items-center text-sm`}>{player.final_score}</span>
+                                        <span className={`flex w-[18%] justify-center items-center text-sm`}>{player.global_score}</span>
                                     </div>
                                 )
                             )}
@@ -856,7 +879,7 @@ function GameFooter() {
                     <div className="flex flex-1 justify-center items-center">
                         <GameButton
                             title={"确定"}
-                            classes={"flex justify-center items-center rounded-md text-sm text-white bg-blue-400 px-3 py-2 h-[70%]"}
+                            classes={"flex justify-center items-center rounded-md text-sm text-white bg-indigo-300 px-3 py-2 h-[70%]"}
                             onClick={hanleColseEndModal}
                         />
                     </div>
