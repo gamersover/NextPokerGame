@@ -7,7 +7,7 @@ export const UserInfoContext = createContext(null)
 export const GameInfoContext = createContext(null)
 
 
-function SocketProvider({ children }) {
+function DataProvider({ children }) {
     const [socket, setSocket] = useState(null)
     const [userInfo, setUserInfo] = useState({
         room_number: null,
@@ -43,4 +43,4 @@ function SocketProvider({ children }) {
     )
 }
 
-export default SocketProvider
+export default DataProvider

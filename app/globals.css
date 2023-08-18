@@ -113,7 +113,7 @@ html {
 }
 
 .game-body {
-  @apply bg-blue-50
+  @apply bg-blue-50 fixed w-full h-full overflow-hidden
 }
 
 .game-button {

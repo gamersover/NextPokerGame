@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { useContext, useState, useEffect, useMemo } from 'react';
 import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
-import { useRouter } from 'next/navigation';
 
 
 function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, alt = '' }) {
@@ -369,14 +368,13 @@ function GameNeck({ height }) {
 }
 
 
-function GameMain({ height }) {
+function GameMain({ height, setCurrPage }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [message, setMessage] = useState({ msg: null, key: 0 })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
     const [isMouseDown, setIsMouseDown] = useState(false)
-    const router = useRouter()
 
     // console.log('game_info', gameInfo)
     const all_cards = userInfo.all_cards
@@ -470,7 +468,7 @@ function GameMain({ height }) {
             })
         }
         else {
-            router.back()
+            setCurrPage("game")
         }
     }, [])
 
@@ -930,12 +928,12 @@ function GameFooter() {
 }
 
 
-export default function Page() {
+export default function Room({ setCurrPage }) {
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
             <GameHeader height='h-1/5' />
             <GameNeck height='flex-1' />
-            <GameMain height='h-40' />
+            <GameMain height='h-40' setCurrPage={setCurrPage} />
             <GameFooter />
         </div>
     )

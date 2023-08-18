@@ -3,7 +3,6 @@
 import { GameButton, Modal, Toast } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { SERVER_ADDR } from "@/utils/conf";
@@ -17,11 +16,10 @@ function HomeTitle() {
     )
 }
 
-function HomeButton({ handleJoin, setMessage }) {
+function HomeButton({ handleJoin, setMessage, setCurrPage }) {
     const setSocket = useContext(SetSocketContext)
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const router = useRouter()
 
     function createRoom() {
         if (userInfo.room_number !== null) {
@@ -56,7 +54,7 @@ function HomeButton({ handleJoin, setMessage }) {
                         host_id: data.game_info.host_id,
                         players_info: data.players_info
                     })
-                    router.push("/game/room")
+                    setCurrPage("room")
                 }
                 else {
                     setMessage({ msg: data.msg, key: 0 })
@@ -245,7 +243,7 @@ function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSub
 }
 
 
-export default function Home() {
+export default function Game({ setCurrPage }) {
     const [showJoinpop, setShowJoinpop] = useState(false)
     const setSocket = useContext(SetSocketContext)
     const socket = useContext(SocketContext)
@@ -255,7 +253,6 @@ export default function Home() {
     const [subsPlayers, setSubsPlayers] = useState({})
     const [subsPlayersID, setSubsPlayersID] = useState([])
     const [joiningRoomNumber, setJoiningRoomNumber] = useState("")
-    const router = useRouter()
 
     useLayoutEffect(() => {
         setUserInfo(() => ({
@@ -275,7 +272,7 @@ export default function Home() {
 
     function handleOk() {
         closeModal()
-        router.push("/game/room")
+        setCurrPage("room")
     }
 
     function handleNotJoin() {
@@ -378,7 +375,7 @@ export default function Home() {
     return (
         <div className="flex flex-col justify-evenly items-center h-screen">
             <HomeTitle />
-            <HomeButton handleJoin={showModal} setMessage={setMessage} />
+            <HomeButton handleJoin={showModal} setMessage={setMessage} setCurrPage={setCurrPage} />
             {showJoinpop && (
                 <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
