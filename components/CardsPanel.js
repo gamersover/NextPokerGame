@@ -2,65 +2,31 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 
 function GameCard({ id, name, isSelected, handleMouseUp, handleMouseDown, handleMouseEnter, marginLeft, imageWidth }) {
-    const [isMobile, setIsMobile] = useState(false);
-
     function handleEnter() {
         handleMouseEnter && handleMouseEnter(id)
     }
 
-    function handleDown() {
+    function handleDown(e) {
         handleMouseDown && handleMouseDown(id)
-    }
-
-    function handleDownForMobile(e) {
-        handleDown()
         e.target.releasePointerCapture(e.pointerId)
     }
 
-    useEffect(() => {
-        const checkIsMobile = () => {
-          setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-        };
-
-        checkIsMobile(); // 在组件挂载时执行一次判断
-
-      }, []);
-
     return (
         <>
-            {isMobile ? (
-                <Image
-                    id={id}
-                    src={`/pokers/${name}.svg`}
-                    width={20}
-                    height={20}
-                    className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
-                    // onClick={handleSelect}
-                    style={{ zIndex: id }}
-                    alt=""
-                    onPointerDown={(e) => handleDownForMobile(e)}
-                    onPointerEnter={handleEnter}
-                    onPointerUp={handleMouseUp}
-                    onContextMenu={(e) => e.preventDefault()}
-                    draggable={false}
-                />
-            ) : (
-                <Image
-                    id={id}
-                    src={`/pokers/${name}.svg`}
-                    width={20}
-                    height={20}
-                    className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
-                    // onClick={handleSelect}
-                    style={{ zIndex: id }}
-                    alt=""
-                    onMouseDown={handleDown}
-                    onMouseEnter={handleEnter}
-                    onMouseUp={handleMouseUp}
-                    onContextMenu={(e) => e.preventDefault()}
-                    draggable={false}
-                />
-            )}
+            <Image
+                id={id}
+                src={`/pokers/${name}.svg`}
+                width={20}
+                height={20}
+                className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
+                style={{ zIndex: id }}
+                alt=""
+                onPointerDown={(e) => handleDown(e)}
+                onPointerEnter={handleEnter}
+                onPointerUp={handleMouseUp}
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+            />
         </>
     )
 }
