@@ -216,9 +216,24 @@ function PlayerExitModal() {
 }
 
 
+function NotificationPanel({ setShowNotification }) {
+    function handleCloseModal() {
+        setShowNotification(false)
+    }
+
+    return (
+        <Modal contentStyle="fixed flex flex-col justify-center top-[10%] right-[10%] w-1/5 h-1/3 bg-gray-500 bg-opacity-20 rounded-md z-[100]" backdropStyle="backdrop" onClose={handleCloseModal}>
+            你好
+        </Modal>
+    )
+}
+
+
 function GameHeader({ height }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
+    const [showNotification, setShowNotification] = useState(false)
+
 
     const player_id = (parseInt(userInfo.player_id) + 2) % 4
     let player_info = null
@@ -265,13 +280,14 @@ function GameHeader({ height }) {
                 </div>
             </div>
             <div className='w-1/4 flex justify-end'>
-                <button className='flex items-center px-2 active:scale-95 mr-2'>
-                    <Image src="/message.svg" width={20} height={20} alt="" />
+                <button className={`flex items-center ${showNotification ? "bg-red-100" : "bg-white"} border-2 border-red-200 rounded-md px-2 active:scale-95 mr-2`} onClick={() => setShowNotification(true)}>
+                    <Image src="/message.svg" width={20} height={20} alt="" />消息
                 </button>
                 <button className='flex items-center bg-white border-2 border-lime-500 rounded-md px-2 active:scale-95' onClick={() => window.location.reload()}>
                     <Image src="/logout.svg" width={20} height={20} alt="" />退出
                 </button>
             </div>
+            { showNotification && <NotificationPanel setShowNotification={setShowNotification}/>}
         </div>
     )
 }
@@ -292,9 +308,9 @@ function GameNeck({ height }) {
             right_player_info = gameInfo.players_info[right_player_id]
             top_player_info = gameInfo.players_info[top_player_id]
         }
-        console.log("left", left_player_info)
-        console.log("right", right_player_info)
-        console.log("top", top_player_info)
+        // console.log("left", left_player_info)
+        // console.log("right", right_player_info)
+        // console.log("top", top_player_info)
         return [left_player_info, right_player_info, top_player_info]
     }, [gameInfo.players_info, userInfo.player_id])
 
@@ -359,9 +375,11 @@ function GameMain({ height }) {
     const [message, setMessage] = useState({ msg: null, key: 0 })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
+    const [isMouseDown, setIsMouseDown] = useState(false)
     const router = useRouter()
 
-    console.log('game_info', gameInfo)
+    // console.log('game_info', gameInfo)
+    const all_cards = userInfo.all_cards
 
     useEffect(() => {
         if (socket) {
@@ -465,15 +483,6 @@ function GameMain({ height }) {
         }
     }
 
-    function handleCardSelect(id) {
-        let all_cards = userInfo.all_cards
-        all_cards[id].selected = !all_cards[id].selected
-        setUserInfo({
-            ...userInfo,
-            all_cards: all_cards
-        })
-    }
-
     function handleGo() {
         if (gameInfo.players_info[userInfo.player_id].state === PlayerState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
@@ -572,6 +581,32 @@ function GameMain({ height }) {
         })
     }
 
+    function handleCardSelect(id) {
+        all_cards[id].selected = !all_cards[id].selected
+        setUserInfo({
+            ...userInfo,
+            all_cards: all_cards
+        })
+    }
+
+    function handleMouseDown(id) {
+        console.log("mouse down")
+        handleCardSelect(id)
+        setIsMouseDown(true)
+    }
+
+    function handleMouseEnter(id) {
+        console.log("mouse enter")
+        if (isMouseDown) {
+            handleCardSelect(id)
+        }
+    }
+
+    function handleMouseUp() {
+        console.log("mouse up")
+        setIsMouseDown(false)
+    }
+
     function handleNextRound() {
         setUserInfo({
             ...userInfo,
@@ -640,7 +675,12 @@ function GameMain({ height }) {
                     <ScoreAlert scoreObj={{ score: player_info.curr_cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
                 </div>
                 <div className="flex justify-center item-end w-screen">
-                    {userInfo.all_cards && <CardsPanel cards={userInfo.all_cards} onCardSelect={handleCardSelect} />}
+                    {userInfo.all_cards && <CardsPanel
+                                              cards={userInfo.all_cards}
+                                              handleMouseDown={handleMouseDown}
+                                              handleMouseUp={handleMouseUp}
+                                              handleMouseEnter={handleMouseEnter}
+                                            />}
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end mb-1">
@@ -754,7 +794,7 @@ function GameFooter() {
     const [showEndModal, setShowEndModal] = useState(false)
 
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
-    console.log('player_info', player_info)
+    // console.log('player_info', player_info)
     const selected_joker_cards = userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
     let game_result = []
     if (player_info.state == PlayerState.GameEnd) {

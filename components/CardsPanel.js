@@ -1,24 +1,72 @@
-function GameCard({ id, name, isSelected, onCardSelect, marginLeft, imageWidth }) {
+import Image from "next/image"
+import { useEffect, useState } from "react"
 
-    function handleSelect() {
-        onCardSelect && onCardSelect(id)
+function GameCard({ id, name, isSelected, handleMouseUp, handleMouseDown, handleMouseEnter, marginLeft, imageWidth }) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    function handleEnter() {
+        handleMouseEnter && handleMouseEnter(id)
     }
+
+    function handleDown() {
+        handleMouseDown && handleMouseDown(id)
+    }
+
+    function handleDownForMobile(e) {
+        handleDown()
+        e.target.releasePointerCapture(e.pointerId)
+    }
+
+    useEffect(() => {
+        const checkIsMobile = () => {
+          setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+        };
+
+        checkIsMobile(); // 在组件挂载时执行一次判断
+
+      }, []);
 
     return (
         <>
-            <img
-                id={id}
-                src={`/pokers/${name}.svg`}
-                className={`shadow-md ${imageWidth} ${marginLeft} h-auto ${isSelected ? '-translate-y-3' : ''}`}
-                onClick={handleSelect}
-                style={{ zIndex: id }}
-            />
+            {isMobile ? (
+                <Image
+                    id={id}
+                    src={`/pokers/${name}.svg`}
+                    width={20}
+                    height={20}
+                    className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
+                    // onClick={handleSelect}
+                    style={{ zIndex: id }}
+                    alt=""
+                    onPointerDown={(e) => handleDownForMobile(e)}
+                    onPointerEnter={handleEnter}
+                    onPointerUp={handleMouseUp}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                />
+            ) : (
+                <Image
+                    id={id}
+                    src={`/pokers/${name}.svg`}
+                    width={20}
+                    height={20}
+                    className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
+                    // onClick={handleSelect}
+                    style={{ zIndex: id }}
+                    alt=""
+                    onMouseDown={handleDown}
+                    onMouseEnter={handleEnter}
+                    onMouseUp={handleMouseUp}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                />
+            )}
         </>
     )
 }
 
 
-export default function CardsPanel({ cards, onCardSelect = null, size = "normal" }) {
+export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, handleMouseEnter, size = "normal" }) {
     let cards_len_level = 0
     if (cards.length >= 23) {
         cards_len_level = 4
@@ -53,7 +101,9 @@ export default function CardsPanel({ cards, onCardSelect = null, size = "normal"
                 id={i}
                 name={card.showName}
                 isSelected={card.selected}
-                onCardSelect={onCardSelect}
+                handleMouseUp={handleMouseUp}
+                handleMouseDown={handleMouseDown}
+                handleMouseEnter={handleMouseEnter}
                 marginLeft={i == 0 ? '' : marginLeft[size][cards_len_level]}
                 imageWidth={imageWidth[size]}
             />)}
