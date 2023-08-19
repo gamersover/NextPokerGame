@@ -1,6 +1,12 @@
 # 四人纸牌
 
-个人学习前端写的一个纸牌游戏，没有使用任何UI组件，自己动手实现所有UI，用于学习，已使用Vercel部署，域名 https://game.caoqinping.com/
+个人学习前端写的一个纸牌游戏，没有使用任何UI组件，自己动手实现所有UI，用于学习，已
+
+* 前端部署
+    使用[Vercel](https://vercel.com/)部署，域名 https://game.caoqinping.com/
+
+* 后端部署
+    使用[railway](https://railway.app/)部署，域名 https://gameserver.caoqinping.com
 
 > 这里只是前端代码，后端代码写的比较乱，整理好之后会开源
 
