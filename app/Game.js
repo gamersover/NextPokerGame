@@ -31,8 +31,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
                 SERVER_ADDR,
                 {
                     transports: ['websocket'],
-                    reconnection: false,
-                    timeout: 1000
+                    timeout: 2000
                 })
 
             socket.on('connect_error', (error) => {
@@ -311,8 +310,7 @@ export default function Game({ setCurrPage }) {
             SERVER_ADDR,
             {
                 transports: ['websocket'],
-                reconnection: false,
-                timeout: 1000
+                timeout: 2000
             });
 
         socket.on('connect_error', (error) => {
