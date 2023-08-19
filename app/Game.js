@@ -7,6 +7,7 @@ import { useCallback, useContext, useEffect, useLayoutEffect, useState } from "r
 import { io } from "socket.io-client";
 import { SERVER_ADDR } from "@/utils/conf";
 import Cookies from "js-cookie";
+import handleSocket from "@/utils/socketHandler";
 
 function HomeTitle() {
     return (
@@ -26,11 +27,19 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
             setMessage({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
         }
         else {
-            const socket = io(SERVER_ADDR, { transports: ['websocket'] })
+            const socket = io(
+                SERVER_ADDR,
+                {
+                    transports: ['websocket'],
+                    reconnection: false,
+                    timeout: 1000
+                })
 
             socket.on('connect_error', (error) => {
+                console.log("触发了connect_error")
                 setMessage({ msg: "服务异常，请稍后重试", key: 0 })
-                setTimeout(() => window.location.reload(), 1000)
+                socket.close()
+                setTimeout(() => setCurrPage("game"), 2000)
             });
 
             socket.emit("create_room", {
@@ -71,6 +80,8 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
                     })
                 }
             })
+
+            handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo)
             setSocket(socket)
         }
     }
@@ -138,9 +149,9 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                     <span className="font-bold text-xl text-red-400">加入房间</span>
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
-                    <button className="flex items-center justify-center active:scale-95" onClick={handleCloseModal}>
+                    <GameButton classes={""} onClick={handleCloseModal}>
                         <Image src="/close.svg" width={20} height={20} className="w-full" alt=""/>
-                    </button>
+                    </GameButton>
                 </div>
             </div>
 
@@ -163,42 +174,48 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                     {inputs[0].map((name, i) => (
                         <GameButton
                             key={i}
-                            title={name}
                             classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
                             onClick={() => handleNumberInput(name)}
-                        />
+                        >
+                            {name}
+                        </GameButton>
                     ))}
                     {inputs[1].map((name, i) => (
                         <GameButton
                             key={i}
-                            title={name}
                             classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
                             onClick={() => handleNumberInput(name)}
-                        />
+                        >
+                            {name}
+                        </GameButton>
                     ))}
                     {inputs[2].map((name, i) => (
                         <GameButton
                             key={i}
-                            title={name}
                             classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
                             onClick={() => handleNumberInput(name)}
-                        />
+                        >
+                            {name}
+                        </GameButton>
                     ))}
                     <GameButton
-                        title={"重置"}
                         classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300"
                         onClick={handleReset}
-                    />
+                    >
+                        重置
+                    </GameButton>
                     <GameButton
-                        title={0}
                         classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
                         onClick={() => handleNumberInput("0")}
-                    />
+                    >
+                        0
+                    </GameButton>
                     <GameButton
-                        title={"删除"}
                         classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-red-300"
                         onClick={handleDelete}
-                    />
+                    >
+                        删除
+                    </GameButton>
                 </div>
             </div>
         </div>
@@ -235,8 +252,8 @@ function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSub
                 }
             </div>
             <div className="w-10/12 flex justify-end">
-                <GameButton title={"不加入"} classes="w-16 !h-10 mx-2 font-bold text-red-400" onClick={handleNotJoin}/>
-                <GameButton title={"加入"} classes="w-16 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300" onClick={() => handleSubsJoin(selectedPlayer)}/>
+                <GameButton classes="w-16 !h-10 mx-2 font-bold text-red-400" onClick={handleNotJoin}>不加入</GameButton>
+                <GameButton classes="w-16 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300" onClick={() => handleSubsJoin(selectedPlayer)}>加入</GameButton>
             </div>
         </div>
     )
@@ -290,14 +307,20 @@ export default function Game({ setCurrPage }) {
     }
 
     const handleJoinRoom = useCallback((roomNumber) => {
-        const socket = io(SERVER_ADDR, {
-            transports: ['websocket']
-        });
+        const socket = io(
+            SERVER_ADDR,
+            {
+                transports: ['websocket'],
+                reconnection: false,
+                timeout: 1000
+            });
 
         socket.on('connect_error', (error) => {
+            console.log("触发了connect_error")
             closeModal()
             setMessage({ msg: "服务异常，请稍后重试", key: 0 })
-            setTimeout(() => window.location.reload(), 1000)
+            socket.close()
+            setTimeout(() => setCurrPage("game"), 2000)
         });
 
         socket.emit("join_room", {
@@ -326,7 +349,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 // closeModal()
-                setMessage({msg: `房间${data.game_info.room_number}加入失败，原因${data.msg}`, key: 0})
+                setMessage({msg: `房间加入失败，${data.msg}`, key: 0})
             }
         })
 
@@ -369,6 +392,8 @@ export default function Game({ setCurrPage }) {
                 setMessage(() => ({"msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0}))
             }
         })
+
+        handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo)
         setSocket(socket)
     }, [userInfo])
 

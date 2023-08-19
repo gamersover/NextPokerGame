@@ -14,8 +14,8 @@ const Toast = ({ message, duration }) => {
 
     return (
         <div
-            className={`fixed z-[101] top-4 ${show ? 'right-2 animate-slip-in' : '-right-full'}
-                } bg-red-600 text-white p-2 rounded shadow`}
+            className={`fixed z-[101] top-1 ${show ? 'right-2 animate-right-in' : '-right-full'}
+                } bg-red-600 text-sm text-white p-2 rounded shadow`}
         >
             {message.msg}
         </div>

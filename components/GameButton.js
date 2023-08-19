@@ -1,6 +1,6 @@
 "use client";
 
-export default function GameButton({ title, classes, onClick, shouldDisable = false }) {
+export default function GameButton({ children, classes, onClick, shouldDisable = false }) {
     return (
         <button
             disabled={shouldDisable}
@@ -8,7 +8,7 @@ export default function GameButton({ title, classes, onClick, shouldDisable = fa
             className={`w-16 h-9 rounded-xl ${shouldDisable ? '' : "active:scale-95"} text-md flex justify-center items-center ${classes}`}
             onClick={onClick}
         >
-            {title}
+            {children}
         </button>
     )
 }

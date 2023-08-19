@@ -1,8 +1,6 @@
 "use client";
 
-
 import { GameButton, Modal, BackDrop } from "@/components"
-import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Cookies from "js-cookie"
@@ -95,9 +93,11 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
     return (
         <div className="flex flex-col justify-center items-center h-24">
             <GameButton
-                title={shouldStartDisable ? "用户设置" : "开始游戏"}
                 onClick={shouldStartDisable ? handleShowUserPanel : handleStart}
-                classes={`w-24 !h-10 text-lg font-bold shadow-md text-gray-700 ${shouldStartDisable ? "bg-red-200" : "bg-blue-200"}`} />
+                classes={`w-24 !h-10 text-lg font-bold shadow-md text-gray-700 ${shouldStartDisable ? "bg-red-200" : "bg-blue-200"}`}
+            >
+                {shouldStartDisable ? "用户设置" : "开始游戏"}
+            </GameButton>
         </div>
     )
 }
