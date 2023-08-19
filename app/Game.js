@@ -117,7 +117,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
 
 
 function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
-    const [roomNumber, setRoomNumber] = useState(['0', '0', '0', '0', '0', '0']) // TODO: 测试用
+    const [roomNumber, setRoomNumber] = useState([]) // TODO: 测试用
 
     function handleNumberInput(number) {
         if (roomNumber.length <= 5) {

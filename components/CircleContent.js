@@ -24,7 +24,7 @@ export default function CircleContent({circleTitle, circleChild, titleBgColor, c
 
     return (
         <div className={`flex ${circlestyleConfig[circleSize].height}`}>
-            <div className={`${titleBgColor} ${circlestyleConfig[circleSize].fontSize} rounded-full flex justify-center items-center ${circlestyleConfig[circleSize].height} ${circlestyleConfig[circleSize].width} text-sm`}>{circleTitle}</div>
+            <div className={`${titleBgColor} ${circlestyleConfig[circleSize].fontSize} rounded-full flex justify-center items-center ${circlestyleConfig[circleSize].height} ${circlestyleConfig[circleSize].width}`}>{circleTitle}</div>
             <div className={`bg-white bg-opacity-60 ${circlestyleConfig[circleSize].fontSize} rounded-md px-1 flex justify-center items-center ${contentStyleConfig[contentSize].width}`}>{circleChild}</div>
         </div>
     )

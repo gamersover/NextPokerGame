@@ -407,14 +407,14 @@ function GameMain({ height }) {
 
 
             // TODO: 方便快速测试
-            if (selectedCard.length >= 21) {
-                result = {
-                    status: 1,
-                    raw_cards: [],
-                    cards_info: [],
-                    cards_value: 0
-                }
-            }
+            // if (selectedCard.length >= 21) {
+            //     result = {
+            //         status: 1,
+            //         raw_cards: [],
+            //         cards_info: [],
+            //         cards_value: 0
+            //     }
+            // }
 
             if (result.status === -1 || result.status === 0) {
                 setMessage(() => ({ msg: result.msg, key: 0 }))
@@ -540,9 +540,9 @@ function GameMain({ height }) {
         case PlayerState.RoundStart:
             content = (
                 <div className="flex w-4/12 justify-between">
-                    <GameButton classes={"bg-gray-100"} onClick={handleSelectAll}>全选</GameButton>
-                    <GameButton classes={"bg-red-200"} onClick={handlePass}>跳过</GameButton>
-                    <GameButton classes={"bg-blue-300"} onClick={handleGo}>出牌</GameButton>
+                    <GameButton classes={"bg-gray-100 border-[1px] border-gray-300"} onClick={handleSelectAll}>全选</GameButton>
+                    <GameButton classes={"bg-red-200 border-[1px] border-red-400"} onClick={handlePass}>跳过</GameButton>
+                    <GameButton classes={"bg-blue-300 border-[1px] border-blue-400"} onClick={handleGo}>出牌</GameButton>
                 </div>
             )
             break
@@ -597,9 +597,9 @@ function GameMain({ height }) {
             {gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help && (
                 <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-red-400">
                     朋友牌已出完，触发了保护机制，玩家
-                    {<span className='font-bold'> gameInfo.players_info[gameInfo.friend_help_info.player].player_name </span>}
+                    {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.player].player_name} </span>}
                     保护了玩家
-                    {<span className='font-bold'> gameInfo.players_info[gameInfo.friend_help_info.helped_friend].player_name </span>}
+                    {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.helped_friend].player_name} </span>}
                 </div>
             )}
         </div>
