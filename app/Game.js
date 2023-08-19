@@ -4,10 +4,8 @@ import { GameButton, Modal, Toast } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
-import { io } from "socket.io-client";
-import { SERVER_ADDR } from "@/utils/conf";
 import Cookies from "js-cookie";
-import handleSocket from "@/utils/socketHandler";
+import { connectSocket, handleSocket } from "@/utils/socketHandler";
 
 function HomeTitle() {
     return (
@@ -18,6 +16,7 @@ function HomeTitle() {
 }
 
 function HomeButton({ handleJoin, setMessage, setCurrPage }) {
+    const socket = useContext(SocketContext)
     const setSocket = useContext(SetSocketContext)
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
@@ -27,20 +26,6 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
             setMessage({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
         }
         else {
-            const socket = io(
-                SERVER_ADDR,
-                {
-                    transports: ['websocket'],
-                    timeout: 2000
-                })
-
-            socket.on('connect_error', (error) => {
-                console.log("触发了connect_error")
-                setMessage({ msg: "服务异常，请稍后重试", key: 0 })
-                socket.close()
-                setTimeout(() => setCurrPage("game"), 2000)
-            });
-
             socket.emit("create_room", {
                 room_number: userInfo.room_number,
                 player_name: userInfo.player_name,
@@ -80,7 +65,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
                 }
             })
 
-            handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo)
+            handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage)
             setSocket(socket)
         }
     }
@@ -269,6 +254,11 @@ export default function Game({ setCurrPage }) {
     const [subsPlayers, setSubsPlayers] = useState({})
     const [subsPlayersID, setSubsPlayersID] = useState([])
     const [joiningRoomNumber, setJoiningRoomNumber] = useState("")
+    const [connectStatus, setConnectStatus] = useState(false)
+
+    useEffect(() => {
+        connectSocket(setConnectStatus, setSocket)
+    }, [])
 
     useLayoutEffect(() => {
         setUserInfo(() => ({
@@ -306,21 +296,7 @@ export default function Game({ setCurrPage }) {
     }
 
     const handleJoinRoom = useCallback((roomNumber) => {
-        const socket = io(
-            SERVER_ADDR,
-            {
-                transports: ['websocket'],
-                timeout: 2000
-            });
-
-        socket.on('connect_error', (error) => {
-            console.log("触发了connect_error")
-            closeModal()
-            setMessage({ msg: "服务异常，请稍后重试", key: 0 })
-            socket.close()
-            setTimeout(() => setCurrPage("game"), 2000)
-        });
-
+        console.log(socket)
         socket.emit("join_room", {
             room_number: roomNumber.join(""),
             player_name: userInfo.player_name,
@@ -365,7 +341,7 @@ export default function Game({ setCurrPage }) {
         socket.on("player_reconnect", data=> {
             console.log("收到了player_reconnect消息")
             if (data.status == 1) {
-                setGameInfo(gameInfo => ({
+                setGameInfo(() => ({
                     ...gameInfo,
                     players_info: data.players_info,
                     state: data.game_info.state,
@@ -376,7 +352,7 @@ export default function Game({ setCurrPage }) {
                     host_id: data.game_info.host_id,
                     winners_order: data.game_info.winners_order
                 }))
-                setUserInfo(userInfo => ({
+                setUserInfo(() => ({
                     ...userInfo,
                     all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false })),
                     player_id: data.user_info.player_id,
@@ -391,12 +367,32 @@ export default function Game({ setCurrPage }) {
             }
         })
 
-        handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo)
+        handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage)
         setSocket(socket)
-    }, [userInfo])
+    }, [socket, userInfo])
 
     return (
         <div className="flex flex-col justify-evenly items-center h-screen">
+            <div className="fixed w-28 h-10 top-2 right-2">
+                {
+                    connectStatus ?
+                    (
+                        <>
+                            <span className="text-green-400 animate-pulse pr-1">
+                                ●
+                            </span>
+                            服务正常
+                        </>
+                    )
+                    : (
+                        <>
+                            <span className="text-red-400 animate-pulse pr-1">
+                                ●
+                            </span>
+                            服务连接中...
+                        </>
+                    )}
+            </div>
             <HomeTitle />
             <HomeButton handleJoin={showModal} setMessage={setMessage} setCurrPage={setCurrPage} />
             {showJoinpop && (

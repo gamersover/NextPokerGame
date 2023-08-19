@@ -1,7 +1,7 @@
 "use client";
 
 import { CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from '@/components';
-import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from '@/components/GameContext';
+import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
 import { useContext, useState, useEffect, useMemo } from 'react';
@@ -540,7 +540,7 @@ function GameMain({ height }) {
         case PlayerState.RoundStart:
             content = (
                 <div className="flex w-4/12 justify-between">
-                    <GameButton classes={"bg-gray-100 border-[1px] border-gray-300"} onClick={handleSelectAll}>全选</GameButton>
+                    <GameButton classes={"bg-gray-100 border-[1px] border-gray-400"} onClick={handleSelectAll}>全选</GameButton>
                     <GameButton classes={"bg-red-200 border-[1px] border-red-400"} onClick={handlePass}>跳过</GameButton>
                     <GameButton classes={"bg-blue-300 border-[1px] border-blue-400"} onClick={handleGo}>出牌</GameButton>
                 </div>

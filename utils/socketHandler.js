@@ -1,4 +1,33 @@
-export default function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo) {
+import { io } from "socket.io-client";
+import { SERVER_ADDR } from "./conf";
+
+
+function connectSocket(setConnectStatus, setSocket) {
+    const socket = io(
+        SERVER_ADDR,
+        {
+            transports: ['websocket'],
+        })
+
+    socket.on("connect", () => {
+        console.log("触发了connect")
+        setConnectStatus(true)
+    })
+
+    socket.on('connect_error', () => {
+        console.log("触发了connect_error")
+        setConnectStatus(false)
+        // setMessage({ msg: "服务异常，请稍后重试", key: 0 })
+        setTimeout(() => {
+            socket.connect();
+        }, 1000);
+        // setTimeout(() => setCurrPage("game"), 2000)
+    });
+    setSocket(socket)
+}
+
+
+function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage) {
     socket.on("prepare_start_global", (data) => {
         console.log("收到了prepare_start_global消息")
         if (data.status == 1) {
@@ -10,11 +39,11 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
     })
     socket.on("game_start_global", (data) => {
         console.log("收到了game_start_global消息")
-        setUserInfo(userInfo => ({
+        setUserInfo(() => ({
             ...userInfo,
             all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
         }))
-        setGameInfo(gameInfo => ({
+        setGameInfo(() => ({
             ...gameInfo,
             players_info: data.players_info,
             curr_player_id: data.game_info.curr_player_id,
@@ -24,7 +53,7 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
     })
     socket.on("game_step", (data) => {
         console.log("收到了game_step消息")
-        setGameInfo(gameInfo => ({
+        setGameInfo(() => ({
             ...gameInfo,
             last_valid_cards_info: data.last_valid_cards_info,
             is_start: data.is_start
@@ -34,7 +63,7 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
         console.log("收到了game_step_global消息")
         if (data.status === 1) {
             // 有出牌
-            setGameInfo(gameInfo => ({
+            setGameInfo(() => ({
                 ...gameInfo,
                 curr_player_id: data.game_info.curr_player_id,
                 friend_card_cnt: data.game_info.friend_card_cnt,
@@ -43,7 +72,7 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
             }))
         }
         else if (data.status === 2) {
-            setGameInfo(gameInfo => ({
+            setGameInfo(() => ({
                 ...gameInfo,
                 curr_player_id: data.game_info.curr_player_id,
                 friend_card_cnt: data.game_info.friend_card_cnt,
@@ -52,7 +81,7 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
             }))
         }
         else if (data.status === 3) {
-            setGameInfo(gameInfo => ({
+            setGameInfo(() => ({
                 ...gameInfo,
                 friend_card_cnt: data.game_info.friend_card_cnt,
                 winners_order: data.game_info.winners_order,
@@ -63,7 +92,7 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
     socket.on("player_exit", data => {
         console.log("收到了player_exit消息")
         if (data.status == 1) {
-            setGameInfo(gameInfo => ({
+            setGameInfo(() => ({
                 ...gameInfo,
                 players_info: data.players_info,
                 host_id: data.game_info.host_id,
@@ -73,16 +102,22 @@ export default function handleSocket(socket, setSocket, userInfo, setUserInfo, g
     })
     socket.on("player_reconnect_global", data => {
         console.log("收到了player_reconnect_global消息")
-        setGameInfo(gameInfo => ({
+        setGameInfo(() => ({
             ...gameInfo,
             players_info: data.players_info,
             state: data.game_info.state
         }))
     })
-    socket.on("disconnect", data => {
+    socket.on("disconnect", () => {
         setMessage(() => ({ msg: "服务端断开连接", "key": 0 }))
         socket.close()
         setTimeout(() => window.location.reload(), 2000)
     })
     setSocket(socket)
+}
+
+
+export {
+    connectSocket,
+    handleSocket
 }
