@@ -27,23 +27,23 @@ function connectSocket(setConnectStatus, setSocket) {
 }
 
 
-function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage) {
+function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
     socket.on("prepare_start_global", (data) => {
         console.log("收到了prepare_start_global消息")
         if (data.status == 1) {
-            setGameInfo({
+            setGameInfo((gameInfo) => ({
                 ...gameInfo,
                 players_info: data.players_info
-            })
+            }))
         }
     })
     socket.on("game_start_global", (data) => {
         console.log("收到了game_start_global消息")
-        setUserInfo(() => ({
+        setUserInfo((userInfo) => ({
             ...userInfo,
             all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
         }))
-        setGameInfo(() => ({
+        setGameInfo((gameInfo) => ({
             ...gameInfo,
             players_info: data.players_info,
             curr_player_id: data.game_info.curr_player_id,
@@ -53,7 +53,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
     })
     socket.on("game_step", (data) => {
         console.log("收到了game_step消息")
-        setGameInfo(() => ({
+        setGameInfo((gameInfo) => ({
             ...gameInfo,
             last_valid_cards_info: data.last_valid_cards_info,
             is_start: data.is_start
@@ -63,7 +63,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
         console.log("收到了game_step_global消息")
         if (data.status === 1) {
             // 有出牌
-            setGameInfo(() => ({
+            setGameInfo((gameInfo) => ({
                 ...gameInfo,
                 curr_player_id: data.game_info.curr_player_id,
                 friend_card_cnt: data.game_info.friend_card_cnt,
@@ -72,7 +72,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
             }))
         }
         else if (data.status === 2) {
-            setGameInfo(() => ({
+            setGameInfo((gameInfo) => ({
                 ...gameInfo,
                 curr_player_id: data.game_info.curr_player_id,
                 friend_card_cnt: data.game_info.friend_card_cnt,
@@ -81,7 +81,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
             }))
         }
         else if (data.status === 3) {
-            setGameInfo(() => ({
+            setGameInfo((gameInfo) => ({
                 ...gameInfo,
                 friend_card_cnt: data.game_info.friend_card_cnt,
                 winners_order: data.game_info.winners_order,
@@ -92,7 +92,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
     socket.on("player_exit", data => {
         console.log("收到了player_exit消息")
         if (data.status == 1) {
-            setGameInfo(() => ({
+            setGameInfo((gameInfo) => ({
                 ...gameInfo,
                 players_info: data.players_info,
                 host_id: data.game_info.host_id,
@@ -102,7 +102,7 @@ function handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGam
     })
     socket.on("player_reconnect_global", data => {
         console.log("收到了player_reconnect_global消息")
-        setGameInfo(() => ({
+        setGameInfo((gameInfo) => ({
             ...gameInfo,
             players_info: data.players_info,
             state: data.game_info.state

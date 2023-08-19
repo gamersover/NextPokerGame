@@ -70,7 +70,7 @@ function ValueCards({ playerState, valueCards }) {
             <div className="flex flex-col shadow-md" onClick={handleShowAll}>
                 {last_value_cards && (
                     last_value_cards.slice(-2).map((card, i) => (
-                        <Image key={i} src={`/pokers/${card}.svg`} width={25} height={25} alt='' className="-mt-8" />
+                        <Image key={i} src={`/pokers/${card}.svg`} width={40} height={40} alt='' className="-mt-10" />
                     ))
                 )}
             </div>

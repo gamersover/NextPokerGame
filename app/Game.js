@@ -65,7 +65,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
                 }
             })
 
-            handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage)
+            handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage)
             setSocket(socket)
         }
     }
@@ -261,7 +261,7 @@ export default function Game({ setCurrPage }) {
     }, [])
 
     useLayoutEffect(() => {
-        setUserInfo(() => ({
+        setUserInfo((userInfo) => ({
             ...userInfo,
             player_name: Cookies.get("username"),
             player_avatar: Cookies.get("avatarID"),
@@ -296,7 +296,6 @@ export default function Game({ setCurrPage }) {
     }
 
     const handleJoinRoom = useCallback((roomNumber) => {
-        console.log(socket)
         socket.emit("join_room", {
             room_number: roomNumber.join(""),
             player_name: userInfo.player_name,
@@ -341,7 +340,7 @@ export default function Game({ setCurrPage }) {
         socket.on("player_reconnect", data=> {
             console.log("收到了player_reconnect消息")
             if (data.status == 1) {
-                setGameInfo(() => ({
+                setGameInfo((gameInfo) => ({
                     ...gameInfo,
                     players_info: data.players_info,
                     state: data.game_info.state,
@@ -352,7 +351,7 @@ export default function Game({ setCurrPage }) {
                     host_id: data.game_info.host_id,
                     winners_order: data.game_info.winners_order
                 }))
-                setUserInfo(() => ({
+                setUserInfo((userInfo) => ({
                     ...userInfo,
                     all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false })),
                     player_id: data.user_info.player_id,
@@ -367,7 +366,7 @@ export default function Game({ setCurrPage }) {
             }
         })
 
-        handleSocket(socket, setSocket, userInfo, setUserInfo, gameInfo, setGameInfo, setMessage)
+        handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage)
         setSocket(socket)
     }, [socket, userInfo])
 
