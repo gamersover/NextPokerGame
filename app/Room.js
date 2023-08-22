@@ -317,7 +317,7 @@ function GameNeck({ height }) {
 
     return (
         <div className={`flex justify-between items-center w-full px-2 ${height}`}>
-            <div className="flex w-24">
+            <div className="flex w-24 ml-7">
                 {left_player_info && (
                     <>
                         <GameBasicInfo
@@ -344,7 +344,7 @@ function GameNeck({ height }) {
                     top={top_player_info}
                 />
             </div>
-            <div className="flex w-24">
+            <div className="flex w-24 mr-7">
                 {right_player_info && (
                     <>
                         <GameCardInfo

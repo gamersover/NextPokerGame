@@ -33,7 +33,7 @@ function GameCard({ id, name, isSelected, handleMouseUp, handleMouseDown, handle
 
 export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, handleMouseEnter, size = "normal" }) {
     const imageWidth = {
-        normal: "w-[3.9rem]",
+        normal: "w-[4rem]",
         small: "w-[2.8rem]",
     }
 
