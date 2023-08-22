@@ -14,7 +14,7 @@ export default function CircleContent({circleTitle, circleChild, titleBgColor, c
 
     const contentStyleConfig = {
         normal: {
-            width: "w-16"
+            width: "w-[4.4rem]"
         },
         small: {
             width: "w-8"
@@ -25,7 +25,9 @@ export default function CircleContent({circleTitle, circleChild, titleBgColor, c
     return (
         <div className={`flex ${circlestyleConfig[circleSize].height}`}>
             <div className={`${titleBgColor} ${circlestyleConfig[circleSize].fontSize} rounded-full flex justify-center items-center ${circlestyleConfig[circleSize].height} ${circlestyleConfig[circleSize].width}`}>{circleTitle}</div>
-            <div className={`bg-white bg-opacity-60 ${circlestyleConfig[circleSize].fontSize} rounded-md px-1 flex justify-center items-center ${contentStyleConfig[contentSize].width}`}>{circleChild}</div>
+            <div className={`bg-white bg-opacity-60 ${circlestyleConfig[circleSize].fontSize} rounded-md px-1 flex justify-center items-center ${contentStyleConfig[contentSize].width}`}>
+                <span className=" overflow-hidden text-ellipsis whitespace-nowrap">{circleChild}</span>
+            </div>
         </div>
     )
 }

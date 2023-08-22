@@ -44,12 +44,10 @@ function ScoreContent({ currScore, totalScore, playerState, finalScore }) {
 
 function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerTotalScore, playerState, playerTeam, finalScore }) {
     return (
-        <div className="flex flex-col items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
+        <div className="flex flex-col w-14 items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
             <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} />
-            <div className="flex justify-center items-center my-1">
-                <span className="text-xs">
-                    {playerName || '无名称'}
-                </span>
+            <div className="flex justify-center items-center h-4 text-xs w-[90%] my-1">
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{playerName || '无名称'}</span>
             </div>
             <ScoreContent currScore={playerCurrScore} totalScore={playerTotalScore} playerState={playerState} finalScore={finalScore} />
         </div>
@@ -69,8 +67,8 @@ function ValueCards({ playerState, valueCards }) {
         <>
             <div className="flex flex-col shadow-md" onClick={handleShowAll}>
                 {last_value_cards && (
-                    last_value_cards.slice(-2).map((card, i) => (
-                        <Image key={i} src={`/pokers/${card}.svg`} width={40} height={40} alt='' className="-mt-10" />
+                    last_value_cards.slice(-1).map((card, i) => (
+                        <Image key={i} src={`/pokers/${card}.svg`} width={20} height={20} alt='' className="w-7" />
                     ))
                 )}
             </div>
@@ -84,7 +82,7 @@ function ValueCards({ playerState, valueCards }) {
                             </div>
                             <div className="flex justify-end items-center flex-1">
                                 <GameButton onClick={() => setShowAll(false)}>
-                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-1/3"/>
+                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-6/12"/>
                                 </GameButton>
                             </div>
                         </div>
@@ -260,7 +258,7 @@ function GameHeader({ height }) {
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
-                <div className="flex w-20">
+                <div className="flex w-24">
                     {player_info && (
                         <>
                             <GameBasicInfo
@@ -319,7 +317,7 @@ function GameNeck({ height }) {
 
     return (
         <div className={`flex justify-between items-center w-full px-2 ${height}`}>
-            <div className="flex w-20">
+            <div className="flex w-24">
                 {left_player_info && (
                     <>
                         <GameBasicInfo
@@ -346,7 +344,7 @@ function GameNeck({ height }) {
                     top={top_player_info}
                 />
             </div>
-            <div className="flex w-20">
+            <div className="flex w-24">
                 {right_player_info && (
                     <>
                         <GameCardInfo
@@ -386,6 +384,7 @@ function GameMain({ height }) {
             setMessage(() => ({ msg: "已准备", key: 0 }))
         }
         else {
+            console.log("发送prepare_start消息")
             socket.emit("prepare_start", {})
         }
     }
@@ -427,6 +426,7 @@ function GameMain({ height }) {
                     state: PlayerState.GameStart,
                     out_cards: userInfo.all_cards.filter(card => card.selected)
                 })
+                console.log("发送game_step消息")
                 socket.emit("game_step", {
                     raw_out_cards: selectedCard,
                     raw_cards: result.raw_cards,
@@ -463,6 +463,7 @@ function GameMain({ height }) {
                     state: PlayerState.RoundSkip,
                     out_cards: []
                 })
+                console.log("发送game_step消息")
                 socket.emit("game_step", {
                     out_state: OutState.PASS,
                 })
@@ -517,6 +518,7 @@ function GameMain({ height }) {
             all_cards: [],
             out_cards: []
         })
+        console.log("发送next_round消息")
         socket.emit("next_round")
     }
 
@@ -573,18 +575,20 @@ function GameMain({ height }) {
         <div className={`flex ${height} w-screen justify-center mb-6`}>
             <div className="flex flex-1">
             </div>
-            <div className="flex flex-col justify-around items-center w-10/12">
-                <div className="flex w-full justify-center relative">
+            <div className="flex flex-col items-center w-10/12">
+                <div className="flex w-full h-[40%] justify-center items-center relative">
                     {content}
                     <ScoreAlert scoreObj={{ score: player_info.curr_cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
                 </div>
-                <div className="flex justify-center item-end w-screen">
-                    {userInfo.all_cards && <CardsPanel
-                                              cards={userInfo.all_cards}
-                                              handleMouseDown={handleMouseDown}
-                                              handleMouseUp={handleMouseUp}
-                                              handleMouseEnter={handleMouseEnter}
-                                            />}
+                <div className="flex flex-1 justify-center items-end mb-2 w-screen">
+                    {userInfo.all_cards.length>0 && (
+                        <CardsPanel
+                            cards={userInfo.all_cards}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseUp={handleMouseUp}
+                            handleMouseEnter={handleMouseEnter}
+                        />
+                    )}
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end mb-1">
@@ -816,14 +820,16 @@ function GameFooter() {
                             {game_result.map(
                                 player => (
                                     <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-amber-200 font-bold" : "text-blue-800"}`}>
-                                        <span className='flex flex-1 justify-end items-center'>
+                                        <div className='flex flex-1 justify-end items-center'>
                                             <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={10} height={10} alt="" className="w-6 h-6 mr-1" />
-                                        </span>
-                                        <span className={`flex w-[18%] justify-center items-center`}>{player.player_name}</span>
-                                        <span className={`flex w-[18%] justify-center items-center`}>{player.normal_score}</span>
-                                        <span className={`flex w-[18%] justify-center items-center`}>{player.value_score}</span>
-                                        <span className={`flex w-[18%] justify-center items-center`}>{player.final_score}</span>
-                                        <span className={`flex w-[18%] justify-center items-center`}>{player.global_score}</span>
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.normal_score}</div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score}</div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.final_score}</div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.global_score}</div>
                                     </div>
                                 )
                             )}
@@ -849,7 +855,7 @@ export default function Room() {
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
             <GameHeader height='h-1/5' />
             <GameNeck height='flex-1' />
-            <GameMain height='h-40' />
+            <GameMain height='h-44' />
             <GameFooter />
         </div>
     )

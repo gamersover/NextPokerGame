@@ -26,6 +26,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
             setMessage({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
         }
         else {
+            console.log("发送create_room消息")
             socket.emit("create_room", {
                 room_number: userInfo.room_number,
                 player_name: userInfo.player_name,
@@ -287,6 +288,7 @@ export default function Game({ setCurrPage }) {
     }
 
     function handleSubsJoin(subsPlayerID) {
+        console.log("发送join_room_second消息")
         socket.emit("join_room_second", {
             room_number: joiningRoomNumber,
             player_id: subsPlayerID,
@@ -296,6 +298,7 @@ export default function Game({ setCurrPage }) {
     }
 
     const handleJoinRoom = useCallback((roomNumber) => {
+        console.log("发送join_room消息")
         socket.emit("join_room", {
             room_number: roomNumber.join(""),
             player_name: userInfo.player_name,
