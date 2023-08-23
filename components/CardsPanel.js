@@ -1,6 +1,6 @@
 import Image from "next/image"
 
-function GameCard({ id, name, isSelected, handleMouseUp, handleMouseDown, handleMouseEnter, marginLeft, imageWidth }) {
+function GameCard({ id, name, isSelected, isFriendCard, handleMouseUp, handleMouseDown, handleMouseEnter, marginLeft, imageWidth }) {
     function handleEnter() {
         handleMouseEnter && handleMouseEnter(id)
     }
@@ -17,7 +17,7 @@ function GameCard({ id, name, isSelected, handleMouseUp, handleMouseDown, handle
                 src={`/pokers/${name}.svg`}
                 width={20}
                 height={20}
-                className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isSelected ? '-translate-y-3' : ''}`}
+                className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isFriendCard ? 'border-red-400 border-[1px]' : ''} ${isSelected ? '-translate-y-3' : ''}`}
                 style={{ zIndex: id }}
                 alt=""
                 onPointerDown={(e) => handleDown(e)}
@@ -49,6 +49,7 @@ export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, hand
                 id={i}
                 name={card.showName}
                 isSelected={card.selected}
+                isFriendCard={card.isFriendCard}
                 handleMouseUp={handleMouseUp}
                 handleMouseDown={handleMouseDown}
                 handleMouseEnter={handleMouseEnter}

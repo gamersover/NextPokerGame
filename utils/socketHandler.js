@@ -41,7 +41,13 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
         console.log("收到了game_start_global消息")
         setUserInfo((userInfo) => ({
             ...userInfo,
-            all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false }))
+            all_cards: data.user_info.all_cards.map((card, i) => ({
+                id: i,
+                name: card,
+                showName: card, 
+                selected: false,
+                isFriendCard: card.split("-").slice(0, 1)[0] == data.game_info.friend_card
+            }))
         }))
         setGameInfo((gameInfo) => ({
             ...gameInfo,

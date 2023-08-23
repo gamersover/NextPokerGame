@@ -119,7 +119,7 @@ function GameCardInfo({ num_cards, value_cards, playerState }) {
     )
 }
 
-function PlayerOut({ style, state, valid_cards, scoreObj, is_exited }) {
+function PlayerOut({ style, state, valid_cards, scoreObj, is_exited, friend_card }) {
     let content = null;
     if (is_exited) {
         content = <span>重连中...</span>
@@ -135,7 +135,7 @@ function PlayerOut({ style, state, valid_cards, scoreObj, is_exited }) {
             content = <span>出牌中...</span>
         }
         else {
-            content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card }))} size='small' />
+            content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == friend_card }))} size='small' />
         }
     }
     return (
@@ -146,7 +146,7 @@ function PlayerOut({ style, state, valid_cards, scoreObj, is_exited }) {
     )
 }
 
-function GameCardsOut({ right, left, top }) {
+function GameCardsOut({ right, left, top, friend_card }) {
     return (
         <>
             <PlayerOut
@@ -155,6 +155,7 @@ function GameCardsOut({ right, left, top }) {
                 valid_cards={left ? left.valid_cards : []}
                 scoreObj={{ score: left ? left.curr_cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
                 is_exited={left ? left.is_exited == 1 : 0}
+                friend_card={friend_card}
             />
             <PlayerOut
                 style={'justify-start items-center mr-1'}
@@ -162,6 +163,7 @@ function GameCardsOut({ right, left, top }) {
                 valid_cards={top ? top.valid_cards : []}
                 scoreObj={{ score: top ? top.curr_cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
                 is_exited={top ? top.is_exited == 1 : 0}
+                friend_card={friend_card}
             />
             <PlayerOut
                 style={'justify-center items-end'}
@@ -169,6 +171,7 @@ function GameCardsOut({ right, left, top }) {
                 valid_cards={right ? right.valid_cards : []}
                 scoreObj={{ score: right ? right.curr_cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
                 is_exited={right ? right.is_exited == 1 : 0}
+                friend_card={friend_card}
             />
         </>
     )
@@ -191,7 +194,7 @@ function PlayerExitModal() {
     }
 
     return (
-        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75">
+        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[101]" backdropStyle="backdrop backdrop-brightness-75">
             <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
                 <div className="w-11/12 text-red-400 h-1/3 flex items-center">
                     ❗️用户离线
@@ -342,6 +345,7 @@ function GameNeck({ height }) {
                     left={left_player_info}
                     right={right_player_info}
                     top={top_player_info}
+                    friend_card={gameInfo.friend_card}
                 />
             </div>
             <div className="flex w-24 mr-7">
@@ -526,7 +530,7 @@ function GameMain({ height }) {
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
     let render_out_cards = []
     if (player_info.valid_cards) {
-        render_out_cards = player_info.valid_cards.map(card => ({ showName: card }))
+        render_out_cards = player_info.valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == gameInfo.friend_card}))
     }
     else {
         render_out_cards = userInfo.out_cards
@@ -767,15 +771,17 @@ function GameFooter() {
     return (
         <>
             <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
-            <div className="fixed bottom-0 flex w-screen px-5 z-10 mb-1">
-                <div className="flex items-end w-full item-center justify-between">
-                    <div className="flex w-1/4 justify-around items-end">
-                        <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} width={35} height={35} />
+            <div className="fixed bottom-0 flex w-screen px-5 z-10 h-7">
+                <div className="flex w-full h-full items-center justify-between">
+                    <div className="flex w-1/4 h-full justify-around items-center">
+                        <div className='self-end'>
+                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} width={35} height={35} />
+                        </div>
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerState={player_info.state} currScore={player_info.curr_cards_value || 0} totalScore={player_info.total_cards_value || 0} finalScore={player_info.global_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
-                        <div className="flex items-end">
+                        <div className="flex w-1/12 items-center justify-center">
                             <GameButton
                                 onClick={handleShowJokerSubstitute}
                                 classes="substitute-button"
@@ -797,7 +803,7 @@ function GameFooter() {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[98]" backdropStyle="backdrop !z-[97] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
@@ -853,7 +859,7 @@ function GameFooter() {
 export default function Room() {
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
-            <GameHeader height='h-1/5' />
+            <GameHeader height='' />
             <GameNeck height='flex-1' />
             <GameMain height='h-44' />
             <GameFooter />

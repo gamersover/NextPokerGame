@@ -376,22 +376,18 @@ export default function Game({ setCurrPage }) {
 
     return (
         <div className="flex flex-col justify-evenly items-center h-screen">
-            <div className="fixed w-28 h-10 top-2 right-2">
+            <div className="fixed flex items-center w-32 bg-opacity-10 h-10 top-2 right-2">
                 {
                     connectStatus ?
                     (
                         <>
-                            <span className="text-green-400 animate-pulse pr-1">
-                                ●
-                            </span>
+                            <span className="inline-block mr-1 bg-green-400 animate-pulse w-2 h-2 rounded-full"></span>
                             服务正常
                         </>
                     )
                     : (
                         <>
-                            <span className="text-red-400 animate-pulse pr-1">
-                                ●
-                            </span>
+                            <span className="inline-block mr-1 bg-red-400 animate-pulse w-2 h-2 rounded-full"></span>
                             服务连接中...
                         </>
                     )}
