@@ -34,7 +34,7 @@ function GameCard({ id, name, isSelected, isFriendCard, handleMouseUp, handleMou
 export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, handleMouseEnter, size = "normal" }) {
     const imageWidth = {
         normal: "w-[4rem]",
-        small: "w-[2.8rem]",
+        small: "w-[2.75rem]",
     }
 
     const marginLeft = {

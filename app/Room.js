@@ -10,8 +10,14 @@ import { OutState } from '@/utils/card';
 
 
 function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, alt = '' }) {
-    const opacityValue = playerState < PlayerState.Prepared || playerState == PlayerState.PlayerEnd ? 'opacity-60' : 'opacity-100'
-    const actived = playerState == PlayerState.RoundStart
+    const opacityValue = useMemo(() => {
+        return playerState < PlayerState.Prepared || playerState == PlayerState.PlayerEnd ? 'opacity-60' : 'opacity-100'
+    }, [playerState])
+
+    const actived = useMemo(() => {
+        return playerState == PlayerState.RoundStart
+    }, [playerState])
+
     const border_color = useMemo(() => {
         if (playerTeam) {
             return playerTeam === 'red' ? 'border-red-500' : 'border-blue-500'
@@ -61,7 +67,9 @@ function ValueCards({ playerState, valueCards }) {
         setShowAll(true)
     }
 
-    const last_value_cards = valueCards[valueCards.length-1]
+    const last_value_cards = useMemo(() => {
+        return valueCards[valueCards.length-1]
+    }, [valueCards])
 
     return (
         <>
@@ -120,24 +128,28 @@ function GameCardInfo({ num_cards, value_cards, playerState }) {
 }
 
 function PlayerOut({ style, state, valid_cards, scoreObj, is_exited, friend_card }) {
-    let content = null;
-    if (is_exited) {
-        content = <span>重连中...</span>
-    }
-    else {
-        if (state == PlayerState.Prepared) {
-            content = <span>已准备</span>
-        }
-        else if (state == PlayerState.RoundSkip) {
-            content = <span>跳过</span>
-        }
-        else if (state == PlayerState.RoundStart) {
-            content = <span>出牌中...</span>
+    const content = useMemo(()=> {
+        let content = null;
+        if (is_exited) {
+            content = <span>重连中...</span>
         }
         else {
-            content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == friend_card }))} size='small' />
+            if (state == PlayerState.Prepared) {
+                content = <span>已准备</span>
+            }
+            else if (state == PlayerState.RoundSkip) {
+                content = <span>跳过</span>
+            }
+            else if (state == PlayerState.RoundStart) {
+                content = <span>出牌中...</span>
+            }
+            else {
+                content = valid_cards && <CardsPanel cards={valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == friend_card }))} size='small' />
+            }
         }
-    }
+        return content
+    }, [state, valid_cards, friend_card, is_exited])
+
     return (
         <div className={`w-1/3 flex flex-col relative ${style}`}>
             <ScoreAlert scoreObj={scoreObj} duration={4000} />
@@ -234,25 +246,30 @@ function GameHeader({ height }) {
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [showNotification, setShowNotification] = useState(false)
 
+    const player_info = useMemo(() => {
+        const player_id = (parseInt(userInfo.player_id) + 2) % 4
+        let player_info = null
+        if (gameInfo.players_info) {
+            player_info = gameInfo.players_info[player_id]
+        }
+        return player_info
+    }, [userInfo.player_id, gameInfo.players_info])
 
-    const player_id = (parseInt(userInfo.player_id) + 2) % 4
-    let player_info = null
-    if (gameInfo.players_info) {
-        player_info = gameInfo.players_info[player_id]
-    }
-    const friend_card = gameInfo.friend_card && (
-        <div className="flex items-center justify-around w-full">
-            <Image
-                width={20}
-                height={20}
-                alt=""
-                src={`/pokers/${gameInfo.friend_card}_small.svg`}
-                className="w-7"
-            />
-            <Image width={20} height={20} alt="" src="/times.svg" className="h-3" />
-            <span className="text-violet-800 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
-        </div>
-    )
+    const friend_card = useMemo(() => {
+        return gameInfo.friend_card && (
+            <div className="flex items-center justify-around w-full">
+                <Image
+                    width={20}
+                    height={20}
+                    alt=""
+                    src={`/pokers/${gameInfo.friend_card}_small.svg`}
+                    className="w-7"
+                />
+                <Image width={20} height={20} alt="" src="/times.svg" className="h-3" />
+                <span className="text-violet-800 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
+            </div>
+            )
+    }, [gameInfo.friend_card, gameInfo.friend_card_cnt])
 
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
@@ -381,8 +398,6 @@ function GameMain({ height }) {
     const [selectAll, setSelectAll] = useState(false)
     const [isMouseDown, setIsMouseDown] = useState(false)
 
-    const all_cards = userInfo.all_cards
-
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= PlayerState.Prepared) {
             setMessage(() => ({ msg: "已准备", key: 0 }))
@@ -423,7 +438,7 @@ function GameMain({ height }) {
                 setMessage(() => ({ msg: result.msg, key: 0 }))
             }
             else if (result.status === 1) {
-                let all_cards = userInfo.all_cards.filter(card => !card.selected)
+                const all_cards = userInfo.all_cards.filter(card => !card.selected)
                 setUserInfo({
                     ...userInfo,
                     all_cards: all_cards,
@@ -457,7 +472,7 @@ function GameMain({ height }) {
             )
             if (result.status === 2) {
                 // 所有选中的牌的状态重置为未选中
-                let all_cards = userInfo.all_cards.map(card => ({
+                const all_cards = userInfo.all_cards.map(card => ({
                     ...card,
                     selected: false
                 }))
@@ -482,7 +497,7 @@ function GameMain({ height }) {
     }
 
     function handleSelectAll() {
-        let all_cards = userInfo.all_cards.map(card => ({
+        const all_cards = userInfo.all_cards.map(card => ({
             ...card,
             selected: !selectAll
         }))
@@ -494,6 +509,7 @@ function GameMain({ height }) {
     }
 
     function handleCardSelect(id) {
+        const all_cards = [...userInfo.all_cards]
         all_cards[id].selected = !all_cards[id].selected
         setUserInfo({
             ...userInfo,
@@ -526,8 +542,8 @@ function GameMain({ height }) {
         socket.emit("next_round")
     }
 
-    let content = null
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
+    let content = null
     let render_out_cards = []
     if (player_info.valid_cards) {
         render_out_cards = player_info.valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == gameInfo.friend_card}))
@@ -574,6 +590,8 @@ function GameMain({ height }) {
         default:
             content = null
     }
+
+
 
     return (
         <div className={`flex ${height} w-screen justify-center mb-6`}>
@@ -712,23 +730,32 @@ function GameFooter() {
     const [showJokerSubs, setShowJokerSubs] = useState(false)
     const [showEndModal, setShowEndModal] = useState(false)
 
-    const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
-    // console.log('player_info', player_info)
-    const selected_joker_cards = userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
-    let game_result = []
-    if (player_info.state == PlayerState.GameEnd) {
-        for (let i of gameInfo.winners_order) {
-            game_result.push({
-                player_id: i,
-                player_avatar: gameInfo.players_info[i].player_avatar,
-                player_name: gameInfo.players_info[i].player_name,
-                normal_score: gameInfo.players_info[i].normal_score,
-                value_score: gameInfo.players_info[i].value_score,
-                final_score: gameInfo.players_info[i].final_score,
-                global_score: gameInfo.players_info[i].global_score
-            })
+    const player_info = useMemo(() => {
+        return gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
+    }, [gameInfo.players_info, userInfo.player_id])
+
+    const selected_joker_cards = useMemo(() => {
+        return userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
+    }, [userInfo.all_cards])
+
+    const game_result = useMemo(()=> {
+        let game_result = []
+        if (player_info.state == PlayerState.GameEnd) {
+            for (let i of gameInfo.winners_order) {
+                game_result.push({
+                    player_id: i,
+                    player_avatar: gameInfo.players_info[i].player_avatar,
+                    player_name: gameInfo.players_info[i].player_name,
+                    normal_score: gameInfo.players_info[i].normal_score,
+                    value_score: gameInfo.players_info[i].value_score,
+                    final_score: gameInfo.players_info[i].final_score,
+                    global_score: gameInfo.players_info[i].global_score
+                })
+            }
         }
-    }
+        return game_result
+    }, [player_info.state, gameInfo.winners_order, gameInfo.players_info])
+
 
     useEffect(() => {
         setShowEndModal(player_info.state == PlayerState.GameEnd)
