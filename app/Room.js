@@ -206,7 +206,7 @@ function PlayerExitModal() {
     }
 
     return (
-        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[101]" backdropStyle="backdrop backdrop-brightness-75">
+        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[102]" backdropStyle="backdrop backdrop-brightness-75 !z-[101]">
             <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
                 <div className="w-11/12 text-red-400 h-1/3 flex items-center">
                     ❗️用户离线
@@ -836,23 +836,31 @@ function GameFooter() {
             )}
             {showEndModal && (
                 <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur-md">
-                    <div className="flex flex-col h-5/6 rounded-lg bg-gradient-to-br from-blue-200 via-indigo-300 to-blue-200  justify-center items-center w-full">
-                        <div className="flex h-[5%]">
-                            {
-                                player_info.normal_score == 2 ? <span className=" text-amber-500 font-medium -mt-3 text-2xl">胜利</span>
-                                    : <span className="text-gray-700 font-medium -mt-3 text-2xl">失败</span>
-                            }
+                    <div className="flex flex-col h-full rounded-lg bg-gray-200 bg-opacity-75 justify-center items-center w-full">
+                        <div className="flex w-full h-[10%]">
+                            <div className="w-1/4"></div>
+                            <div className="flex-1 flex justify-center items-center">
+                                {
+                                    player_info.normal_score == 2 ? <span className=" text-amber-500 font-medium -mt-4 text-3xl">胜利</span>
+                                        : <span className="text-gray-700 font-medium -mt-4 text-3xl">失败</span>
+                                }
+                            </div>
+                            <div className='w-1/4 flex justify-end'>
+                                <GameButton onClick={hanleColseEndModal}>
+                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-1/2"/>
+                                </GameButton>
+                            </div>
                         </div>
                         <div className="flex flex-col justify-evenly flex-1 w-5/6">
                             <div className="flex w-full">
                                 <span className="flex flex-1"></span>
                                 {["昵称", "输赢", "赏值", "分数", "总分"].map(title => (
-                                    <span key={title} className="flex w-[18%] justify-center text-amber-200 font-bold">{title}</span>
+                                    <span key={title} className="flex w-[18%] justify-center text-amber-500 font-bold">{title}</span>
                                 ))}
                             </div>
                             {game_result.map(
                                 player => (
-                                    <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-amber-200 font-bold" : "text-blue-800"}`}>
+                                    <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-amber-500 font-bold" : "text-blue-800"}`}>
                                         <div className='flex flex-1 justify-end items-center'>
                                             <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={10} height={10} alt="" className="w-6 h-6 mr-1" />
                                         </div>
@@ -867,14 +875,6 @@ function GameFooter() {
                                 )
                             )}
                         </div>
-                    </div>
-                    <div className="flex flex-1 justify-center items-center">
-                        <GameButton
-                            classes={"flex justify-center items-center rounded-md text-white bg-indigo-300 px-3 py-3 h-[80%]"}
-                            onClick={hanleColseEndModal}
-                        >
-                            确定
-                        </GameButton>
                     </div>
                 </Modal>
             )}

@@ -2,15 +2,10 @@
 import { useState } from "react";
 
 export default function GameButton({ children, classes, onClick, shouldDisable = false }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const disabled = shouldDisable || isLoading
+    const disabled = shouldDisable
 
     function handleClick() {
-        if (!isLoading) {
-            setIsLoading(true)
             onClick()
-            setIsLoading(false)
-        }
     }
 
     return (
