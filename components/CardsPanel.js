@@ -42,8 +42,19 @@ export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, hand
         small: "-ml-8"
     }
 
+    function handleMoveEnd(e) {
+        const fromElement = e.relatedTarget
+        if(!e.currentTarget.contains(fromElement)) {
+            handleMouseUp(e)
+        }
+    }
+
+    function handleTouchEnd(e) {
+        handleMouseUp(e)
+    }
+
     return (
-        <div className="flex flex-wrap justify-center">
+        <div className="flex flex-wrap justify-center" onMouseOut={e => handleMoveEnd(e)} onTouchEnd={e => handleTouchEnd(e)}>
             {cards.map((card, i) => <GameCard
                 key={card.id || i}
                 id={i}
