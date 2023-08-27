@@ -35,11 +35,10 @@ function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, 
 }
 
 
-function ScoreContent({ currScore, totalScore, playerState, finalScore }) {
+function ScoreContent({ playerScore }) {
     const scoreContent = (
         <>
-            <span className="text-yellow-600">{playerState === PlayerState.GameEnd ? finalScore : totalScore}</span>
-            {currScore > 0 && <div><span className="text-green-500">+</span><span className="text-green-500">{currScore}</span></div>}
+            <span className="text-yellow-600">{playerScore ? playerScore : '0'}</span>
         </>
     )
     return (
@@ -48,14 +47,14 @@ function ScoreContent({ currScore, totalScore, playerState, finalScore }) {
 }
 
 
-function GameBasicInfo({ playerName, playerAvatar, playerCurrScore, playerTotalScore, playerState, playerTeam, finalScore }) {
+function GameBasicInfo({ playerName, playerAvatar, playerState, playerTeam, finalScore }) {
     return (
         <div className="flex flex-col w-14 items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
             <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} />
             <div className="flex justify-center items-center h-4 text-xs w-[90%] my-1">
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">{playerName || '无名称'}</span>
             </div>
-            <ScoreContent currScore={playerCurrScore} totalScore={playerTotalScore} playerState={playerState} finalScore={finalScore} />
+            <ScoreContent playerScore={finalScore} />
         </div>
     )
 }
@@ -120,14 +119,14 @@ function GameCardInfo({ num_cards, value_cards, playerState }) {
                     </div>
                 )}
             </div>
-            <div className="flex w-full flex-1 justify-center items-end">
+            <div className="flex h-1/2 justify-center items-center">
                 <ValueCards playerState={playerState} valueCards={value_cards} />
             </div>
         </div>
     )
 }
 
-function PlayerOut({ style, state, valid_cards, scoreObj, is_exited, friend_card }) {
+function PlayerOut({ style, state, valid_cards, is_exited, friend_card }) {
     const content = useMemo(()=> {
         let content = null;
         if (is_exited) {
@@ -152,7 +151,6 @@ function PlayerOut({ style, state, valid_cards, scoreObj, is_exited, friend_card
 
     return (
         <div className={`w-1/3 flex flex-col relative ${style}`}>
-            <ScoreAlert scoreObj={scoreObj} duration={4000} />
             {content}
         </div>
     )
@@ -165,7 +163,6 @@ function GameCardsOut({ right, left, top, friend_card }) {
                 style={'justify-center items-start mr-1'}
                 state={left ? left.state : null}
                 valid_cards={left ? left.valid_cards : []}
-                scoreObj={{ score: left ? left.curr_cards_value : 0, num_rounds: left ? left.num_rounds : 0 }}
                 is_exited={left ? left.is_exited == 1 : 0}
                 friend_card={friend_card}
             />
@@ -173,7 +170,6 @@ function GameCardsOut({ right, left, top, friend_card }) {
                 style={'justify-start items-center mr-1'}
                 state={top ? top.state : null}
                 valid_cards={top ? top.valid_cards : []}
-                scoreObj={{ score: top ? top.curr_cards_value : 0, num_rounds: top ? top.num_rounds : 0 }}
                 is_exited={top ? top.is_exited == 1 : 0}
                 friend_card={friend_card}
             />
@@ -181,7 +177,6 @@ function GameCardsOut({ right, left, top, friend_card }) {
                 style={'justify-center items-end'}
                 state={right ? right.state : null}
                 valid_cards={right ? right.valid_cards : []}
-                scoreObj={{ score: right ? right.curr_cards_value : 0, num_rounds: right ? right.num_rounds : 0 }}
                 is_exited={right ? right.is_exited == 1 : 0}
                 friend_card={friend_card}
             />
@@ -271,10 +266,15 @@ function GameHeader({ height }) {
             )
     }, [gameInfo.friend_card, gameInfo.friend_card_cnt])
 
+
+    function copyRoomNumber() {
+        navigator.clipboard.writeText(userInfo.room_number)
+    }
+
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
-            <div className="flex w-[26%] justify-between">
-                <CircleContent circleTitle={'房'} circleChild={userInfo.room_number} titleBgColor={'bg-cyan-100'} />
+            <div className="flex w-[30%] justify-start">
+                <CircleContent className="mr-2" circleTitle={'房'} circleChild={<>{userInfo.room_number}<GameButton onClick={copyRoomNumber}><Image width={20} height={20} alt="" src="/copy.svg"></Image></GameButton></>} titleBgColor={'bg-cyan-100'} />
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
@@ -284,8 +284,6 @@ function GameHeader({ height }) {
                             <GameBasicInfo
                                 playerName={player_info.player_name}
                                 playerAvatar={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`}
-                                playerCurrScore={player_info.curr_cards_value || 0}
-                                playerTotalScore={player_info.total_cards_value || 0}
                                 playerState={player_info.state}
                                 playerTeam={player_info.team}
                                 finalScore={player_info.global_score}
@@ -299,7 +297,7 @@ function GameHeader({ height }) {
                     )}
                 </div>
             </div>
-            <div className='w-[26%] h-10 flex justify-end'>
+            <div className='w-[30%] h-10 flex justify-end'>
                 <GameButton classes={`${showNotification ? "bg-red-100" : "bg-white"} !w-20 !h-full border-2 border-red-200 mr-2`} onClick={() => setShowNotification(true)}>
                     <Image src="/message.svg" width={20} height={20} alt="" />消息
                 </GameButton>
@@ -343,8 +341,6 @@ function GameNeck({ height }) {
                         <GameBasicInfo
                             playerName={left_player_info.player_name}
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(left_player_info.player_avatar).padStart(2, '0')}.png`}
-                            playerCurrScore={left_player_info.curr_cards_value || 0}
-                            playerTotalScore={left_player_info.total_cards_value || 0}
                             playerState={left_player_info.state}
                             playerTeam={left_player_info.team}
                             finalScore={left_player_info.global_score}
@@ -376,8 +372,6 @@ function GameNeck({ height }) {
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(right_player_info.player_avatar).padStart(2, '0')}.png`}
-                            playerCurrScore={right_player_info.curr_cards_value || 0}
-                            playerTotalScore={right_player_info.total_cards_value || 0}
                             playerState={right_player_info.state}
                             playerTeam={right_player_info.team}
                             finalScore={right_player_info.global_score}
@@ -600,7 +594,6 @@ function GameMain({ height }) {
             <div className="flex flex-col items-center w-10/12">
                 <div className="flex w-full h-[40%] justify-center items-center relative">
                     {content}
-                    <ScoreAlert scoreObj={{ score: player_info.curr_cards_value, num_rounds: player_info.num_rounds }} duration={4000} />
                 </div>
                 <div className="flex flex-1 justify-center items-end mb-2 w-screen">
                     {userInfo.all_cards.length>0 && (
@@ -634,11 +627,26 @@ function GameMain({ height }) {
 
 function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
     // TODO: 使用grid布局，或者每行4个
-    const numbers = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', null];
+    const numbers = [['3', '4', '5', '6'], ['7', '8', '9', '10'], ['J', 'Q', 'K', 'A'], ['2', null]];
 
     return (
         <>
-            {numbers.map((number, i) => (
+            {numbers.map((row, i) => (
+                <div key={i} className='flex justify-around items-center'>
+                    {
+                        row.map((number, i) => (
+                            <GameButton
+                                key={i}
+                                classes={`${number ? 'w-8' : 'w-28'} !h-8 m-1 !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
+                                onClick={() => onNumberSelected(number)}
+                            >
+                                {number ? number : "重置"}
+                            </GameButton>)
+                        )
+                    }
+                </div>
+            ))}
+            {/* {numbers.map((number, i) => (
                 <GameButton
                     key={i}
                     classes={`${number ? 'w-8' : 'w-28'} !h-8 m-1 !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
@@ -646,7 +654,7 @@ function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
                 >
                     {number ? number : "重置"}
                 </GameButton>)
-            )}
+            )} */}
         </>
     );
 }
@@ -805,7 +813,7 @@ function GameFooter() {
                             <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} width={35} height={35} />
                         </div>
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
-                        <ScoreContent playerState={player_info.state} currScore={player_info.curr_cards_value || 0} totalScore={player_info.total_cards_value || 0} finalScore={player_info.global_score} />
+                        <ScoreContent playerScore={player_info.global_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
                         <div className="flex w-1/12 items-center justify-center">
@@ -830,7 +838,7 @@ function GameFooter() {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[98]" backdropStyle="backdrop !z-[97] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:w-[35%] lg:h-[25%] -translate-x-1/2 -translate-y-1/2 z-[98]" backdropStyle="backdrop !z-[97] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}

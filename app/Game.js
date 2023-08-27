@@ -156,52 +156,60 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                         }
                     </div>
                 </div>
-                <div className="flex flex-wrap w-[90%] justify-between items-center flex-1">
-                    {inputs[0].map((name, i) => (
+                <div className="flex flex-col w-[90%] justify-evenly items-center flex-1">
+                    <div className="flex w-full justify-between items-center">
+                        {inputs[0].map((name, i) => (
+                            <GameButton
+                                key={i}
+                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
+                                onClick={() => handleNumberInput(name)}
+                            >
+                                {name}
+                            </GameButton>
+                        ))}
+                    </div>
+                    <div className="flex w-full justify-between items-center">
+                        {inputs[1].map((name, i) => (
+                            <GameButton
+                                key={i}
+                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
+                                onClick={() => handleNumberInput(name)}
+                            >
+                                {name}
+                            </GameButton>
+                        ))}
+                    </div>
+                    <div className="flex w-full justify-between items-center">
+                        {inputs[2].map((name, i) => (
+                            <GameButton
+                                key={i}
+                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
+                                onClick={() => handleNumberInput(name)}
+                            >
+                                {name}
+                            </GameButton>
+                        ))}
+                    </div>
+                    <div className="flex w-full justify-between items-center">
                         <GameButton
-                            key={i}
-                            classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                            onClick={() => handleNumberInput(name)}
+                            classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300"
+                            onClick={handleReset}
                         >
-                            {name}
+                            重置
                         </GameButton>
-                    ))}
-                    {inputs[1].map((name, i) => (
                         <GameButton
-                            key={i}
                             classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                            onClick={() => handleNumberInput(name)}
+                            onClick={() => handleNumberInput("0")}
                         >
-                            {name}
+                            0
                         </GameButton>
-                    ))}
-                    {inputs[2].map((name, i) => (
                         <GameButton
-                            key={i}
-                            classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                            onClick={() => handleNumberInput(name)}
+                            classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-red-300"
+                            onClick={handleDelete}
                         >
-                            {name}
+                            删除
                         </GameButton>
-                    ))}
-                    <GameButton
-                        classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300"
-                        onClick={handleReset}
-                    >
-                        重置
-                    </GameButton>
-                    <GameButton
-                        classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                        onClick={() => handleNumberInput("0")}
-                    >
-                        0
-                    </GameButton>
-                    <GameButton
-                        classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-red-300"
-                        onClick={handleDelete}
-                    >
-                        删除
-                    </GameButton>
+                    </div>
                 </div>
             </div>
         </div>

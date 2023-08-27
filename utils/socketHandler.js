@@ -44,7 +44,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             all_cards: data.user_info.all_cards.map((card, i) => ({
                 id: i,
                 name: card,
-                showName: card, 
+                showName: card,
                 selected: false,
                 isFriendCard: card.split("-").slice(0, 1)[0] == data.game_info.friend_card
             }))
@@ -67,6 +67,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
     })
     socket.on("game_step_global", (data) => {
         console.log("收到了game_step_global消息")
+        console.log(data)
         if (data.status === 1) {
             // 有出牌
             setGameInfo((gameInfo) => ({
