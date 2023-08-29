@@ -28,7 +28,8 @@ function DataProvider({ children }) {
         last_valid_cards_info: null,
         is_start: null, // 是否为首个出牌用户
         state: GameState.GameNotStart,
-        friend_help_info: null
+        friend_help_info: null,
+        messages: [],
     })
 
     return (

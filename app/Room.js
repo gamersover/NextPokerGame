@@ -4,7 +4,7 @@ import { CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from 
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
-import { useContext, useState, useEffect, useMemo } from 'react';
+import { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
 
@@ -59,16 +59,25 @@ function GameBasicInfo({ playerName, playerAvatar, playerState, playerTeam, fina
     )
 }
 
-function ValueCards({ playerState, valueCards }) {
+function ValueCards({ shouldShowAll, valueCards, resetShowValueCardsPlayerId }) {
     const [showAll, setShowAll] = useState(false)
 
     function handleShowAll() {
         setShowAll(true)
     }
 
+    function closeShowAll() {
+        setShowAll(false)
+        resetShowValueCardsPlayerId()
+    }
+
     const last_value_cards = useMemo(() => {
         return valueCards[valueCards.length-1]
     }, [valueCards])
+
+    const showAllFinal = useMemo(() => {
+        return shouldShowAll || showAll
+    }, [shouldShowAll, showAll])
 
     return (
         <>
@@ -79,8 +88,8 @@ function ValueCards({ playerState, valueCards }) {
                     ))
                 )}
             </div>
-            {showAll && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-100 bg-opacity-80 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur" onClose={() => setShowAll(false)}>
+            {showAllFinal && (
+                <Modal contentStyle={`fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-300 bg-opacity-80 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 ${showAllFinal ? 'z-[90]' : 'z-[60]'}`} backdropStyle={`backdrop ${showAllFinal ? '!z-[89]' : '!z-[59]'} backdrop-blur-md`} onClose={closeShowAll}>
                     <div className='w-full h-full flex flex-col justify-between items-center'>
                         <div className="flex w-full h-[18%] items-center justify-center pr-1">
                             <div className="flex-1"></div>
@@ -88,7 +97,7 @@ function ValueCards({ playerState, valueCards }) {
                                 <span className="text-lg">赏牌</span>
                             </div>
                             <div className="flex justify-end items-center flex-1">
-                                <GameButton onClick={() => setShowAll(false)}>
+                                <GameButton onClick={closeShowAll}>
                                     <Image src="/close.svg" width={20} height={20} alt="" className="w-6/12"/>
                                 </GameButton>
                             </div>
@@ -109,7 +118,7 @@ function ValueCards({ playerState, valueCards }) {
 }
 
 
-function GameCardInfo({ num_cards, value_cards, playerState }) {
+function GameCardInfo({ num_cards, value_cards, playerState, shouldShowAll, resetShowValueCardsPlayerId }) {
     return (
         <div className="flex flex-col justify-between flex-1">
             <div className="h-1/2 flex justify-center items-center">
@@ -120,7 +129,7 @@ function GameCardInfo({ num_cards, value_cards, playerState }) {
                 )}
             </div>
             <div className="flex h-1/2 justify-center items-center">
-                <ValueCards playerState={playerState} valueCards={value_cards} />
+                <ValueCards shouldShowAll={shouldShowAll} valueCards={value_cards} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
             </div>
         </div>
     )
@@ -201,7 +210,7 @@ function PlayerExitModal() {
     }
 
     return (
-        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[102]" backdropStyle="backdrop backdrop-brightness-75 !z-[101]">
+        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75 !z-[99]">
             <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
                 <div className="w-11/12 text-red-400 h-1/3 flex items-center">
                     ❗️用户离线
@@ -223,32 +232,83 @@ function PlayerExitModal() {
 }
 
 
-function NotificationPanel({ setShowNotification }) {
-    function handleCloseModal() {
-        setShowNotification(false)
+function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
+    const [message, setMessage] = useState('')
+    const [isSending, setIsSending] = useState(false)
+    const messageContentRef = useRef(null)
+
+    function handleInputChanged(e) {
+        setMessage(e.target.value)
     }
 
+    function handleSendMessage() {
+        if (message.length > 0) {
+            setIsSending(true)
+            sendMessage(message)
+            setMessage('')
+
+            setTimeout(() => {
+                setIsSending(false)
+            }, 1000)
+        }
+    }
+
+    useEffect(() => {
+        handleShowLast(messageContentRef)
+    }, [handleShowLast, message])
+
     return (
-        <Modal contentStyle="fixed flex flex-col justify-center top-[10%] right-[10%] w-1/5 h-1/3 bg-gray-500 bg-opacity-20 rounded-md z-[100]" backdropStyle="backdrop" onClose={handleCloseModal}>
-            正在建设中
+        <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-1/3 h-1/2 lg:h-1/3 bg-slate-700 bg-opacity-50 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
+            <div className='h-full flex flex-col'>
+                <div className='flex-grow flex-col mb-1 border-red-100 overflow-hidden overflow-y-scroll' style={{ WebkitOverflowScrolling: 'touch' }} ref={messageContentRef}>
+                    {
+                        messages.map((msg, i) => {
+                            return (
+                                <div key={i} className='flex items-center border-b-[1px] h-10'>
+                                    <span className='text-green-400'>{msg.player_name}：</span>
+                                    <span>{msg.msg}</span>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+                <div className='flex justify-center items-end mb-2 w-full'>
+                    <div className='flex w-full justify-between'>
+                        <input
+                            className='pl-2 mr-2 flex-1 rounded-md text-black border-2 focus:border-red-200 focus:outline-none'
+                            placeholder='输入聊天内容'
+                            value={message}
+                            onChange={handleInputChanged}
+                        />
+                        <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-200 text-black'}`} onClick={handleSendMessage}>
+                            发送
+                        </GameButton>
+                    </div>
+                </div>
+            </div>
         </Modal>
     )
 }
 
 
-function GameHeader({ height }) {
+function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [showNotification, setShowNotification] = useState(false)
+    const [newMessageCnt, setNewMessageCnt] = useState(0)
+    const socket = useContext(SocketContext)
+    const [isShowMessage, setIsShowMessage] = useState(false)
+
+    const player_id = useMemo(() => {
+        return (parseInt(userInfo.player_id) + 2) % 4
+    }, [userInfo.player_id])
 
     const player_info = useMemo(() => {
-        const player_id = (parseInt(userInfo.player_id) + 2) % 4
         let player_info = null
         if (gameInfo.players_info) {
             player_info = gameInfo.players_info[player_id]
         }
         return player_info
-    }, [userInfo.player_id, gameInfo.players_info])
+    }, [player_id, gameInfo.players_info])
 
     const friend_card = useMemo(() => {
         return gameInfo.friend_card && (
@@ -269,6 +329,42 @@ function GameHeader({ height }) {
 
     function copyRoomNumber() {
         navigator.clipboard.writeText(userInfo.room_number)
+    }
+
+    function sendMessage(newMessage) {
+        socket.emit("send_message", {
+            player_name: userInfo.player_name,
+            msg: newMessage
+        })
+    }
+
+    function handleShowMessage() {
+        setIsShowMessage(true)
+        setNewMessageCnt(0)
+    }
+
+    useEffect(() => {
+        socket.on("send_message_global", (data) => {
+            setGameInfo((gameInfo) => ({
+                ...gameInfo,
+                messages: [...gameInfo.messages, data]
+            }))
+
+            if (!isShowMessage) {
+                setNewMessageCnt((newMessageCnt) => newMessageCnt + 1)
+            }
+        })
+        return () => {
+            socket.off("send_message_global")
+        }
+    }, [isShowMessage])
+
+    function handleShowLast(ref) {
+        if (isShowMessage) {
+            if (ref.current) {
+                ref.current.scrollTop = ref.current.scrollHeight
+            }
+        }
     }
 
     return (
@@ -292,45 +388,49 @@ function GameHeader({ height }) {
                                 num_cards={player_info.num_cards}
                                 value_cards={player_info.show_value_cards || []}
                                 playerState={player_info.state}
+                                shouldShowAll={showValueCardsPlayerId == player_id}
+                                resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}
                             />
                         </>
                     )}
                 </div>
             </div>
             <div className='w-[30%] h-10 flex justify-end'>
-                <GameButton classes={`${showNotification ? "bg-red-100" : "bg-white"} !w-20 !h-full border-2 border-red-200 mr-2`} onClick={() => setShowNotification(true)}>
+                <GameButton classes={`${isShowMessage ? "bg-red-100" : "bg-white"} relative !w-20 !h-full border-2 border-red-100 mr-2`} onClick={handleShowMessage}>
                     <Image src="/message.svg" width={20} height={20} alt="" />消息
+                    {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
                 </GameButton>
                 <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500'} onClick={() => window.location.reload()}>
                     <Image src="/logout.svg" width={20} height={20} alt="" />退出
                 </GameButton>
             </div>
-            { showNotification && <NotificationPanel setShowNotification={setShowNotification}/>}
+            { isShowMessage && <MessagePanel closePanel={() => setIsShowMessage(false)} sendMessage={sendMessage} messages={gameInfo.messages} handleShowLast={handleShowLast} />}
         </div>
     )
 }
 
-function GameNeck({ height }) {
+function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
+    const [left_player_id, right_player_id, top_player_id] = useMemo(() => {
+        const my_player_id = parseInt(userInfo.player_id)
+        const right_player_id = (my_player_id + 1) % 4
+        const top_player_id = (my_player_id + 2) % 4
+        const left_player_id = (my_player_id + 3) % 4
+        return [left_player_id, right_player_id, top_player_id]
+    }, [userInfo.player_id])
+
     const [left_player_info, right_player_info, top_player_info] = useMemo(() => {
         let left_player_info = null, right_player_info = null, top_player_info = null
-        let my_player_id = parseInt(userInfo.player_id)
-        let right_player_id = (my_player_id + 1) % 4
-        let top_player_id = (my_player_id + 2) % 4
-        let left_player_id = (my_player_id + 3) % 4
-
         if (gameInfo.players_info) {
             left_player_info = gameInfo.players_info[left_player_id]
             right_player_info = gameInfo.players_info[right_player_id]
             top_player_info = gameInfo.players_info[top_player_id]
         }
-        // console.log("left", left_player_info)
-        // console.log("right", right_player_info)
-        // console.log("top", top_player_info)
+
         return [left_player_info, right_player_info, top_player_info]
-    }, [gameInfo.players_info, userInfo.player_id])
+    }, [gameInfo.players_info, left_player_id, right_player_id, top_player_id])
 
 
     return (
@@ -349,6 +449,8 @@ function GameNeck({ height }) {
                             num_cards={left_player_info.num_cards}
                             value_cards={left_player_info.show_value_cards || []}
                             playerState={left_player_info.state}
+                            shouldShowAll={showValueCardsPlayerId == left_player_id}
+                            resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}
                         />
                     </>
                 )}
@@ -368,6 +470,8 @@ function GameNeck({ height }) {
                             num_cards={right_player_info.num_cards}
                             value_cards={right_player_info.show_value_cards || []}
                             playerState={right_player_info.state}
+                            shouldShowAll={showValueCardsPlayerId == right_player_id}
+                            resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}
                         />
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
@@ -384,17 +488,17 @@ function GameNeck({ height }) {
 }
 
 
-function GameMain({ height }) {
+function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [message, setMessage] = useState({ msg: null, key: 0 })
+    const [notification, setNotification] = useState({ msg: null, key: 0 })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
     const [isMouseDown, setIsMouseDown] = useState(false)
 
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= PlayerState.Prepared) {
-            setMessage(() => ({ msg: "已准备", key: 0 }))
+            setNotification(() => ({ msg: "已准备", key: 0 }))
         }
         else {
             console.log("发送prepare_start消息")
@@ -406,7 +510,7 @@ function GameMain({ height }) {
         if (gameInfo.players_info[userInfo.player_id].state === PlayerState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
             if (selectedCard.length == 0) {
-                setMessage(() => ({ msg: "未选择任何牌", key: 0 }))
+                setNotification(() => ({ msg: "未选择任何牌", key: 0 }))
                 return
             }
 
@@ -429,7 +533,7 @@ function GameMain({ height }) {
             // }
 
             if (result.status === -1 || result.status === 0) {
-                setMessage(() => ({ msg: result.msg, key: 0 }))
+                setNotification(() => ({ msg: result.msg, key: 0 }))
             }
             else if (result.status === 1) {
                 const all_cards = userInfo.all_cards.filter(card => !card.selected)
@@ -452,7 +556,7 @@ function GameMain({ height }) {
             }
         }
         else {
-            setMessage(() => ({ msg: "非出牌时间", key: 0 }))
+            setNotification(() => ({ msg: "非出牌时间", key: 0 }))
         }
     }
 
@@ -482,11 +586,11 @@ function GameMain({ height }) {
                 })
             }
             else if (result.status === -1) {
-                setMessage(() => ({ msg: "无法跳过，请选择出牌", key: 0 }))
+                setNotification(() => ({ msg: "无法跳过，请选择出牌", key: 0 }))
             }
         }
         else {
-            setMessage(() => ({ msg: "非出牌时间", key: 0 }))
+            setNotification(() => ({ msg: "非出牌时间", key: 0 }))
         }
     }
 
@@ -585,8 +689,6 @@ function GameMain({ height }) {
             content = null
     }
 
-
-
     return (
         <div className={`flex ${height} w-screen justify-center mb-6`}>
             <div className="flex flex-1">
@@ -607,9 +709,9 @@ function GameMain({ height }) {
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end mb-1">
-                <ValueCards playerState={player_info.state} valueCards={player_info.show_value_cards || []} />
+                <ValueCards shouldShowAll={showValueCardsPlayerId == userInfo.player_id} valueCards={player_info.show_value_cards || []} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
             </div>
-            {message.msg && <Toast message={message} duration={4000} />}
+            {notification.msg && <Toast message={notification} duration={4000} />}
             {gameInfo.state == GameState.GameStop && (
                 <PlayerExitModal />
             )}
@@ -732,7 +834,7 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
     )
 }
 
-function GameFooter() {
+function GameFooter({ setShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [showJokerSubs, setShowJokerSubs] = useState(false)
@@ -838,13 +940,13 @@ function GameFooter() {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:w-[35%] lg:h-[25%] -translate-x-1/2 -translate-y-1/2 z-[98]" backdropStyle="backdrop !z-[97] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:w-[35%] lg:h-[25%] -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
             {showEndModal && (
-                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-blur-md">
-                    <div className="flex flex-col h-full rounded-lg bg-gray-200 bg-opacity-75 justify-center items-center w-full">
+                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[30%]">
+                    <div className="flex flex-col h-full rounded-lg bg-gray-300 justify-center items-center w-full">
                         <div className="flex w-full h-[10%]">
                             <div className="w-1/4"></div>
                             <div className="flex-1 flex justify-center items-center">
@@ -876,7 +978,7 @@ function GameFooter() {
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>{player.normal_score}</div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score}</div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score} <GameButton classes={"!w-5 p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}><Image src="/info-circle.svg" width={10} height={10} alt="" className='w-5'/></GameButton> </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>{player.final_score}</div>
                                         <div className={`flex w-[18%] justify-center items-center`}>{player.global_score}</div>
                                     </div>
@@ -892,12 +994,22 @@ function GameFooter() {
 
 
 export default function Room() {
+    const [showValueCardsPlayerId, setShowValueCardsPlayerId] = useState(-1)
+
+    function handleShowValueCardsPlayerId(playerId) {
+        setShowValueCardsPlayerId(playerId)
+    }
+
+    function resetShowValueCardsPlayerId() {
+        setShowValueCardsPlayerId(-1)
+    }
+
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
-            <GameHeader height='' />
-            <GameNeck height='flex-1' />
-            <GameMain height='h-44' />
-            <GameFooter />
+            <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
+            <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
+            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
+            <GameFooter setShowValueCardsPlayerId={setShowValueCardsPlayerId} />
         </div>
     )
 }

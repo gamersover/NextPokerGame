@@ -45,12 +45,12 @@ export default function CardsPanel({ cards, handleMouseDown, handleMouseUp, hand
     function handleMoveEnd(e) {
         const fromElement = e.relatedTarget
         if(!e.currentTarget.contains(fromElement)) {
-            handleMouseUp(e)
+            handleMouseUp && handleMouseUp(e)
         }
     }
 
     function handleTouchEnd(e) {
-        handleMouseUp(e)
+        handleMouseUp && handleMouseUp(e)
     }
 
     return (

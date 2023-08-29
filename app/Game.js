@@ -15,7 +15,7 @@ function HomeTitle() {
     )
 }
 
-function HomeButton({ handleJoin, setMessage, setCurrPage }) {
+function HomeButton({ handleJoin, setNotification, setCurrPage }) {
     const socket = useContext(SocketContext)
     const setSocket = useContext(SetSocketContext)
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
@@ -23,7 +23,7 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
 
     function createRoom() {
         if (userInfo.room_number !== null) {
-            setMessage({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
+            setNotification({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
         }
         else {
             console.log("发送create_room消息")
@@ -51,29 +51,18 @@ function HomeButton({ handleJoin, setMessage, setCurrPage }) {
                     setCurrPage("room")
                 }
                 else {
-                    setMessage({ msg: data.msg, key: 0 })
+                    setNotification({ msg: data.msg, key: 0 })
                 }
             })
 
-            socket.on("join_room_global", (data) => {
-                console.log("收到了join_room_global消息")
-                if (data.status == 1) {
-                    setGameInfo({
-                        ...gameInfo,
-                        host_id: data.game_info.host_id,
-                        players_info: data.players_info
-                    })
-                }
-            })
-
-            handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage)
+            handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification)
             setSocket(socket)
         }
     }
 
     function joinRoom() {
         if (userInfo.room_number !== null) {
-            setMessage({ msg: `你已在${userInfo.room_number}房间，无法加入其他房间`, key: 0 })
+            setNotification({ msg: `你已在${userInfo.room_number}房间，无法加入其他房间`, key: 0 })
         }
         else {
             handleJoin()
@@ -260,7 +249,7 @@ export default function Game({ setCurrPage }) {
     const socket = useContext(SocketContext)
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [message, setMessage] = useState({ msg: null, key: 0 })
+    const [notification, setNotification] = useState({ msg: null, key: 0 })
     const [subsPlayers, setSubsPlayers] = useState({})
     const [subsPlayersID, setSubsPlayersID] = useState([])
     const [joiningRoomNumber, setJoiningRoomNumber] = useState("")
@@ -324,6 +313,10 @@ export default function Game({ setCurrPage }) {
                     player_id: player_id,
                     player_name: data.players_info[player_id].player_name,
                 })
+                setGameInfo({
+                    ...gameInfo,
+                    messages: data.game_info.messages
+                })
                 handleOk()
             }
             else if (data.status == 2) {
@@ -334,18 +327,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 // closeModal()
-                setMessage({msg: `房间加入失败，${data.msg}`, key: 0})
-            }
-        })
-
-        socket.on("join_room_global", (data) => {
-            console.log("收到了join_room_global消息")
-            if (data.status == 1) {
-                setGameInfo({
-                    ...gameInfo,
-                    host_id: data.game_info.host_id,
-                    players_info: data.players_info
-                })
+                setNotification({msg: `房间加入失败，${data.msg}`, key: 0})
             }
         })
 
@@ -361,7 +343,8 @@ export default function Game({ setCurrPage }) {
                     friend_card_cnt: data.game_info.friend_card_cnt,
                     num_games: data.game_info.num_games,
                     host_id: data.game_info.host_id,
-                    winners_order: data.game_info.winners_order
+                    winners_order: data.game_info.winners_order,
+                    messages: data.game_info.messages
                 }))
                 setUserInfo((userInfo) => ({
                     ...userInfo,
@@ -374,11 +357,11 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 handleNotJoin()
-                setMessage(() => ({"msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0}))
+                setNotification(() => ({"msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0}))
             }
         })
 
-        handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage)
+        handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification)
         setSocket(socket)
     }, [socket, userInfo])
 
@@ -401,13 +384,13 @@ export default function Game({ setCurrPage }) {
                     )}
             </div>
             <HomeTitle />
-            <HomeButton handleJoin={showModal} setMessage={setMessage} setCurrPage={setCurrPage} />
+            <HomeButton handleJoin={showModal} setNotification={setNotification} setCurrPage={setCurrPage} />
             {showJoinpop && (
                 <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
                 </Modal>
             )}
-            {message.msg && <Toast message={message} duration={4000} />}
+            {notification.msg && <Toast message={notification} duration={4000} />}
             {subsPlayersID.length > 0 && (
                 <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] md:h-[70%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <SubstituePlayers subsPlayers={subsPlayers} subsPlayersID={subsPlayersID} handleNotJoin={handleNotJoin} handleSubsJoin={handleSubsJoin} />

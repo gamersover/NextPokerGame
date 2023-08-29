@@ -17,17 +17,26 @@ function connectSocket(setConnectStatus, setSocket) {
     socket.on('connect_error', () => {
         console.log("触发了connect_error")
         setConnectStatus(false)
-        // setMessage({ msg: "服务异常，请稍后重试", key: 0 })
         setTimeout(() => {
             socket.connect();
         }, 1000);
-        // setTimeout(() => setCurrPage("game"), 2000)
     });
     setSocket(socket)
 }
 
 
-function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
+function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification) {
+    socket.on("join_room_global", (data) => {
+        console.log("收到了join_room_global消息")
+        if (data.status == 1) {
+            setGameInfo((gameInfo) => ({
+                ...gameInfo,
+                host_id: data.game_info.host_id,
+                players_info: data.players_info
+            }))
+        }
+    })
+
     socket.on("prepare_start_global", (data) => {
         console.log("收到了prepare_start_global消息")
         if (data.status == 1) {
@@ -37,6 +46,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             }))
         }
     })
+
     socket.on("game_start_global", (data) => {
         console.log("收到了game_start_global消息")
         setUserInfo((userInfo) => ({
@@ -57,6 +67,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             num_games: data.game_info.num_games
         }))
     })
+
     socket.on("game_step", (data) => {
         console.log("收到了game_step消息")
         setGameInfo((gameInfo) => ({
@@ -65,9 +76,9 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             is_start: data.is_start
         }))
     })
+
     socket.on("game_step_global", (data) => {
         console.log("收到了game_step_global消息")
-        console.log(data)
         if (data.status === 1) {
             // 有出牌
             setGameInfo((gameInfo) => ({
@@ -96,6 +107,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             }))
         }
     })
+
     socket.on("player_exit", data => {
         console.log("收到了player_exit消息")
         if (data.status == 1) {
@@ -107,6 +119,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             }))
         }
     })
+
     socket.on("player_reconnect_global", data => {
         console.log("收到了player_reconnect_global消息")
         setGameInfo((gameInfo) => ({
@@ -115,8 +128,9 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setMessage) {
             state: data.game_info.state
         }))
     })
+
     socket.on("disconnect", () => {
-        setMessage(() => ({ msg: "服务端断开连接", "key": 0 }))
+        setNotification(() => ({ msg: "服务端断开连接", "key": 0 }))
         socket.close()
         setTimeout(() => window.location.reload(), 2000)
     })

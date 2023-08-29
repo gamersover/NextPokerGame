@@ -5,7 +5,7 @@ export default function GameButton({ children, classes, onClick, shouldDisable =
     const disabled = shouldDisable
 
     function handleClick() {
-            onClick()
+       onClick()
     }
 
     return (
