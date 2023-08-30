@@ -8,7 +8,7 @@ export default function CircleContent({className, circleTitle, circleChild, titl
         small: {
             height: "h-5",
             width: "w-5",
-            fontSize: "text-[10px]"
+            fontSize: "text-sm"
         }
     }
 

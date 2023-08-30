@@ -2,7 +2,7 @@
 
 
 import DataProvider from "@/components/GameContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Home from "./Home";
 import Game from "./Game";
 import Room from "./Room";

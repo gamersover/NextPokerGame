@@ -9,7 +9,12 @@ import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, alt = '' }) {
+function GameAvater({ imgUrl, playerState, playerTeam, size="sm", alt = '' }) {
+    const sizeType = {
+        "sm": "w-10 h-10",
+        "md": "w-12 h-12",
+    }
+
     const opacityValue = useMemo(() => {
         return playerState < PlayerState.Prepared || playerState == PlayerState.PlayerEnd ? 'opacity-60' : 'opacity-100'
     }, [playerState])
@@ -29,7 +34,7 @@ function GameAvater({ imgUrl, playerState, playerTeam, width = 30, height = 30, 
 
     return (
         <>
-            <Image src={imgUrl} width={width} height={height} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 w-auto h-auto ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
+            <Image src={imgUrl} width={50} height={50} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 ${sizeType[size]} ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
         </>
     )
 }
@@ -249,7 +254,7 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
 
             setTimeout(() => {
                 setIsSending(false)
-            }, 1000)
+            }, 500)
         }
     }
 
@@ -260,7 +265,7 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
     return (
         <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-1/3 h-1/2 lg:h-1/3 bg-slate-700 bg-opacity-50 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
             <div className='h-full flex flex-col'>
-                <div className='flex-grow flex-col mb-1 border-red-100 overflow-hidden overflow-y-scroll' style={{ WebkitOverflowScrolling: 'touch' }} ref={messageContentRef}>
+                <div className='flex-grow flex-col mb-1 border-red-100 overflow-hidden overflow-y-auto' style={{ WebkitOverflowScrolling: 'touch' }} ref={messageContentRef}>
                     {
                         messages.map((msg, i) => {
                             return (
@@ -271,6 +276,7 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
                             )
                         })
                     }
+                    <div className='flex justify-center text-gray-300 items-center pt-1 h-5'>无更多消息</div>
                 </div>
                 <div className='flex justify-center items-end mb-2 w-full'>
                     <div className='flex w-full justify-between'>
@@ -652,7 +658,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 
     switch (player_info.state) {
         case PlayerState.InGame:
-            content = <GameButton classes={"bg-red-200"} onClick={handlePrepare}>准备</GameButton>
+            content = <GameButton classes={"bg-red-200 bg-red-200 border-[1px] border-red-400"} onClick={handlePrepare}>准备</GameButton>
             break
         case PlayerState.Prepared:
             content = <span>已准备</span>
@@ -683,7 +689,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             )
             break
         case PlayerState.GameEnd:
-            content = <GameButton classes={"w-20 bg-red-100"} onClick={handleNextRound}>再来一局</GameButton>
+            content = <GameButton classes={"w-20 bg-red-200 border-[1px] border-red-400"} onClick={handleNextRound}>再来一局</GameButton>
             break
         default:
             content = null
@@ -910,9 +916,9 @@ function GameFooter({ setShowValueCardsPlayerId }) {
             <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-5 z-10 h-7">
                 <div className="flex w-full h-full items-center justify-between">
-                    <div className="flex w-1/4 h-full justify-around items-center">
+                    <div className="flex w-[30%] h-full justify-around items-center">
                         <div className='self-end'>
-                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} width={35} height={35} />
+                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} size='md' />
                         </div>
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerScore={player_info.global_score} />
@@ -945,14 +951,14 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 </Modal>
             )}
             {showEndModal && (
-                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[30%]">
+                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[30%]">
                     <div className="flex flex-col h-full rounded-lg bg-gray-300 justify-center items-center w-full">
                         <div className="flex w-full h-[10%]">
                             <div className="w-1/4"></div>
-                            <div className="flex-1 flex justify-center items-center">
+                            <div className="flex-1 flex justify-center">
                                 {
-                                    player_info.normal_score == 2 ? <span className=" text-amber-500 font-medium -mt-4 text-3xl">胜利</span>
-                                        : <span className="text-gray-700 font-medium -mt-4 text-3xl">失败</span>
+                                    player_info.normal_score == 2 ? <span className=" text-amber-500 font-extrabold -mt-4 text-3xl">胜利</span>
+                                        : <span className="text-gray-700 font-extrabold -mt-4 text-3xl">失败</span>
                                 }
                             </div>
                             <div className='w-1/4 flex justify-end'>
@@ -970,17 +976,23 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                             </div>
                             {game_result.map(
                                 player => (
-                                    <div key={player.player_id} className={`flex w-full ${player.player_id == userInfo.player_id ? "bg-blue-200 rounded-md bg-opacity-80 text-amber-500 font-bold" : "text-blue-800"}`}>
+                                    <div key={player.player_id} className={`flex w-full text-blue-800 ${player.player_id == userInfo.player_id ? "bg-blue-100 rounded-md bg-opacity-80 font-bold" : ""}`}>
                                         <div className='flex flex-1 justify-end items-center'>
-                                            <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={10} height={10} alt="" className="w-6 h-6 mr-1" />
+                                            <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={30} height={30} alt="" className="w-6 h-6 mr-1" />
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
                                         </div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.normal_score}</div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score} <GameButton classes={"!w-5 p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}><Image src="/info-circle.svg" width={10} height={10} alt="" className='w-5'/></GameButton> </div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.final_score}</div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.global_score}</div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.normal_score}</span>
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score} <GameButton classes={"!w-5 p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}><Image src="/info-circle.svg" width={10} height={10} alt="" className='w-4 h-4'/></GameButton> </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.final_score}</span>
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                        <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.global_score}</span>
+                                        </div>
                                     </div>
                                 )
                             )}
@@ -995,10 +1007,6 @@ function GameFooter({ setShowValueCardsPlayerId }) {
 
 export default function Room() {
     const [showValueCardsPlayerId, setShowValueCardsPlayerId] = useState(-1)
-
-    function handleShowValueCardsPlayerId(playerId) {
-        setShowValueCardsPlayerId(playerId)
-    }
 
     function resetShowValueCardsPlayerId() {
         setShowValueCardsPlayerId(-1)

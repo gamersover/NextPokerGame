@@ -64,7 +64,8 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotificati
             players_info: data.players_info,
             curr_player_id: data.game_info.curr_player_id,
             friend_card: data.game_info.friend_card,
-            num_games: data.game_info.num_games
+            num_games: data.game_info.num_games,
+            friend_card_cnt: 2
         }))
     })
 

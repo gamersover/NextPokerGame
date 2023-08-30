@@ -12,7 +12,7 @@ export default function GameButton({ children, classes, onClick, shouldDisable =
         <button
             disabled={disabled}
             type={"button"}
-            className={`w-16 h-9 rounded-xl ${disabled ? '' : "active:scale-95"} text-md flex font-bold justify-center items-center ${classes}`}
+            className={`w-16 h-9 rounded-xl ${disabled ? '' : "active:scale-95"} transition-transform text-md flex font-bold justify-center items-center ${classes}`}
             onClick={handleClick}
         >
             {children}
