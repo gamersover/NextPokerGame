@@ -333,6 +333,7 @@ export default function Game({ setCurrPage }) {
 
         socket.on("player_reconnect", data=> {
             console.log("收到了player_reconnect消息")
+            console.log(data)
             if (data.status == 1) {
                 setGameInfo((gameInfo) => ({
                     ...gameInfo,
@@ -348,7 +349,7 @@ export default function Game({ setCurrPage }) {
                 }))
                 setUserInfo((userInfo) => ({
                     ...userInfo,
-                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false })),
+                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false, isFriendCard: card.split("-").slice(0, 1)[0] == data.game_info.friend_card })),
                     player_id: data.user_info.player_id,
                     player_name: data.players_info[data.user_info.player_id].player_name,
                     room_number: data.game_info.room_number

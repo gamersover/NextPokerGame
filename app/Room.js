@@ -285,6 +285,7 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
                             placeholder='输入聊天内容'
                             value={message}
                             onChange={handleInputChanged}
+                            maxLength={20}
                         />
                         <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-200 text-black'}`} onClick={handleSendMessage}>
                             发送
