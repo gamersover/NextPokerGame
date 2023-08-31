@@ -116,7 +116,8 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotificati
                 ...gameInfo,
                 players_info: data.players_info,
                 host_id: data.game_info.host_id,
-                state: data.game_info.state
+                state: data.game_info.state,
+                exited_player_id: data.game_info.exited_player_id
             }))
         }
     })

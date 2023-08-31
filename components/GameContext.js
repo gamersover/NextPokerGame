@@ -30,6 +30,7 @@ function DataProvider({ children }) {
         state: GameState.GameNotStart,
         friend_help_info: null,
         messages: [],
+        exited_player_id: null
     })
 
     return (

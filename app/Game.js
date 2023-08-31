@@ -333,7 +333,6 @@ export default function Game({ setCurrPage }) {
 
         socket.on("player_reconnect", data=> {
             console.log("收到了player_reconnect消息")
-            console.log(data)
             if (data.status == 1) {
                 setGameInfo((gameInfo) => ({
                     ...gameInfo,

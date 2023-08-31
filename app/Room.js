@@ -199,19 +199,13 @@ function GameCardsOut({ right, left, top, friend_card }) {
 }
 
 
-function PlayerExitModal() {
-    const [showMoreButton, setShowMoreButton] = useState(false)
-
-    function handleMainButtonClicked() {
-        setShowMoreButton(true)
+function PlayerExitModal({setIsShowExit}) {
+    function handleOk() {
+        window.location.reload()
     }
 
     function handleCancel() {
-        setShowMoreButton(false)
-    }
-
-    function handleOk() {
-        window.location.reload()
+        setIsShowExit(false)
     }
 
     return (
@@ -221,15 +215,13 @@ function PlayerExitModal() {
                     ❗️用户离线
                 </div>
                 <div className="w-10/12 text-xs h-1/3">
-                    {showMoreButton ? "退出房间后游戏信息都会丢失，确定退出吗？" : "房间其他用户已断开连接，等待重连中..."}
+                    房间其他用户已断开连接，等待重连中...
                 </div>
-                <div className="w-10/12 flex items-center justify-center h-1/3">
-                    {showMoreButton ? (
-                        <div className="flex w-8/12 justify-between">
-                            <GameButton classes="bg-white border-2 border-gray-400 !h-7 w-12" onClick={handleCancel}>否</GameButton>
-                            <GameButton classes="bg-red-400 text-white !h-7 w-12" onClick={handleOk}>是</GameButton>
-                        </div>
-                    ) : <GameButton classes="!text-sm bg-red-400 text-white !h-7 w-32" onClick={handleMainButtonClicked}>不等待，退出房间</GameButton>}
+                <div className="w-10/12 flex items-center justify-end h-1/3">
+                    <div className="flex">
+                        <GameButton classes="!h-7 w-full !font-normal text-xs" onClick={handleOk}>不等待，退出房间</GameButton>
+                        <GameButton classes="bg-red-400 text-white !h-7 w-12" onClick={handleCancel}>等待</GameButton>
+                    </div>
                 </div>
             </div>
         </Modal>
@@ -502,6 +494,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
     const [isMouseDown, setIsMouseDown] = useState(false)
+    const [isShowExit, setIsShowExit] = useState(false)
 
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= PlayerState.Prepared) {
@@ -647,6 +640,15 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
         socket.emit("next_round")
     }
 
+    useEffect(() => {
+        if (gameInfo.state == GameState.GameStop) {
+            setIsShowExit(true)
+        }
+        else {
+            setIsShowExit(false)
+        }
+    }, [gameInfo.state, gameInfo.exited_player_id])
+
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
     let content = null
     let render_out_cards = []
@@ -719,8 +721,8 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                 <ValueCards shouldShowAll={showValueCardsPlayerId == userInfo.player_id} valueCards={player_info.show_value_cards || []} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
             </div>
             {notification.msg && <Toast message={notification} duration={4000} />}
-            {gameInfo.state == GameState.GameStop && (
-                <PlayerExitModal />
+            {isShowExit && (
+                <PlayerExitModal setIsShowExit={setIsShowExit}/>
             )}
             {gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help && (
                 <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-red-400">
@@ -985,14 +987,14 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.normal_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : (player.normal_score < 0  ? 'bg-rose-300' : '')}`}>{player.normal_score}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>{player.value_score} <GameButton classes={"!w-5 p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}><Image src="/info-circle.svg" width={10} height={10} alt="" className='w-4 h-4'/></GameButton> </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.final_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : (player.final_score < 0  ? 'bg-rose-300' : '')}`}>{player.final_score}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                        <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : 'bg-rose-300'}`}>{player.global_score}</span>
+                                        <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : (player.global_score < 0  ? 'bg-rose-300' : '')}`}>{player.global_score}</span>
                                         </div>
                                     </div>
                                 )
