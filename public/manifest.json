@@ -3,7 +3,7 @@
     "short_name": "四人纸牌",
     "description": "一款四人纸牌游戏",
     "start_url": "/",
-    "display": "fullscreen",
+    "display": "standalone",
     "orientation": "landscape",
     "background_color": "white",
     "theme_color": "white",

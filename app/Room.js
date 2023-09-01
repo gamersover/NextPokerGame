@@ -1010,6 +1010,38 @@ function GameFooter({ setShowValueCardsPlayerId }) {
 
 export default function Room() {
     const [showValueCardsPlayerId, setShowValueCardsPlayerId] = useState(-1)
+    useEffect(() => {
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+          try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('屏幕保持唤醒状态已启用:', wakeLock);
+          } catch (err) {
+            console.error('请求屏幕保持唤醒状态时出错:', err);
+          }
+        }
+
+        function releaseWakeLock() {
+          if (wakeLock) {
+            wakeLock.release()
+              .then(() => {
+                console.log('屏幕保持唤醒状态已释放');
+              })
+              .catch((err) => {
+                console.error('释放屏幕保持唤醒状态时出错:', err);
+              });
+          }
+        }
+
+        // 在组件挂载时请求屏幕保持唤醒状态
+        requestWakeLock();
+
+        // 在组件卸载时释放屏幕保持唤醒状态
+        return () => {
+          releaseWakeLock();
+        };
+      }, []);
 
     function resetShowValueCardsPlayerId() {
         setShowValueCardsPlayerId(-1)
