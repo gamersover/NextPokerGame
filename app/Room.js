@@ -1,6 +1,6 @@
 "use client";
 
-import { CardsPanel, CircleContent, GameButton, Modal, ScoreAlert, Toast } from '@/components';
+import { CardsPanel, CircleContent, GameButton, Modal, Toast } from '@/components';
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
@@ -319,7 +319,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                     src={`/pokers/${gameInfo.friend_card}_small.svg`}
                     className="w-7"
                 />
-                <Image width={20} height={20} alt="" src="/times.svg" className="h-3" />
+                <Image width={20} height={20} alt="" src="/times.svg" className="h-3 w-3" />
                 <span className="text-violet-800 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
             </div>
             )

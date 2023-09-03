@@ -3,9 +3,9 @@
 import { GameButton, Modal, Toast } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
-import { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
-import Cookies from "js-cookie";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { connectSocket, handleSocket } from "@/utils/socketHandler";
+import { useLocalStorage } from "@/utils/hooks";
 
 function HomeTitle() {
     return (
@@ -255,17 +255,21 @@ export default function Game({ setCurrPage }) {
     const [joiningRoomNumber, setJoiningRoomNumber] = useState("")
     const [connectStatus, setConnectStatus] = useState(false)
 
+    const [playerName, setPlayerName] = useLocalStorage("player_name", userInfo.player_name)
+    const [playerAvatar, setPlayerAvatar] = useLocalStorage("player_avatar", userInfo.player_avatar)
+
     useEffect(() => {
         connectSocket(setConnectStatus, setSocket)
     }, [])
 
-    useLayoutEffect(() => {
-        setUserInfo((userInfo) => ({
+    useEffect(() => {
+        setUserInfo({
             ...userInfo,
-            player_name: Cookies.get("username"),
-            player_avatar: Cookies.get("avatarID"),
-        }))
-    }, [])
+            player_name: playerName,
+            player_avatar: playerAvatar
+        })
+    }, [playerName, playerAvatar])
+
 
     function showModal() {
         setShowJoinpop(true)

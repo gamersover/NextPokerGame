@@ -3,7 +3,7 @@
 import { GameButton, Modal, BackDrop } from "@/components"
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import Cookies from "js-cookie"
+import { useLocalStorage } from "@/utils/hooks";
 
 function HomeTitle() {
     return (
@@ -104,10 +104,10 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
 
 export default function Home({ setCurrPage }) {
     const [showUserPanel, setShowUserPanel] = useState(false)
-    const [username, setUserName] = useState('')
-    const [avatarID, setAvatarID] = useState(-1)
     const [showAvatars, setShowAvatars] = useState(false)
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true)
+    const [playerName, setPlayerName] = useLocalStorage("player_name", "")
+    const [playerAvatar, setPlayerAvatar] = useLocalStorage("player_avatar", -1)
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -116,11 +116,6 @@ export default function Home({ setCurrPage }) {
 
         return () => clearTimeout(timer);
     }, []);
-
-    useEffect(() => {
-        setUserName(Cookies.get("username") || '')
-        setAvatarID(Cookies.get("avatarID") || -1)
-    }, [])
 
     function handleShowAvatars() {
         setShowAvatars(true)
@@ -132,13 +127,11 @@ export default function Home({ setCurrPage }) {
 
     function handleAvatarSelected(id) {
         handleCloseAvatars()
-        setAvatarID(id)
-        Cookies.set("avatarID", id)
+        setPlayerAvatar(id)
     }
 
     function handleUserNameChanged(username) {
-        setUserName(username)
-        Cookies.set("username", username)
+       setPlayerName(username)
     }
 
     function handleShowUserPanel() {
@@ -163,15 +156,15 @@ export default function Home({ setCurrPage }) {
                 <div className="flex flex-col justify-evenly items-center flex-1 h-full">
                     <HomeTitle />
                     <HomeImage />
-                    <HomeButton setCurrPage={setCurrPage} shouldStartDisable={username.length == 0 || avatarID < 0} handleShowUserPanel={handleShowUserPanel} />
+                    <HomeButton setCurrPage={setCurrPage} shouldStartDisable={playerName.length == 0 || playerAvatar < 0} handleShowUserPanel={handleShowUserPanel} />
                 </div>
                 {
                     (
                         <>
                             <div className={`${showUserPanel ? "animate-right-in": "animate-right-out"} fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]`}>
                                 <UserProfilePanel
-                                    avatarID={avatarID}
-                                    username={username}
+                                    avatarID={playerAvatar}
+                                    username={playerName}
                                     handleUserNameChanged={handleUserNameChanged}
                                     handleAvatarSelected={handleAvatarSelected}
                                     showAvatars={showAvatars}
