@@ -114,7 +114,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
         }
     }, [roomNumber, handleJoinRoom])
 
-    const inputs = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]]
+    const inputs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "重置", "0", "删除"]
     return (
         <div className="flex flex-col justify-center items-center w-full h-full">
             <div className="flex w-full h-[10%]">
@@ -125,7 +125,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
                     <GameButton classes={""} onClick={handleCloseModal}>
-                        <Image src="/close.svg" width={20} height={20} className="w-full" alt=""/>
+                        <Image src="/close.svg" width={20} height={20} className="w-full" alt="" />
                     </GameButton>
                 </div>
             </div>
@@ -135,70 +135,48 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                     <span className="text-xs text-zinc-700">请输入6位房间号，在游戏左上角可以找到</span>
                 </div>
                 <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300">
-                    <div className="flex w-full justify-evenly items-center">
-                        {
-                            [...roomNumber, ...Array(6 - roomNumber.length).fill("")].map((name, i) => (
-                                <div key={i} className="flex justify-center items-center w-1/6 text-3xl font-bold">
-                                    {name}
-                                </div>
-                            ))
-                        }
+                    <div className="grid grid-cols-6 w-full place-items-center">
+                        {roomNumber.map((name, i) => (
+                            <span key={i} className="text-3xl font-bold">{name}</span>
+                        ))}
                     </div>
                 </div>
-                <div className="flex flex-col w-[90%] justify-evenly items-center flex-1">
-                    <div className="flex w-full justify-between items-center">
-                        {inputs[0].map((name, i) => (
-                            <GameButton
-                                key={i}
-                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                                onClick={() => handleNumberInput(name)}
-                            >
-                                {name}
-                            </GameButton>
-                        ))}
-                    </div>
-                    <div className="flex w-full justify-between items-center">
-                        {inputs[1].map((name, i) => (
-                            <GameButton
-                                key={i}
-                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                                onClick={() => handleNumberInput(name)}
-                            >
-                                {name}
-                            </GameButton>
-                        ))}
-                    </div>
-                    <div className="flex w-full justify-between items-center">
-                        {inputs[2].map((name, i) => (
-                            <GameButton
-                                key={i}
-                                classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                                onClick={() => handleNumberInput(name)}
-                            >
-                                {name}
-                            </GameButton>
-                        ))}
-                    </div>
-                    <div className="flex w-full justify-between items-center">
-                        <GameButton
-                            classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300"
-                            onClick={handleReset}
-                        >
-                            重置
-                        </GameButton>
-                        <GameButton
-                            classes="w-20 !h-10 !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
-                            onClick={() => handleNumberInput("0")}
-                        >
-                            0
-                        </GameButton>
-                        <GameButton
-                            classes="w-20 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-red-300"
-                            onClick={handleDelete}
-                        >
-                            删除
-                        </GameButton>
-                    </div>
+                <div className="grid grid-cols-3 gap-3 w-[90%] my-2 flex-1">
+                    {inputs.map((name, i) => {
+                        if (name === '重置') {
+                            return (
+                                <GameButton
+                                    key={i}
+                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-blue-300'
+                                    onClick={handleReset}
+                                >
+                                    {name}
+                                </GameButton>
+                            )
+                        }
+                        else if (name === '删除') {
+                            return (
+                                <GameButton
+                                    key={i}
+                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-red-300'
+                                    onClick={handleDelete}
+                                >
+                                    {name}
+                                </GameButton>
+                            )
+                        }
+                        else {
+                            return (
+                                <GameButton
+                                    key={i}
+                                    classes="!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
+                                    onClick={() => handleNumberInput(name)}
+                                >
+                                    {name}
+                                </GameButton>
+                            )
+                        }
+                    })}
                 </div>
             </div>
         </div>
@@ -222,7 +200,7 @@ function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSub
             <div className="w-full flex justify-evenly">
                 {
                     subsPlayersID.map(player_id => (
-                        <div key={player_id} className={`${selectedPlayer==player_id ? "bg-white shadow-md" : "bg-white opacity-50"}  p-1 rounded-md flex flex-col items-center`} onClick={() => setSelectedPlayer(player_id)}>
+                        <div key={player_id} className={`${selectedPlayer == player_id ? "bg-white shadow-md" : "bg-white opacity-50"}  p-1 rounded-md flex flex-col items-center`} onClick={() => setSelectedPlayer(player_id)}>
                             <Image
                                 src={`/avatars/Avatars Set Flat Style-${String(subsPlayers[player_id].player_avatar).padStart(2, '0')}.png`}
                                 width={50}
@@ -331,11 +309,11 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 // closeModal()
-                setNotification({msg: `房间加入失败，${data.msg}`, key: 0})
+                setNotification({ msg: `房间加入失败，${data.msg}`, key: 0 })
             }
         })
 
-        socket.on("player_reconnect", data=> {
+        socket.on("player_reconnect", data => {
             console.log("收到了player_reconnect消息")
             if (data.status == 1) {
                 setGameInfo((gameInfo) => ({
@@ -361,7 +339,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 handleNotJoin()
-                setNotification(() => ({"msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0}))
+                setNotification(() => ({ "msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0 }))
             }
         })
 
@@ -374,18 +352,18 @@ export default function Game({ setCurrPage }) {
             <div className="fixed flex items-center w-32 bg-opacity-10 h-10 top-2 right-2">
                 {
                     connectStatus ?
-                    (
-                        <>
-                            <span className="inline-block mr-1 bg-green-400 animate-pulse w-2 h-2 rounded-full"></span>
-                            服务正常
-                        </>
-                    )
-                    : (
-                        <>
-                            <span className="inline-block mr-1 bg-red-400 animate-pulse w-2 h-2 rounded-full"></span>
-                            服务连接中...
-                        </>
-                    )}
+                        (
+                            <>
+                                <span className="inline-block mr-1 bg-green-400 animate-pulse w-2 h-2 rounded-full"></span>
+                                服务正常
+                            </>
+                        )
+                        : (
+                            <>
+                                <span className="inline-block mr-1 bg-red-400 animate-pulse w-2 h-2 rounded-full"></span>
+                                服务连接中...
+                            </>
+                        )}
             </div>
             <HomeTitle />
             <HomeButton handleJoin={showModal} setNotification={setNotification} setCurrPage={setCurrPage} />

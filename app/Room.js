@@ -368,8 +368,8 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
 
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
-            <div className="flex w-[30%] justify-start">
-                <CircleContent className="mr-2" circleTitle={'房'} circleChild={<>{userInfo.room_number}<GameButton onClick={copyRoomNumber}><Image width={20} height={20} alt="" src="/copy.svg"></Image></GameButton></>} titleBgColor={'bg-cyan-100'} />
+            <div className="flex w-[30%] justify-start gap-2">
+                <CircleContent circleTitle={'房'} circleChild={<>{userInfo.room_number}<GameButton onClick={copyRoomNumber}><Image width={20} height={20} alt="" src="/copy.svg"></Image></GameButton></>} titleBgColor={'bg-cyan-100'} />
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
@@ -668,7 +668,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             break
         case PlayerState.RoundStart:
             content = (
-                <div className="flex w-4/12 justify-between">
+                <div className="flex gap-3 justify-between">
                     <GameButton classes={"bg-gray-100 border-[1px] border-gray-400"} onClick={handleSelectAll}>全选</GameButton>
                     <GameButton classes={"bg-red-200 border-[1px] border-red-400"} onClick={handlePass}>跳过</GameButton>
                     <GameButton classes={"bg-blue-300 border-[1px] border-blue-400"} onClick={handleGo}>出牌</GameButton>
@@ -737,37 +737,20 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 }
 
 function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
-    // TODO: 使用grid布局，或者每行4个
-    const numbers = [['3', '4', '5', '6'], ['7', '8', '9', '10'], ['J', 'Q', 'K', 'A'], ['2', null]];
-
+    const numbers = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', null]
     return (
-        <>
-            {numbers.map((row, i) => (
-                <div key={i} className='flex justify-around items-center'>
-                    {
-                        row.map((number, i) => (
-                            <GameButton
-                                key={i}
-                                classes={`${number ? 'w-8' : 'w-28'} !h-8 m-1 !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
-                                onClick={() => onNumberSelected(number)}
-                            >
-                                {number ? number : "重置"}
-                            </GameButton>)
-                        )
-                    }
-                </div>
-            ))}
-            {/* {numbers.map((number, i) => (
+        <div className='w-[90%] h-[90%] grid grid-cols-4 gap-3'>
+            {numbers.map((number, i) => (
                 <GameButton
                     key={i}
-                    classes={`${number ? 'w-8' : 'w-28'} !h-8 m-1 !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
+                    classes={`${number ? 'col-span-1' : 'col-span-3'} !w-full !h-full !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
                     onClick={() => onNumberSelected(number)}
                 >
                     {number ? number : "重置"}
                 </GameButton>)
-            )} */}
-        </>
-    );
+            )}
+        </div>
+    )
 }
 
 function SubstituteJokerCards({ jokerCards, selectedCard, handleCardChange }) {
@@ -919,7 +902,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
             <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-5 z-10 h-7">
                 <div className="flex w-full h-full items-center justify-between">
-                    <div className="flex w-[30%] h-full justify-around items-center">
+                    <div className="flex w-full h-full gap-3 items-center">
                         <div className='self-end'>
                             <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} size='md' />
                         </div>
@@ -949,7 +932,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 w-5/12 h-1/2 lg:w-[35%] lg:h-[25%] -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 h-56 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
