@@ -21,7 +21,6 @@ function HomeImage() {
     )
 }
 
-
 function UserProfilePanel({ avatarID, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars }) {
     const [showInputError, setShowInputError] = useState(false)
 
@@ -94,7 +93,7 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
         <div className="flex flex-col justify-center items-center h-24">
             <GameButton
                 onClick={shouldStartDisable ? handleShowUserPanel : handleStart}
-                classes={`w-24 !h-10 text-lg font-bold shadow-md text-gray-700 ${shouldStartDisable ? "bg-red-200" : "bg-blue-200"}`}
+                classes={`w-24 !h-10 text-lg font-bold drop-shadow-md text-gray-700 ${shouldStartDisable ? "bg-red-200" : "bg-blue-200"}`}
             >
                 {shouldStartDisable ? "用户设置" : "开始游戏"}
             </GameButton>

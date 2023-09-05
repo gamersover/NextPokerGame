@@ -71,14 +71,14 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
 
     return (
         <div className="flex w-8/12 h-5/6 justify-evenly items-center">
-            <div className="bg-[url('/pokers/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={joinRoom}>
+            <div className="bg-[url('/pokers/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center drop-shadow-2xl active:scale-90" onClick={joinRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-blue-200 font-bold mb-2">
                         加入房间
                     </span>
                 </div>
             </div>
-            <div className="bg-[url('/pokers/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-2xl active:scale-90" onClick={createRoom}>
+            <div className="bg-[url('/pokers/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center drop-shadow-2xl active:scale-90" onClick={createRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-red-200 font-bold mb-2">
                         创建房间
@@ -309,7 +309,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 // closeModal()
-                setNotification({ msg: `房间加入失败，${data.msg}`, key: 0 })
+                setNotification({ msg: `加入房间失败，${data.msg}`, key: 0 })
             }
         })
 
@@ -372,7 +372,7 @@ export default function Game({ setCurrPage }) {
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
                 </Modal>
             )}
-            {notification.msg && <Toast message={notification} duration={4000} />}
+            {notification.msg && <Toast message={notification} duration={4000} color={"error"} />}
             {subsPlayersID.length > 0 && (
                 <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] md:h-[70%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <SubstituePlayers subsPlayers={subsPlayers} subsPlayersID={subsPlayersID} handleNotJoin={handleNotJoin} handleSubsJoin={handleSubsJoin} />

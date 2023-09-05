@@ -72,17 +72,17 @@ html {
 
 @keyframes fade-in {
   0% {
-      opacity: 0;
+    opacity: 0;
   }
   10% {
-      opacity: 1;
+    opacity: 1;
   }
   100% {
     opacity: 1;
 }
 }
 
-@keyframes right-in {
+@keyframes horizontal-in {
   from {
       transform: translateX(100%);
   }
@@ -91,7 +91,7 @@ html {
   }
 }
 
-@keyframes right-out {
+@keyframes horizontal-out {
   from {
     transform: translateX(0);
   }
@@ -100,12 +100,38 @@ html {
   }
 }
 
+@keyframes vertical-in {
+  from {
+    transform: translateY(-100%) scale(0);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vertical-out {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-100%) scale(0);
+  }
+}
+
 .animate-right-out {
-  animation: right-out .5s forwards;
+  animation: horizontal-out .5s forwards;
 }
 
 .animate-right-in {
-  animation: right-in .5s forwards;
+  animation: horizontal-in .5s forwards;
+}
+
+.animate-top-in {
+  animation: vertical-in .5s forwards;
+}
+
+.animate-top-out {
+  animation: vertical-out .5s forwards;
 }
 
 .animate-fade-in {

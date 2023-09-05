@@ -305,8 +305,8 @@ function RoomNumberCard({ roomNumber }) {
     return (
         <>
             {roomNumber}
-            <GameButton onClick={copyRoomNumber}>
-                {isCopyed ? <CheckedIcon className={"h-5 w-5"}/> : <CopyIcon className={"h-5 w-5"} />}
+            <GameButton onClick={copyRoomNumber} classes={"active:!transform-none"}>
+                {isCopyed ? <CheckedIcon className={"h-5 w-5"} /> : <CopyIcon className={"h-5 w-5"} />}
             </GameButton>
         </>
     )
@@ -388,7 +388,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
             <div className="flex w-[30%] justify-start gap-2">
-                <CircleContent circleTitle={'房'} circleChild={<RoomNumberCard roomNumber={userInfo.room_number}/>} titleBgColor={'bg-cyan-100'} />
+                <CircleContent circleTitle={'房'} circleChild={<RoomNumberCard roomNumber={userInfo.room_number} />} titleBgColor={'bg-cyan-100'} />
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
@@ -674,6 +674,27 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
         }
     }, [gameInfo.state, gameInfo.exited_player_id])
 
+    const firendHelpToast = useMemo(() => {
+        if (gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help) {
+            return (
+                <Toast
+                    message={{
+                        msg: (<>
+                            朋友牌效果触发，
+                            {<span className='font-bold'>{gameInfo.players_info[gameInfo.friend_help_info.player].player_name} </span>}
+                            保护了
+                            {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.helped_friend].player_name} </span>}
+                        </>)
+                    }}
+                    color="primary"
+                    duration={6000}
+                />)
+        }
+        else {
+            return null
+        }
+    }, [gameInfo.friend_help_info, gameInfo.players_info])
+
     const player_info = gameInfo.players_info ? gameInfo.players_info[userInfo.player_id] : {}
     let content = null
     let render_out_cards = []
@@ -745,18 +766,11 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             <div className="flex flex-1 justify-center items-end mb-1">
                 <ValueCards shouldShowAll={showValueCardsPlayerId == userInfo.player_id} valueCards={player_info.show_value_cards || []} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
             </div>
-            {notification.msg && <Toast message={notification} duration={4000} />}
+            {notification.msg && <Toast message={notification} duration={4000} color="error" />}
             {isShowExit && (
                 <PlayerExitModal setIsShowExit={setIsShowExit} />
             )}
-            {gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help && (
-                <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base text-red-400">
-                    朋友牌已出完，触发了保护机制，玩家
-                    {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.player].player_name} </span>}
-                    保护了玩家
-                    {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.helped_friend].player_name} </span>}
-                </div>
-            )}
+            {firendHelpToast}
         </div>
     )
 }

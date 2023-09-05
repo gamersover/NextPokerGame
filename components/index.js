@@ -6,7 +6,17 @@ import CircleContent from "./CircleContent";
 import CardsPanel from "./CardsPanel";
 import Toast from "./Toast";
 import ScoreAlert from "./ScoreAlert";
-import { CloseIcon, UserSettingIcon, InfoIcon, TimesIcon, LogoutIcon, MessageIcon, CopyIcon, CheckedIcon } from "./Icons";
+import {
+    CloseIcon,
+    UserSettingIcon,
+    InfoIcon,
+    TimesIcon,
+    LogoutIcon,
+    MessageIcon,
+    CopyIcon,
+    CheckedIcon,
+    ErrorIcon
+} from "./Icons";
 
 
 export {
@@ -25,5 +35,6 @@ export {
     LogoutIcon,
     MessageIcon,
     CopyIcon,
-    CheckedIcon
+    CheckedIcon,
+    ErrorIcon
 }
