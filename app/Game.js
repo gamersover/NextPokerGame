@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, Modal, Toast } from "@/components";
+import { GameButton, Modal, Toast, CloseIcon } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -125,7 +125,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
                     <GameButton classes={""} onClick={handleCloseModal}>
-                        <Image src="/close.svg" width={20} height={20} className="w-full" alt="" />
+                        <CloseIcon className={"w-full h-full"}/>
                     </GameButton>
                 </div>
             </div>

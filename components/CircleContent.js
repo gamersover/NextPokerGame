@@ -23,10 +23,10 @@ export default function CircleContent({className, circleTitle, circleChild, titl
 
 
     return (
-        <div className={`flex ${circlestyleConfig[circleSize].height} ${className}`}>
+        <div className={`flex ${circlestyleConfig[circleSize].height} ${className ?? ''}`}>
             <div className={`${titleBgColor} ${circlestyleConfig[circleSize].fontSize} rounded-full flex justify-center items-center ${circlestyleConfig[circleSize].height} ${circlestyleConfig[circleSize].width}`}>{circleTitle}</div>
             <div className={`bg-white bg-opacity-60 ${circlestyleConfig[circleSize].fontSize} rounded-md px-1 flex justify-center items-center ${contentStyleConfig[contentSize].width}`}>
-                <span className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">{circleChild}</span>
+                <span className="flex w-full justify-around items-center overflow-hidden text-ellipsis whitespace-nowrap">{circleChild}</span>
             </div>
         </div>
     )

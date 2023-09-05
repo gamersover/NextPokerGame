@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, Modal, BackDrop } from "@/components"
+import { GameButton, Modal, BackDrop, CloseIcon, UserSettingIcon } from "@/components"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useLocalStorage } from "@/utils/hooks";
@@ -131,7 +131,7 @@ export default function Home({ setCurrPage }) {
     }
 
     function handleUserNameChanged(username) {
-       setPlayerName(username)
+        setPlayerName(username)
     }
 
     function handleShowUserPanel() {
@@ -151,7 +151,9 @@ export default function Home({ setCurrPage }) {
             )}
             <div className="flex justify-evenly items-center h-screen w-screen">
                 <div className={`fixed top-3 right-4 ${showUserPanel ? 'z-[101]' : ''}`}>
-                    <Image src={showUserPanel ? "/close.svg" : "/user-setting.svg"} width={10} height={10} alt="" className="w-8 !h-8 !rounded-full" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel} />
+                    <GameButton classes="!w-8 !h-8" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel}>
+                        {showUserPanel ? <CloseIcon className={"w-full h-full"}/> : <UserSettingIcon className={"w-full h-full"}/>}
+                    </GameButton>
                 </div>
                 <div className="flex flex-col justify-evenly items-center flex-1 h-full">
                     <HomeTitle />
@@ -161,7 +163,7 @@ export default function Home({ setCurrPage }) {
                 {
                     (
                         <>
-                            <div className={`${showUserPanel ? "animate-right-in": "animate-right-out"} fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]`}>
+                            <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]`}>
                                 <UserProfilePanel
                                     avatarID={playerAvatar}
                                     username={playerName}

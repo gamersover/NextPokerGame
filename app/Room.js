@@ -1,6 +1,6 @@
 "use client";
 
-import { CardsPanel, CircleContent, GameButton, Modal, Toast } from '@/components';
+import { CardsPanel, CircleContent, CloseIcon, TimesIcon, GameButton, InfoIcon, Modal, Toast, LogoutIcon, MessageIcon, CopyIcon, CheckedIcon } from '@/components';
 import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, playerState, playerTeam, size="sm", alt = '' }) {
+function GameAvater({ imgUrl, playerState, playerTeam, size = "sm", alt = '' }) {
     const sizeType = {
         "sm": "w-10 h-10",
         "md": "w-12 h-12",
@@ -77,7 +77,7 @@ function ValueCards({ shouldShowAll, valueCards, resetShowValueCardsPlayerId }) 
     }
 
     const last_value_cards = useMemo(() => {
-        return valueCards[valueCards.length-1]
+        return valueCards[valueCards.length - 1]
     }, [valueCards])
 
     const showAllFinal = useMemo(() => {
@@ -102,15 +102,15 @@ function ValueCards({ shouldShowAll, valueCards, resetShowValueCardsPlayerId }) 
                                 <span className="text-lg">赏牌</span>
                             </div>
                             <div className="flex justify-end items-center flex-1">
-                                <GameButton onClick={closeShowAll}>
-                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-6/12"/>
+                                <GameButton onClick={closeShowAll} classes={"w-8 h-8"}>
+                                    <CloseIcon className={"w-full h-full"} />
                                 </GameButton>
                             </div>
                         </div>
                         <div className='flex flex-wrap justify-center items-center w-[95%] flex-1'>
                             {valueCards.map((cards, i) => (
                                 <div className="mx-1" key={i} >
-                                    <CardsPanel cards={cards.map((card) => ({showName: card}))} size="small"/>
+                                    <CardsPanel cards={cards.map((card) => ({ showName: card }))} size="small" />
                                 </div>
                             ))}
                         </div>
@@ -141,7 +141,7 @@ function GameCardInfo({ num_cards, value_cards, playerState, shouldShowAll, rese
 }
 
 function PlayerOut({ style, state, valid_cards, is_exited, friend_card }) {
-    const content = useMemo(()=> {
+    const content = useMemo(() => {
         let content = null;
         if (is_exited) {
             content = <span>重连中...</span>
@@ -199,7 +199,7 @@ function GameCardsOut({ right, left, top, friend_card }) {
 }
 
 
-function PlayerExitModal({setIsShowExit}) {
+function PlayerExitModal({ setIsShowExit }) {
     function handleOk() {
         window.location.reload()
     }
@@ -289,6 +289,29 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
     )
 }
 
+function RoomNumberCard({ roomNumber }) {
+    const [isCopyed, setIsCopyed] = useState(false)
+
+    function copyRoomNumber() {
+        if (!isCopyed) {
+            setIsCopyed(true)
+            navigator.clipboard.writeText(roomNumber)
+            setTimeout(() => {
+                setIsCopyed(false)
+            }, 2000)
+        }
+    }
+
+    return (
+        <>
+            {roomNumber}
+            <GameButton onClick={copyRoomNumber}>
+                {isCopyed ? <CheckedIcon className={"h-5 w-5"}/> : <CopyIcon className={"h-5 w-5"} />}
+            </GameButton>
+        </>
+    )
+}
+
 
 function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
@@ -296,6 +319,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
     const [newMessageCnt, setNewMessageCnt] = useState(0)
     const socket = useContext(SocketContext)
     const [isShowMessage, setIsShowMessage] = useState(false)
+
 
     const player_id = useMemo(() => {
         return (parseInt(userInfo.player_id) + 2) % 4
@@ -319,16 +343,11 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                     src={`/pokers/${gameInfo.friend_card}_small.svg`}
                     className="w-7"
                 />
-                <Image width={20} height={20} alt="" src="/times.svg" className="h-3 w-3" />
+                <TimesIcon />
                 <span className="text-violet-800 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
             </div>
-            )
+        )
     }, [gameInfo.friend_card, gameInfo.friend_card_cnt])
-
-
-    function copyRoomNumber() {
-        navigator.clipboard.writeText(userInfo.room_number)
-    }
 
     function sendMessage(newMessage) {
         socket.emit("send_message", {
@@ -369,7 +388,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
             <div className="flex w-[30%] justify-start gap-2">
-                <CircleContent circleTitle={'房'} circleChild={<>{userInfo.room_number}<GameButton onClick={copyRoomNumber}><Image width={20} height={20} alt="" src="/copy.svg"></Image></GameButton></>} titleBgColor={'bg-cyan-100'} />
+                <CircleContent circleTitle={'房'} circleChild={<RoomNumberCard roomNumber={userInfo.room_number}/>} titleBgColor={'bg-cyan-100'} />
                 <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
             </div>
             <div className="flex flex-1 justify-center">
@@ -395,15 +414,21 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                 </div>
             </div>
             <div className='w-[30%] h-10 flex justify-end'>
-                <GameButton classes={`${isShowMessage ? "bg-red-100" : "bg-white"} relative !w-20 !h-full border-2 border-red-100 mr-2`} onClick={handleShowMessage}>
-                    <Image src="/message.svg" width={20} height={20} alt="" />消息
+                <GameButton classes={`${isShowMessage ? "bg-red-300" : "bg-white"} relative !w-20 !h-full border-2 border-red-300 mr-2`} onClick={handleShowMessage}>
+                    <div className='flex justify-center gap-1 items-center'>
+                        <MessageIcon className={"h-5 w-5"} />
+                        <span>消息</span>
+                    </div>
                     {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
                 </GameButton>
                 <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500'} onClick={() => window.location.reload()}>
-                    <Image src="/logout.svg" width={20} height={20} alt="" />退出
+                    <div className='flex justify-center gap-1 items-center'>
+                        <LogoutIcon className={"h-5 w-5"} />
+                        <span>退出</span>
+                    </div>
                 </GameButton>
             </div>
-            { isShowMessage && <MessagePanel closePanel={() => setIsShowMessage(false)} sendMessage={sendMessage} messages={gameInfo.messages} handleShowLast={handleShowLast} />}
+            {isShowMessage && <MessagePanel closePanel={() => setIsShowMessage(false)} sendMessage={sendMessage} messages={gameInfo.messages} handleShowLast={handleShowLast} />}
         </div>
     )
 }
@@ -653,7 +678,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
     let content = null
     let render_out_cards = []
     if (player_info.valid_cards) {
-        render_out_cards = player_info.valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == gameInfo.friend_card}))
+        render_out_cards = player_info.valid_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == gameInfo.friend_card }))
     }
     else {
         render_out_cards = userInfo.out_cards
@@ -707,7 +732,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                     {content}
                 </div>
                 <div className="flex flex-1 justify-center items-end mb-2 w-screen">
-                    {userInfo.all_cards.length>0 && (
+                    {userInfo.all_cards.length > 0 && (
                         <CardsPanel
                             cards={userInfo.all_cards}
                             handleMouseDown={handleMouseDown}
@@ -718,14 +743,14 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end mb-1">
-                <ValueCards shouldShowAll={showValueCardsPlayerId == userInfo.player_id} valueCards={player_info.show_value_cards || []} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
+                <ValueCards shouldShowAll={showValueCardsPlayerId == userInfo.player_id} valueCards={player_info.show_value_cards || []} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
             </div>
             {notification.msg && <Toast message={notification} duration={4000} />}
             {isShowExit && (
-                <PlayerExitModal setIsShowExit={setIsShowExit}/>
+                <PlayerExitModal setIsShowExit={setIsShowExit} />
             )}
             {gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help && (
-                <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-red-400">
+                <div className="animate-fade-in bg-white opacity-0 px-2 rounded-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base text-red-400">
                     朋友牌已出完，触发了保护机制，玩家
                     {<span className='font-bold'> {gameInfo.players_info[gameInfo.friend_help_info.player].player_name} </span>}
                     保护了玩家
@@ -755,9 +780,9 @@ function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
 
 function SubstituteJokerCards({ jokerCards, selectedCard, handleCardChange }) {
     return (
-        <>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 place-items-center">
             {jokerCards.map(card => (
-                <label key={card.id} className="mx-4">
+                <label key={card.id}>
                     <input
                         type="radio"
                         className="hidden"
@@ -774,7 +799,7 @@ function SubstituteJokerCards({ jokerCards, selectedCard, handleCardChange }) {
                     />
                 </label>
             ))}
-        </>
+        </div>
     )
 }
 
@@ -802,23 +827,24 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
     }
 
     return (
-        <div className="flex flex-col justify-center h-full">
+        <div className="flex flex-col justify-center h-full w-full">
             <div className="flex w-full flex-1 items-center justify-center pr-1">
                 <div className="flex-1"></div>
                 <div className="flex justify-center w-2/3">
                     <span className="text-lg">替换王牌</span>
                 </div>
                 <div className="flex justify-end items-center flex-1">
-                    <button className="flex items-center justify-end" onClick={handleCloseModal}>
-                        <Image src="/close.svg" width={20} height={20} alt="" className="w-5/12"/>
+                    <button className="flex items-center justify-end w-7 h-7" onClick={handleCloseModal}>
+                        <CloseIcon className={"w-full h-full"} />
+                        {/* <Image src="/close.svg" width={20} height={20} alt="" className="w-5/12"/> */}
                     </button>
                 </div>
             </div>
             <div className="flex justify-evenly w-full items-center h-[85%] pb-1">
-                <div className="flex flex-wrap justify-center w-1/2 h-full m-1 items-center bg-amber-50 rounded-md">
+                <div className="flex justify-center w-1/2 h-full m-1 items-center bg-amber-50 rounded-md">
                     <SubstituteJokerCards jokerCards={jokerCards} selectedCard={selectedCard} handleCardChange={handleCardChange} handleCloseModal={handleCloseModal} />
                 </div>
-                <div className="flex flex-wrap justify-center w-1/2 h-full mr-1 items-center bg-amber-50 rounded-md">
+                <div className="flex justify-center w-1/2 h-full mr-1 items-center bg-amber-50 rounded-md">
                     <NumberSelectPanel selectedNumber={selectedNumber} onNumberSelected={handleNumberSelected} />
                 </div>
             </div>
@@ -840,7 +866,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
         return userInfo.all_cards.filter(card => card.selected && SPECIAL_CARDS.has(card.name))
     }, [userInfo.all_cards])
 
-    const game_result = useMemo(()=> {
+    const game_result = useMemo(() => {
         let game_result = []
         if (player_info.state == PlayerState.GameEnd) {
             for (let i of gameInfo.winners_order) {
@@ -902,7 +928,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
             <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-5 z-10 h-7">
                 <div className="flex w-full h-full items-center justify-between">
-                    <div className="flex w-full h-full gap-3 items-center">
+                    <div className="flex h-full gap-3 items-center">
                         <div className='self-end'>
                             <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} size='md' />
                         </div>
@@ -932,7 +958,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 h-56 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 h-56 w-96 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
@@ -948,8 +974,8 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                                 }
                             </div>
                             <div className='w-1/4 flex justify-end'>
-                                <GameButton onClick={hanleColseEndModal}>
-                                    <Image src="/close.svg" width={20} height={20} alt="" className="w-1/2"/>
+                                <GameButton onClick={hanleColseEndModal} classes="!w-8 !h-8">
+                                    <CloseIcon className={"w-full h-full"} />
                                 </GameButton>
                             </div>
                         </div>
@@ -962,7 +988,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                             </div>
                             {game_result.map(
                                 player => (
-                                    <div key={player.player_id} className={`flex w-full text-blue-800 ${player.player_id == userInfo.player_id ? "bg-blue-100 rounded-md bg-opacity-80 font-bold" : ""}`}>
+                                    <div key={player.player_id} className={`flex w-full text-blue-800 py-1 ${player.player_id == userInfo.player_id ? "bg-blue-100 rounded-md bg-opacity-80 font-bold" : ""}`}>
                                         <div className='flex flex-1 justify-end items-center'>
                                             <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={30} height={30} alt="" className="w-6 h-6 mr-1" />
                                         </div>
@@ -970,14 +996,21 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : (player.normal_score < 0  ? 'bg-rose-300' : '')}`}>{player.normal_score}</span>
-                                        </div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>{player.value_score} <GameButton classes={"!w-5 p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}><Image src="/info-circle.svg" width={10} height={10} alt="" className='w-4 h-4'/></GameButton> </div>
-                                        <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : (player.final_score < 0  ? 'bg-rose-300' : '')}`}>{player.final_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : (player.normal_score < 0 ? 'bg-rose-300' : '')}`}>{player.normal_score}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                        <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : (player.global_score < 0  ? 'bg-rose-300' : '')}`}>{player.global_score}</span>
+                                            {player.value_score}
+                                            {player.value_score > 0 && (
+                                                <GameButton classes={"!w-5 h-full p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}>
+                                                    <InfoIcon className={"w-full h-full"} />
+                                                </GameButton>)
+                                            }
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : (player.final_score < 0 ? 'bg-rose-300' : '')}`}>{player.final_score}</span>
+                                        </div>
+                                        <div className={`flex w-[18%] justify-center items-center`}>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : (player.global_score < 0 ? 'bg-rose-300' : '')}`}>{player.global_score}</span>
                                         </div>
                                     </div>
                                 )
@@ -997,24 +1030,24 @@ export default function Room() {
         let wakeLock = null;
 
         async function requestWakeLock() {
-          try {
-            wakeLock = await navigator.wakeLock.request('screen');
-            console.log('屏幕保持唤醒状态已启用:', wakeLock);
-          } catch (err) {
-            console.error('请求屏幕保持唤醒状态时出错:', err);
-          }
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('屏幕保持唤醒状态已启用:', wakeLock);
+            } catch (err) {
+                console.error('请求屏幕保持唤醒状态时出错:', err);
+            }
         }
 
         function releaseWakeLock() {
-          if (wakeLock) {
-            wakeLock.release()
-              .then(() => {
-                console.log('屏幕保持唤醒状态已释放');
-              })
-              .catch((err) => {
-                console.error('释放屏幕保持唤醒状态时出错:', err);
-              });
-          }
+            if (wakeLock) {
+                wakeLock.release()
+                    .then(() => {
+                        console.log('屏幕保持唤醒状态已释放');
+                    })
+                    .catch((err) => {
+                        console.error('释放屏幕保持唤醒状态时出错:', err);
+                    });
+            }
         }
 
         // 在组件挂载时请求屏幕保持唤醒状态
@@ -1022,9 +1055,9 @@ export default function Room() {
 
         // 在组件卸载时释放屏幕保持唤醒状态
         return () => {
-          releaseWakeLock();
+            releaseWakeLock();
         };
-      }, []);
+    }, []);
 
     function resetShowValueCardsPlayerId() {
         setShowValueCardsPlayerId(-1)
@@ -1032,9 +1065,9 @@ export default function Room() {
 
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
-            <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
-            <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
-            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}/>
+            <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
+            <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
+            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
             <GameFooter setShowValueCardsPlayerId={setShowValueCardsPlayerId} />
         </div>
     )
