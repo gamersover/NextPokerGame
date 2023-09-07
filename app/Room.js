@@ -844,7 +844,7 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
             <div className="flex w-full flex-1 items-center justify-center pr-1">
                 <div className="flex-1"></div>
                 <div className="flex justify-center w-2/3">
-                    <span className="text-lg">替换王牌</span>
+                    <span className="text-lg font-bold">替换王牌</span>
                 </div>
                 <div className="flex justify-end items-center flex-1">
                     <button className="flex items-center justify-end w-7 h-7" onClick={handleCloseModal}>
@@ -948,26 +948,29 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerScore={player_info.global_score} />
                     </div>
-                    {selected_joker_cards.length > 0 && (
-                        <div className="flex w-1/12 items-center justify-center mr-4">
-                            <GameButton
-                                onClick={handleShowJokerSubstitute}
-                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
-                            >
-                                替换王牌
-                            </GameButton>
-                        </div>
-                    )}
-                    {player_info.state == PlayerState.GameEnd && (
-                        <div className="flex items-end">
-                            <GameButton
-                                onClick={handleshowEndModal}
-                                classes="flex justify-center items-center !h-5 !w-full px-2 py-1 text-xs text-white bg-indigo-400"
-                            >
-                                显示结果
-                            </GameButton>
-                        </div>
-                    )}
+                    <div className="flex w-1/6 items-center gap-2 justify-center mr-4">
+                        {selected_joker_cards.length > 0 && (
+                            // <div className="flex w-1/12 items-center justify-center mr-4">
+                                <GameButton
+                                    onClick={handleShowJokerSubstitute}
+                                    classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
+                                >
+                                    替换王牌
+                                </GameButton>
+                            // </div>
+                        )}
+                        {player_info.state == PlayerState.GameEnd && (
+                            // <div className="flex items-end">
+                                <GameButton
+                                    onClick={handleshowEndModal}
+                                    classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-indigo-300"
+                                >
+                                    显示结果
+                                </GameButton>
+                            // </div>
+                        )}
+
+                    </div>
                 </div>
             </div>
             {showJokerSubs && (
