@@ -40,6 +40,14 @@ html {
 }
 }
 
+body {
+  user-select: none;
+}
+
+img {
+   -webkit-touch-callout: none;
+}
+
 
 @keyframes flash-alert {
   0% {
@@ -168,8 +176,4 @@ html {
 
 .backdrop {
   @apply w-full h-full fixed top-0 left-0 z-[99]
-}
-
-.substitute-button {
-    @apply rounded-md shadow-md text-gray-600 text-sm h-6 w-10 bg-gradient-to-br from-green-400 to-green-500
 }

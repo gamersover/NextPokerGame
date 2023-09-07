@@ -9,7 +9,7 @@ import { SPECIAL_CARDS, is_valid_out_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
 
 
-function GameAvater({ imgUrl, playerState, playerTeam, size = "sm", alt = '' }) {
+function GameAvater({ imgUrl, playerState, playerTeam, playerRank, size = "sm", alt = '' }) {
     const sizeType = {
         "sm": "w-10 h-10",
         "md": "w-12 h-12",
@@ -33,9 +33,10 @@ function GameAvater({ imgUrl, playerState, playerTeam, size = "sm", alt = '' }) 
     }, [playerTeam])
 
     return (
-        <>
-            <Image src={imgUrl} width={50} height={50} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 ${sizeType[size]} ${opacityValue} ${actived ? "animate-bounce" : ''}`} />
-        </>
+        <div className={`relative flex justify-center ${actived ? "animate-bounce" : ''}`}>
+            <Image src={imgUrl} width={50} height={50} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 ${sizeType[size]} ${opacityValue}`} />
+            {playerRank && <div className='absolute -top-3 text-lg flex justify-center items-center font-bold rounded-md bg-opacity-50 text-red-700'>{playerRank}</div>}
+        </div>
     )
 }
 
@@ -52,10 +53,10 @@ function ScoreContent({ playerScore }) {
 }
 
 
-function GameBasicInfo({ playerName, playerAvatar, playerState, playerTeam, finalScore }) {
+function GameBasicInfo({ playerName, playerAvatar, playerState, playerTeam, playerRank, finalScore }) {
     return (
         <div className="flex flex-col w-14 items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
-            <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} />
+            <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} playerRank={playerRank} />
             <div className="flex justify-center items-center h-4 text-xs w-[90%] my-1">
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">{playerName || '无名称'}</span>
             </div>
@@ -400,6 +401,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                                 playerAvatar={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`}
                                 playerState={player_info.state}
                                 playerTeam={player_info.team}
+                                playerRank={player_info.rank}
                                 finalScore={player_info.global_score}
                             />
                             <GameCardInfo
@@ -467,6 +469,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(left_player_info.player_avatar).padStart(2, '0')}.png`}
                             playerState={left_player_info.state}
                             playerTeam={left_player_info.team}
+                            playerRank={left_player_info.rank}
                             finalScore={left_player_info.global_score}
                         />
                         <GameCardInfo
@@ -502,6 +505,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                             playerAvatar={`/avatars/Avatars Set Flat Style-${String(right_player_info.player_avatar).padStart(2, '0')}.png`}
                             playerState={right_player_info.state}
                             playerTeam={right_player_info.team}
+                            playerRank={right_player_info.rank}
                             finalScore={right_player_info.global_score}
                         />
                     </>
@@ -730,12 +734,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             content = <span>跳过</span>
             break
         case PlayerState.PlayerEnd:
-            content = (
-                <div>
-                    <CardsPanel cards={render_out_cards} size="small" />
-                    <span>{`你的排名：${player_info.rank}`}</span>
-                </div>
-            )
+            content = <CardsPanel cards={render_out_cards} size="small" />
             break
         case PlayerState.GameEnd:
             content = <GameButton classes={"w-20 bg-red-200 border-[1px] border-red-400"} onClick={handleNextRound}>再来一局</GameButton>
@@ -944,7 +943,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 <div className="flex w-full h-full items-center justify-between">
                     <div className="flex h-full gap-3 items-center">
                         <div className='self-end'>
-                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} size='md' />
+                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} playerRank={player_info.rank} size='md' />
                         </div>
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerScore={player_info.global_score} />
@@ -953,7 +952,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                         <div className="flex w-1/12 items-center justify-center">
                             <GameButton
                                 onClick={handleShowJokerSubstitute}
-                                classes="substitute-button"
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-10 bg-amber-200"
                             >
                                 替换
                             </GameButton>

@@ -108,6 +108,17 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
         setRoomNumber(roomNumber.slice(0, -1))
     }
 
+    function handleHover() {
+        navigator.clipboard.readText()
+            .then(clipboardData => {
+                // 粘贴板中的内容现在存储在 clipboardData 变量中
+                setRoomNumber(clipboardData.split(''))
+            })
+            .catch(err => {
+                console.error('无法读取粘贴板内容：', err);
+            });
+    }
+
     useEffect(() => {
         if (roomNumber.length == 6) {
             handleJoinRoom(roomNumber)
@@ -125,7 +136,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
                     <GameButton classes={""} onClick={handleCloseModal}>
-                        <CloseIcon className={"w-full h-full"}/>
+                        <CloseIcon className={"w-full h-full"} />
                     </GameButton>
                 </div>
             </div>
@@ -134,7 +145,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
                 <div className="flex justify-center items-center h-[8%]">
                     <span className="text-xs text-zinc-700">请输入6位房间号，在游戏左上角可以找到</span>
                 </div>
-                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300">
+                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300" onPointerDown={handleHover}>
                     <div className="grid grid-cols-6 w-full place-items-center">
                         {roomNumber.map((name, i) => (
                             <span key={i} className="text-3xl font-bold">{name}</span>
