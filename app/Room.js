@@ -949,12 +949,12 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                         <ScoreContent playerScore={player_info.global_score} />
                     </div>
                     {selected_joker_cards.length > 0 && (
-                        <div className="flex w-1/12 items-center justify-center">
+                        <div className="flex w-1/12 items-center justify-center mr-4">
                             <GameButton
                                 onClick={handleShowJokerSubstitute}
-                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-10 bg-amber-200"
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
                             >
-                                替换
+                                替换王牌
                             </GameButton>
                         </div>
                     )}
@@ -971,20 +971,21 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-80 h-56 w-96 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-40 backdrop-blur-sm h-56 w-96 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
             {showEndModal && (
-                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[30%]">
-                    <div className="flex flex-col h-full rounded-lg bg-gray-300 justify-center items-center w-full">
+                <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[40%]">
+                    <div className="flex flex-col h-full rounded-lg bg-zinc-200/80 backdrop-blur-sm justify-center items-center w-full">
                         <div className="flex w-full h-[10%]">
                             <div className="w-1/4"></div>
                             <div className="flex-1 flex justify-center">
-                                {
+                                <span className=" text-gray-800 font-extrabold -mt-4 text-3xl">结算</span>
+                                {/* {
                                     player_info.normal_score == 2 ? <span className=" text-amber-500 font-extrabold -mt-4 text-3xl">胜利</span>
                                         : <span className="text-gray-700 font-extrabold -mt-4 text-3xl">失败</span>
-                                }
+                                } */}
                             </div>
                             <div className='w-1/4 flex justify-end'>
                                 <GameButton onClick={hanleColseEndModal} classes="!w-8 !h-8">
