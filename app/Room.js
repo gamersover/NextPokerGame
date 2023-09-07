@@ -33,9 +33,9 @@ function GameAvater({ imgUrl, playerState, playerTeam, playerRank, size = "sm", 
     }, [playerTeam])
 
     return (
-        <div className={`relative flex justify-center ${actived ? "animate-bounce" : ''}`}>
+        <div className={`relative flex ${actived ? "animate-bounce" : ''}`}>
             <Image src={imgUrl} width={50} height={50} alt={alt} className={`rounded-full shadow-md ${border_color} border-2 ${sizeType[size]} ${opacityValue}`} />
-            {playerRank && <div className='absolute -top-3 text-lg flex justify-center items-center font-bold rounded-md bg-opacity-50 text-red-700'>{playerRank}</div>}
+            {playerRank && <div className='absolute -bottom-0 -right-1 text-sm rounded-full shadow-md h-4 w-4 flex justify-center items-center bg-red-500 text-slate-100'>{playerRank}</div>}
         </div>
     )
 }

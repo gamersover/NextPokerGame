@@ -90,7 +90,7 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
 }
 
 
-function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
+function RoomNumberInput({ handleJoinRoom, handleCloseModal, setNotification }) {
     const [roomNumber, setRoomNumber] = useState([])
     // const [roomNumber, setRoomNumber] = useState(['0', '0', '0', '0', '0', '0']) TODO: 测试用
 
@@ -108,11 +108,16 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
         setRoomNumber(roomNumber.slice(0, -1))
     }
 
-    function handleHover() {
+    function handleCopyed() {
         navigator.clipboard.readText()
             .then(clipboardData => {
-                // 粘贴板中的内容现在存储在 clipboardData 变量中
-                setRoomNumber(clipboardData.split(''))
+                if (/^[0-9]{6}$/.test(clipboardData)) {
+                    // 粘贴板中的内容现在存储在 clipboardData 变量中
+                    setRoomNumber(clipboardData.split(''))
+                }
+                else {
+                    setNotification({ msg: "非法房间号" })
+                }
             })
             .catch(err => {
                 console.error('无法读取粘贴板内容：', err);
@@ -143,9 +148,9 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal }) {
 
             <div className="flex justify-center flex-col items-center flex-1 bg-orange-100 rounded-md w-[98%] mb-1">
                 <div className="flex justify-center items-center h-[8%]">
-                    <span className="text-xs text-zinc-700">请输入6位房间号，在游戏左上角可以找到</span>
+                    <span className="text-xs text-zinc-700">请输入6位房间号（游戏左上角）或点击下方粘贴</span>
                 </div>
-                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300" onPointerDown={handleHover}>
+                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300" onPointerDown={handleCopyed}>
                     <div className="grid grid-cols-6 w-full place-items-center">
                         {roomNumber.map((name, i) => (
                             <span key={i} className="text-3xl font-bold">{name}</span>
@@ -379,8 +384,8 @@ export default function Game({ setCurrPage }) {
             <HomeTitle />
             <HomeButton handleJoin={showModal} setNotification={setNotification} setCurrPage={setCurrPage} />
             {showJoinpop && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
-                    <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} />
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white min-w-[300px] max-h-[500px] w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                    <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} setNotification={setNotification} />
                 </Modal>
             )}
             {notification.msg && <Toast message={notification} duration={4000} color={"error"} />}
