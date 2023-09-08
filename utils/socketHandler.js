@@ -132,7 +132,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotificati
     })
 
     socket.on("disconnect", () => {
-        setNotification(() => ({ msg: "服务端断开连接", "key": 0 }))
+        setNotification(() => ({ msg: "服务端断开连接" }))
         socket.close()
         setTimeout(() => window.location.reload(), 2000)
     })

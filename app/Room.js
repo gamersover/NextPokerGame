@@ -210,18 +210,18 @@ function PlayerExitModal({ setIsShowExit }) {
     }
 
     return (
-        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/3 h-1/3 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75 !z-[99]">
+        <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75 !z-[99]">
             <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
-                <div className="w-11/12 text-red-400 h-1/3 flex items-center">
+                <div className="w-11/12 text-red-500 h-1/3 text-xl font-bold flex items-center">
                     ❗️用户离线
                 </div>
-                <div className="w-10/12 text-xs h-1/3">
+                <div className="w-10/12 text-md h-1/3">
                     房间其他用户已断开连接，等待重连中...
                 </div>
                 <div className="w-10/12 flex items-center justify-end h-1/3">
-                    <div className="flex">
-                        <GameButton classes="!h-7 w-full !font-normal text-xs" onClick={handleOk}>不等待，退出房间</GameButton>
-                        <GameButton classes="bg-red-400 text-white !h-7 w-12" onClick={handleCancel}>等待</GameButton>
+                    <div className="flex items-center gap-3">
+                        <GameButton classes="bg-red-200 text-rose-700 !h-10 w-24 !font-normal" onClick={handleOk}>退出房间</GameButton>
+                        <GameButton classes="bg-blue-500 text-white !h-10 w-24 !font-normal" onClick={handleCancel}>继续等待</GameButton>
                     </div>
                 </div>
             </div>
@@ -519,7 +519,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
     const [userInfo, setUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [notification, setNotification] = useState({ msg: null, key: 0 })
+    const [notification, setNotification] = useState({ msg: null })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
     const [isMouseDown, setIsMouseDown] = useState(false)
@@ -527,7 +527,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 
     function handlePrepare() {
         if (gameInfo.players_info[userInfo.player_id].state >= PlayerState.Prepared) {
-            setNotification(() => ({ msg: "已准备", key: 0 }))
+            setNotification(() => ({ msg: "已准备" }))
         }
         else {
             console.log("发送prepare_start消息")
@@ -539,7 +539,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
         if (gameInfo.players_info[userInfo.player_id].state === PlayerState.RoundStart) {
             const selectedCard = userInfo.all_cards.filter(card => card.selected).map(card => card.showName)
             if (selectedCard.length == 0) {
-                setNotification(() => ({ msg: "未选择任何牌", key: 0 }))
+                setNotification(() => ({ msg: "未选择任何牌" }))
                 return
             }
 
@@ -562,7 +562,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             // }
 
             if (result.status === -1 || result.status === 0) {
-                setNotification(() => ({ msg: result.msg, key: 0 }))
+                setNotification(() => ({ msg: result.msg }))
             }
             else if (result.status === 1) {
                 const all_cards = userInfo.all_cards.filter(card => !card.selected)
@@ -585,7 +585,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             }
         }
         else {
-            setNotification(() => ({ msg: "非出牌时间", key: 0 }))
+            setNotification(() => ({ msg: "非出牌时间" }))
         }
     }
 
@@ -615,11 +615,11 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                 })
             }
             else if (result.status === -1) {
-                setNotification(() => ({ msg: "无法跳过，请选择出牌", key: 0 }))
+                setNotification(() => ({ msg: "无法跳过，请选择出牌" }))
             }
         }
         else {
-            setNotification(() => ({ msg: "非出牌时间", key: 0 }))
+            setNotification(() => ({ msg: "非出牌时间" }))
         }
     }
 
@@ -951,22 +951,22 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                     <div className="flex w-1/6 items-center gap-2 justify-center mr-4">
                         {selected_joker_cards.length > 0 && (
                             // <div className="flex w-1/12 items-center justify-center mr-4">
-                                <GameButton
-                                    onClick={handleShowJokerSubstitute}
-                                    classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
-                                >
-                                    替换王牌
-                                </GameButton>
+                            <GameButton
+                                onClick={handleShowJokerSubstitute}
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
+                            >
+                                替换王牌
+                            </GameButton>
                             // </div>
                         )}
                         {player_info.state == PlayerState.GameEnd && (
                             // <div className="flex items-end">
-                                <GameButton
-                                    onClick={handleshowEndModal}
-                                    classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-indigo-300"
-                                >
-                                    显示结果
-                                </GameButton>
+                            <GameButton
+                                onClick={handleshowEndModal}
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-indigo-300"
+                            >
+                                显示结果
+                            </GameButton>
                             // </div>
                         )}
 

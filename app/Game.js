@@ -23,7 +23,7 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
 
     function createRoom() {
         if (userInfo.room_number !== null) {
-            setNotification({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间`, key: 0 })
+            setNotification({ msg: `你已在${userInfo.room_number}房间，无法创建其他房间` })
         }
         else {
             console.log("发送create_room消息")
@@ -51,7 +51,7 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
                     setCurrPage("room")
                 }
                 else {
-                    setNotification({ msg: data.msg, key: 0 })
+                    setNotification({ msg: data.msg })
                 }
             })
 
@@ -62,7 +62,7 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
 
     function joinRoom() {
         if (userInfo.room_number !== null) {
-            setNotification({ msg: `你已在${userInfo.room_number}房间，无法加入其他房间`, key: 0 })
+            setNotification({ msg: `你已在${userInfo.room_number}房间，无法加入其他房间` })
         }
         else {
             handleJoin()
@@ -325,7 +325,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 // closeModal()
-                setNotification({ msg: `加入房间失败，${data.msg}`, key: 0 })
+                setNotification({ msg: `加入房间失败，${data.msg}` })
             }
         })
 
@@ -355,7 +355,7 @@ export default function Game({ setCurrPage }) {
             }
             else {
                 handleNotJoin()
-                setNotification(() => ({ "msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}`, key: 0 }))
+                setNotification(() => ({ "msg": `房间${data.game_info.room_number}加入失败，原因：${data.msg}` }))
             }
         })
 
@@ -384,7 +384,7 @@ export default function Game({ setCurrPage }) {
             <HomeTitle />
             <HomeButton handleJoin={showModal} setNotification={setNotification} setCurrPage={setCurrPage} />
             {showJoinpop && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white min-w-[300px] max-h-[500px] w-[37%] h-[85%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white min-w-[300px] max-h-[500px] w-[37%] h-[80%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} setNotification={setNotification} />
                 </Modal>
             )}
