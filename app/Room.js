@@ -203,7 +203,6 @@ function GameCardsOut({ right, left, top, friend_card }) {
 function PlayerExitModal({ setIsShowExit, setCurrPage }) {
     function handleOk() {
         setCurrPage("game")
-        // TODO: 主动发送退出房间生气
     }
 
     function handleCancel() {
@@ -992,10 +991,6 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                             <div className="w-1/4"></div>
                             <div className="flex-1 flex justify-center">
                                 <span className=" text-gray-800 font-extrabold -mt-4 text-3xl">结算</span>
-                                {/* {
-                                    player_info.normal_score == 2 ? <span className=" text-amber-500 font-extrabold -mt-4 text-3xl">胜利</span>
-                                        : <span className="text-gray-700 font-extrabold -mt-4 text-3xl">失败</span>
-                                } */}
                             </div>
                             <div className='w-1/4 flex justify-end'>
                                 <GameButton onClick={hanleColseEndModal} classes="!w-8 !h-8">
@@ -1014,7 +1009,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                                 player => (
                                     <div key={player.player_id} className={`flex w-full text-blue-800 py-1 ${player.player_id == userInfo.player_id ? "bg-blue-100 rounded-md bg-opacity-80 font-bold" : ""}`}>
                                         <div className='flex flex-1 justify-end items-center'>
-                                            <Image src={`/avatars/Avatars Set Flat Style-${String(player.player_avatar).padStart(2, '0')}.png`} width={30} height={30} alt="" className="w-6 h-6 mr-1" />
+                                            <Image src={player.player_avatar} width={30} height={30} alt="" className="w-6 h-6 mr-1 rounded-full" />
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
