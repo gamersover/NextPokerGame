@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, Modal, Toast, CloseIcon } from "@/components";
+import { GameButton, Modal, Toast, CloseIcon, BackIcon } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -18,7 +18,7 @@ function HomeTitle() {
 function HomeButton({ handleJoin, setNotification, setCurrPage }) {
     const socket = useContext(SocketContext)
     const setSocket = useContext(SetSocketContext)
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
     function createRoom() {
@@ -218,7 +218,7 @@ function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSub
                     subsPlayersID.map(player_id => (
                         <div key={player_id} className={`${selectedPlayer == player_id ? "bg-white shadow-md" : "bg-white opacity-50"}  p-1 rounded-md flex flex-col items-center`} onClick={() => setSelectedPlayer(player_id)}>
                             <Image
-                                src={`/avatars/Avatars Set Flat Style-${String(subsPlayers[player_id].player_avatar).padStart(2, '0')}.png`}
+                                src={subsPlayers[player_id].player_avatar}
                                 width={50}
                                 height={50}
                                 alt=""
@@ -241,7 +241,7 @@ export default function Game({ setCurrPage }) {
     const [showJoinpop, setShowJoinpop] = useState(false)
     const setSocket = useContext(SetSocketContext)
     const socket = useContext(SocketContext)
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [notification, setNotification] = useState({ msg: null, key: 0 })
     const [subsPlayers, setSubsPlayers] = useState({})
@@ -365,6 +365,11 @@ export default function Game({ setCurrPage }) {
 
     return (
         <div className="flex flex-col justify-evenly items-center h-screen">
+            <div className="fixed flex items-center top-3 left-4">
+                <GameButton classes={"!h-8 !w-8"} onClick={() => setCurrPage("home")}>
+                    <BackIcon className={"h-full w-full"}/>
+                </GameButton>
+            </div>
             <div className="fixed flex items-center w-32 bg-opacity-10 h-10 top-2 right-2">
                 {
                     connectStatus ?

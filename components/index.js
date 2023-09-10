@@ -15,7 +15,9 @@ import {
     MessageIcon,
     CopyIcon,
     CheckedIcon,
-    ErrorIcon
+    ErrorIcon,
+    AddIcon,
+    BackIcon
 } from "./Icons";
 
 
@@ -36,5 +38,7 @@ export {
     MessageIcon,
     CopyIcon,
     CheckedIcon,
-    ErrorIcon
+    ErrorIcon,
+    AddIcon,
+    BackIcon
 }

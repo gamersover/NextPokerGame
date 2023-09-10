@@ -200,9 +200,10 @@ function GameCardsOut({ right, left, top, friend_card }) {
 }
 
 
-function PlayerExitModal({ setIsShowExit }) {
+function PlayerExitModal({ setIsShowExit, setCurrPage }) {
     function handleOk() {
-        window.location.reload()
+        setCurrPage("game")
+        // TODO: 主动发送退出房间生气
     }
 
     function handleCancel() {
@@ -314,8 +315,8 @@ function RoomNumberCard({ roomNumber }) {
 }
 
 
-function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, setCurrPage }) {
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [newMessageCnt, setNewMessageCnt] = useState(0)
     const socket = useContext(SocketContext)
@@ -386,6 +387,12 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
         }
     }
 
+    function handleExit() {
+        socket.emit("exit")
+        initUserInfo()
+        setCurrPage("game")
+    }
+
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
             <div className="flex w-[30%] justify-start gap-2">
@@ -398,7 +405,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                         <>
                             <GameBasicInfo
                                 playerName={player_info.player_name}
-                                playerAvatar={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`}
+                                playerAvatar={player_info.player_avatar}
                                 playerState={player_info.state}
                                 playerTeam={player_info.team}
                                 playerRank={player_info.rank}
@@ -423,7 +430,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                     </div>
                     {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
                 </GameButton>
-                <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500'} onClick={() => window.location.reload()}>
+                <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500'} onClick={handleExit}>
                     <div className='flex justify-center gap-1 items-center'>
                         <LogoutIcon className={"h-5 w-5"} />
                         <span>退出</span>
@@ -436,7 +443,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
 }
 
 function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
 
     const [left_player_id, right_player_id, top_player_id] = useMemo(() => {
@@ -466,7 +473,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                     <>
                         <GameBasicInfo
                             playerName={left_player_info.player_name}
-                            playerAvatar={`/avatars/Avatars Set Flat Style-${String(left_player_info.player_avatar).padStart(2, '0')}.png`}
+                            playerAvatar={left_player_info.player_avatar}
                             playerState={left_player_info.state}
                             playerTeam={left_player_info.team}
                             playerRank={left_player_info.rank}
@@ -502,7 +509,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                         />
                         <GameBasicInfo
                             playerName={right_player_info.player_name}
-                            playerAvatar={`/avatars/Avatars Set Flat Style-${String(right_player_info.player_avatar).padStart(2, '0')}.png`}
+                            playerAvatar={right_player_info.player_avatar}
                             playerState={right_player_info.state}
                             playerTeam={right_player_info.team}
                             playerRank={right_player_info.rank}
@@ -516,8 +523,8 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 }
 
 
-function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, setCurrPage }) {
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [notification, setNotification] = useState({ msg: null })
     const socket = useContext(SocketContext)
@@ -767,7 +774,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
             </div>
             {notification.msg && <Toast message={notification} duration={4000} color="error" />}
             {isShowExit && (
-                <PlayerExitModal setIsShowExit={setIsShowExit} />
+                <PlayerExitModal setIsShowExit={setIsShowExit} setCurrPage={setCurrPage}/>
             )}
             {firendHelpToast}
         </div>
@@ -866,7 +873,7 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
 }
 
 function GameFooter({ setShowValueCardsPlayerId }) {
-    const [userInfo, setUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
     const [showJokerSubs, setShowJokerSubs] = useState(false)
     const [showEndModal, setShowEndModal] = useState(false)
@@ -943,7 +950,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                 <div className="flex w-full h-full items-center justify-between">
                     <div className="flex h-full gap-3 items-center">
                         <div className='self-end'>
-                            <GameAvater imgUrl={`/avatars/Avatars Set Flat Style-${String(player_info.player_avatar).padStart(2, '0')}.png`} playerState={player_info.state} playerTeam={player_info.team} playerRank={player_info.rank} size='md' />
+                            <GameAvater imgUrl={player_info.player_avatar} playerState={player_info.state} playerTeam={player_info.team} playerRank={player_info.rank} size='md' />
                         </div>
                         <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
                         <ScoreContent playerScore={player_info.global_score} />
@@ -1041,7 +1048,7 @@ function GameFooter({ setShowValueCardsPlayerId }) {
 }
 
 
-export default function Room() {
+export default function Room({ setCurrPage }) {
     const [showValueCardsPlayerId, setShowValueCardsPlayerId] = useState(-1)
     useEffect(() => {
         let wakeLock = null;
@@ -1082,9 +1089,9 @@ export default function Room() {
 
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
-            <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
+            <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
             <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
-            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
+            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage}/>
             <GameFooter setShowValueCardsPlayerId={setShowValueCardsPlayerId} />
         </div>
     )

@@ -1,5 +1,5 @@
 import { GameState } from "@/utils/tool";
-import { createContext, useState } from "react";
+import { createContext, useId, useState } from "react";
 
 export const SocketContext = createContext(null)
 export const SetSocketContext = createContext(null)
@@ -19,6 +19,18 @@ function DataProvider({ children }) {
         out_cards: [],
     })
 
+    function initUserInfo() {
+        setUserInfo({
+            room_number: null,
+            player_name: userInfo.player_name,
+            player_avatar: userInfo.player_avatar,
+            player_id: null,
+            score: 0,
+            all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
+            out_cards: []
+        })
+    }
+
     const [gameInfo, setGameInfo] = useState({
         host_id: null,
         players_info: null,
@@ -34,7 +46,7 @@ function DataProvider({ children }) {
     })
 
     return (
-        <UserInfoContext.Provider value={[userInfo, setUserInfo]}>
+        <UserInfoContext.Provider value={[userInfo, setUserInfo, initUserInfo]}>
             <GameInfoContext.Provider value={[gameInfo, setGameInfo]}>
                 <SocketContext.Provider value={socket}>
                     <SetSocketContext.Provider value={setSocket}>

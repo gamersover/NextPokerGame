@@ -62,7 +62,7 @@ function CopyIcon({ className }) {
 function CheckedIcon({ className }) {
     return (
         <svg className={className} width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="m4 12 5.5 6L20 6" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="m4 12 5.5 6L20 6" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     )
 }
@@ -71,6 +71,27 @@ function ErrorIcon({ className }) {
     return (
         <svg className={className} width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM7.403 7.403a1 1 0 0 1 1.414 0L12 10.586l3.183-3.183a1 1 0 1 1 1.414 1.414L13.414 12l3.183 3.183a1 1 0 0 1-1.414 1.414L12 13.414l-3.183 3.183a1 1 0 0 1-1.414-1.414L10.586 12 7.403 8.817a1 1 0 0 1 0-1.414z" fill="#c92626" />
+        </svg>
+    )
+}
+
+function AddIcon({ className }) {
+    return (
+        <svg className={className} width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12H20M12 4V20" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    )
+}
+
+function BackIcon({ className }) {
+    return (
+        <svg className={className} fill="#000000" height="1em" width="1em" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 26.676 26.676">
+            <path d="M26.105,21.891c-0.229,0-0.439-0.131-0.529-0.346l0,0c-0.066-0.156-1.716-3.857-7.885-4.59
+                c-1.285-0.156-2.824-0.236-4.693-0.25v4.613c0,0.213-0.115,0.406-0.304,0.508c-0.188,0.098-0.413,0.084-0.588-0.033L0.254,13.815
+                C0.094,13.708,0,13.528,0,13.339c0-0.191,0.094-0.365,0.254-0.477l11.857-7.979c0.175-0.121,0.398-0.129,0.588-0.029
+                c0.19,0.102,0.303,0.295,0.303,0.502v4.293c2.578,0.336,13.674,2.33,13.674,11.674c0,0.271-0.191,0.508-0.459,0.562
+                C26.18,21.891,26.141,21.891,26.105,21.891z"/>
         </svg>
     )
 }
@@ -84,5 +105,7 @@ export {
     MessageIcon,
     CopyIcon,
     CheckedIcon,
-    ErrorIcon
+    ErrorIcon,
+    AddIcon,
+    BackIcon
 }

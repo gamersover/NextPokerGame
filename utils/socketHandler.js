@@ -3,6 +3,7 @@ import { SERVER_ADDR } from "./conf";
 
 
 function connectSocket(setConnectStatus, setSocket) {
+    // TODO: socket没有关闭是否可以不必重新创建？
     const socket = io(
         SERVER_ADDR,
         {
@@ -132,6 +133,7 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotificati
     })
 
     socket.on("disconnect", () => {
+        console.log("收到了disconnect消息")
         setNotification(() => ({ msg: "服务端断开连接" }))
         socket.close()
         setTimeout(() => window.location.reload(), 2000)
