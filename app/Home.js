@@ -33,7 +33,7 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
     function handleInputChanged(e) {
         const userName = e.target.value
         const sanitizedValue = userName.replace(/[\u4e00-\u9fa5]/g, '__')
-        if (sanitizedValue.length <= 10) {
+        if (sanitizedValue.length <= 20) {
             handleUserNameChanged(userName)
             setShowInputError(false)
         }
@@ -87,26 +87,49 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
     }
 
     return (
-        <div className="flex flex-col items-center justify-evenly h-[90%] w-full">
-            <div className="text-2xl h-10">用户设置</div>
-            <div className="flex flex-col justify-evenly items-center w-full flex-1">
-                <div className="flex justify-center items-center rounded-full h-20 w-20 border-2 border-slate-100" onClick={handleShowAvatars}>
-                    {
-                        avatar ? (
-                            <NextImage width={100} height={100} alt='' src={avatar} className="h-full w-full rounded-full bg-slate-100" />
-                        ) : "选择头像"
-                    }
+        <div className="flex flex-col items-center justify-evenly h-full w-full">
+            <div className="text-2xl flex items-center h-16">设置</div>
+            <div className="flex flex-col w-full gap-4 border-y-[1px] px-5 py-3">
+                <p className="text-lg font-bold">用户设置</p>
+                <div className="flex items-center w-full justify-between">
+                    <div>用户头像</div>
+                    <div className="flex justify-center items-center rounded-full h-8 w-8 border-2 border-slate-100" onClick={handleShowAvatars}>
+                        {
+                            avatar ? (
+                                <NextImage width={100} height={100} alt='' src={avatar} className="h-full w-full rounded-full bg-slate-100" />
+                            ) : "选择头像"
+                        }
+                    </div>
                 </div>
-                <div className="w-2/3 h-15 flex flex-col items-center justify-center">
-                    <input
-                        type="text"
-                        placeholder="请输入用户名"
-                        value={username}
-                        onChange={(e) => handleInputChanged(e)}
-                        className="w-5/6 h-2/3 text-lg p-2 border-b-2 text-center border-blue-100 focus:border-blue-500 focus:outline-none bg-transparent"
-                    />
-                    <span className="text-red-500 text-xs h-1/3 pt-1">{showInputError ? "用户名长度已至限" : ""}</span>
+                <div className="flex items-center w-full justify-between">
+                    <div>用户名</div>
+                    <div className="flex w-32 flex-col items-end justify-center">
+                        <input
+                            type="text"
+                            placeholder="请输入用户名"
+                            value={username}
+                            onChange={(e) => handleInputChanged(e)}
+                            className="w-full text-right border-r-2 border-transparent focus:border-blue-500 focus:outline-none bg-transparent"
+                        />
+                        {/* <span className="text-red-500 text-xs h-1/3 pt-1">{showInputError ? "用户名长度已至限" : ""}</span> */}
+                    </div>
                 </div>
+            </div>
+            <div className="flex flex-col w-full gap-4 flex-1 px-5 py-3">
+                <p className="text-lg font-bold">主题设置</p>
+                <label className="flex items-center">
+                    <input type='radio' className="h-5 w-5"/>
+                    <span className="ml-3">普通模式</span>
+                </label>
+                <label className="flex items-center">
+                    <input type='radio' className="h-5 w-5"/>
+                    <span className="ml-3">暗黑模式</span>
+                </label>
+                <label className="flex items-center">
+                    <input type='radio' className="h-5 w-5"/>
+                    <span className="ml-3">跟随系统</span>
+                </label>
+
             </div>
             {
                 showAvatars && (
@@ -215,12 +238,12 @@ export default function Home({ setCurrPage }) {
                 <div className="flex flex-col justify-evenly items-center flex-1 h-full">
                     <HomeTitle />
                     <HomeImage />
-                    <HomeButton setCurrPage={setCurrPage} shouldStartDisable={playerName.length == 0 || playerAvatar===null} handleShowUserPanel={handleShowUserPanel} />
+                    <HomeButton setCurrPage={setCurrPage} shouldStartDisable={playerName.length == 0 || playerAvatar === null} handleShowUserPanel={handleShowUserPanel} />
                 </div>
                 {
                     (
                         <>
-                            <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 left-2/3 flex w-1/3 shadow-md bg-white h-full justify-center items-center z-[100]`}>
+                            <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 right-0 flex w-[30%] shadow-md rounded-md bg-white h-full justify-center items-center z-[100]`}>
                                 <UserProfilePanel
                                     avatar={playerAvatar}
                                     username={playerName}
