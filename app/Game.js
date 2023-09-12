@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, Modal, Toast, CloseIcon, BackIcon } from "@/components";
+import { GameButton, Modal, Toast, CloseIcon, BackIcon, TimesIcon } from "@/components";
 import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -71,14 +71,14 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
 
     return (
         <div className="flex w-8/12 h-5/6 justify-evenly items-center">
-            <div className="bg-[url('/pokers/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center drop-shadow-2xl active:scale-90" onClick={joinRoom}>
+            <div className="bg-[url('/pokers/fish.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-lg dark:shadow-slate-600 active:scale-90" onClick={joinRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-blue-200 font-bold mb-2">
                         加入房间
                     </span>
                 </div>
             </div>
-            <div className="bg-[url('/pokers/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center drop-shadow-2xl active:scale-90" onClick={createRoom}>
+            <div className="bg-[url('/pokers/frog.svg')] bg-cover bg-center w-1/3 h-5/6 rounded-md flex justify-center items-center shadow-lg dark:shadow-slate-600 active:scale-90" onClick={createRoom}>
                 <div className="w-11/12 h-full border-cyan-150 flex justify-center items-end">
                     <span className="text-2xl text-red-200 font-bold mb-2">
                         创建房间
@@ -137,20 +137,20 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal, setNotification }) 
                 <div className="w-1/12">
                 </div>
                 <div className="flex flex-1 justify-center items-center">
-                    <span className="font-bold text-xl text-red-400">加入房间</span>
+                    <span className="font-bold text-xl text-red-400 dark:text-red-500">加入房间</span>
                 </div>
                 <div className="w-1/12 flex justify-center items-center">
                     <GameButton classes={""} onClick={handleCloseModal}>
-                        <CloseIcon className={"w-full h-full"} />
+                        <TimesIcon className={"w-full h-full dark:fill-white"} />
                     </GameButton>
                 </div>
             </div>
 
-            <div className="flex justify-center flex-col items-center flex-1 bg-orange-100 rounded-md w-[98%] mb-1">
+            <div className="flex justify-center flex-col items-center flex-1 bg-orange-100 dark:bg-gray-700 rounded-md w-[98%] mb-1">
                 <div className="flex justify-center items-center h-[8%]">
-                    <span className="text-xs text-zinc-700">请输入6位房间号（游戏左上角）或点击下方粘贴</span>
+                    <span className="text-xs text-zinc-700 dark:text-gray-300">请输入6位房间号（游戏左上角）或点击下方粘贴</span>
                 </div>
-                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300" onPointerDown={handleCopyed}>
+                <div className="flex justify-center items-center rounded-md h-[18%] w-[90%] bg-stone-300 dark:bg-neutral-500" onPointerDown={handleCopyed}>
                     <div className="grid grid-cols-6 w-full place-items-center">
                         {roomNumber.map((name, i) => (
                             <span key={i} className="text-3xl font-bold">{name}</span>
@@ -163,7 +163,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal, setNotification }) 
                             return (
                                 <GameButton
                                     key={i}
-                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-blue-300'
+                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-blue-300 dark:text-white dark:bg-blue-800'
                                     onClick={handleReset}
                                 >
                                     {name}
@@ -174,7 +174,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal, setNotification }) 
                             return (
                                 <GameButton
                                     key={i}
-                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-red-300'
+                                    classes='!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-red-300 dark:text-white dark:bg-red-800'
                                     onClick={handleDelete}
                                 >
                                     {name}
@@ -185,7 +185,7 @@ function RoomNumberInput({ handleJoinRoom, handleCloseModal, setNotification }) 
                             return (
                                 <GameButton
                                     key={i}
-                                    classes="!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300"
+                                    classes="!w-full !h-full !rounded-md text-lg font-bold text-gray-700 shadow-md bg-amber-300 dark:text-white dark:bg-amber-600"
                                     onClick={() => handleNumberInput(name)}
                                 >
                                     {name}
@@ -216,21 +216,21 @@ function SubstituePlayers({ subsPlayers, subsPlayersID, handleNotJoin, handleSub
             <div className="w-full flex justify-evenly">
                 {
                     subsPlayersID.map(player_id => (
-                        <div key={player_id} className={`${selectedPlayer == player_id ? "bg-white shadow-md" : "bg-white opacity-50"}  p-1 rounded-md flex flex-col items-center`} onClick={() => setSelectedPlayer(player_id)}>
+                        <div key={player_id} className={`${selectedPlayer == player_id ? "shadow-md" : "opacity-50"} w-20 bg-white dark:bg-gray-500 p-1 rounded-md flex flex-col items-center justify-center`} onClick={() => setSelectedPlayer(player_id)}>
                             <Image
                                 src={subsPlayers[player_id].player_avatar}
                                 width={50}
                                 height={50}
                                 alt=""
                             />
-                            <span>{subsPlayers[player_id].player_name}</span>
+                            <span className="w-full text-center text-ellipsis whitespace-nowrap overflow-hidden">{subsPlayers[player_id].player_name}</span>
                         </div>
                     ))
                 }
             </div>
             <div className="w-10/12 flex justify-end">
-                <GameButton classes="w-16 !h-10 mx-2 font-bold text-red-400" onClick={handleNotJoin}>不加入</GameButton>
-                <GameButton classes="w-16 !h-10 !rounded-md font-bold text-gray-700 shadow-md bg-blue-300" onClick={() => handleSubsJoin(selectedPlayer)}>加入</GameButton>
+                <GameButton classes="w-16 !h-10 mx-2 font-bold text-red-400 dark:text-red-500" onClick={handleNotJoin}>不加入</GameButton>
+                <GameButton classes="w-16 !h-10 !rounded-md font-bold text-gray-700 dark:text-white shadow-md bg-blue-300 dark:bg-blue-700" onClick={() => handleSubsJoin(selectedPlayer)}>加入</GameButton>
             </div>
         </div>
     )
@@ -367,7 +367,7 @@ export default function Game({ setCurrPage }) {
         <div className="flex flex-col justify-evenly items-center h-screen">
             <div className="fixed flex items-center top-3 left-4">
                 <GameButton classes={"!h-8 !w-8"} onClick={() => setCurrPage("home")}>
-                    <BackIcon className={"h-full w-full"}/>
+                    <BackIcon className={"h-full w-full dark:fill-white"}/>
                 </GameButton>
             </div>
             <div className="fixed flex items-center w-32 bg-opacity-10 h-10 top-2 right-2">
@@ -389,13 +389,13 @@ export default function Game({ setCurrPage }) {
             <HomeTitle />
             <HomeButton handleJoin={showModal} setNotification={setNotification} setCurrPage={setCurrPage} />
             {showJoinpop && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white min-w-[300px] max-h-[500px] w-[37%] h-[80%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-white dark:bg-neutral-800 min-w-[300px] max-h-[500px] w-[37%] h-[80%] lg:h-[60%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <RoomNumberInput handleJoinRoom={handleJoinRoom} handleCloseModal={closeModal} setNotification={setNotification} />
                 </Modal>
             )}
             {notification.msg && <Toast message={notification} duration={4000} color={"error"} />}
             {subsPlayersID.length > 0 && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 w-[37%] h-[85%] md:h-[70%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-1/2 left-1/2 bg-slate-100 dark:bg-neutral-700 w-[37%] h-[85%] md:h-[70%] -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle='backdrop backdrop-blur-md'>
                     <SubstituePlayers subsPlayers={subsPlayers} subsPlayersID={subsPlayersID} handleNotJoin={handleNotJoin} handleSubsJoin={handleSubsJoin} />
                 </Modal>
             )}

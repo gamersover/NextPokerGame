@@ -1,6 +1,6 @@
 "use client";
 
-import { GameButton, Modal, BackDrop, CloseIcon, UserSettingIcon, AddIcon } from "@/components"
+import { GameButton, Modal, BackDrop, CloseIcon, UserSettingIcon, AddIcon, TimesIcon } from "@/components"
 import { useEffect, useRef, useState } from "react"
 import NextImage from "next/image"
 import { useLocalStorage } from "@/utils/hooks";
@@ -21,13 +21,14 @@ function HomeImage() {
     )
 }
 
-function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars }) {
+function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars, theme, setTheme }) {
     const imageList = Array.from(new Array(50)).map((_, index) => {
         return `/avatars/Avatars Set Flat Style-${String(index + 1).padStart(2, '0')}.png`
     })
     const [showInputError, setShowInputError] = useState(false)
     const [avatars, setAvatars] = useState(imageList)
     const fileInputRef = useRef(null)
+    const [themeOption, setThemeOption] = useState(theme)
 
 
     function handleInputChanged(e) {
@@ -86,10 +87,28 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
         fileInputRef.current.click()
     }
 
+    function handleThemeChange(e) {
+        setThemeOption(e.target.value)
+    }
+
+    useEffect(() => {
+        if (themeOption !== 'follow') {
+            setTheme(themeOption)
+        }
+        else {
+            if (matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme('dark')
+            }
+            else {
+                setTheme('light')
+            }
+        }
+    }, [themeOption, setTheme])
+
     return (
         <div className="flex flex-col items-center justify-evenly h-full w-full">
             <div className="text-2xl flex items-center h-16">设置</div>
-            <div className="flex flex-col w-full gap-4 border-y-[1px] px-5 py-3">
+            <div className="flex flex-col w-full gap-4 border-y-[1px] dark:border-gray-600 px-5 py-3">
                 <p className="text-lg font-bold">用户设置</p>
                 <div className="flex items-center w-full justify-between">
                     <div>用户头像</div>
@@ -109,7 +128,7 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
                             placeholder="请输入用户名"
                             value={username}
                             onChange={(e) => handleInputChanged(e)}
-                            className="w-full text-right border-r-2 border-transparent focus:border-blue-500 focus:outline-none bg-transparent"
+                            className={`w-full text-right border-r-2 border-transparent ${showInputError ? 'focus:border-red-500' : 'focus:border-blue-500'} focus:outline-none bg-transparent`}
                         />
                         {/* <span className="text-red-500 text-xs h-1/3 pt-1">{showInputError ? "用户名长度已至限" : ""}</span> */}
                     </div>
@@ -118,24 +137,24 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
             <div className="flex flex-col w-full gap-4 flex-1 px-5 py-3">
                 <p className="text-lg font-bold">主题设置</p>
                 <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5"/>
+                    <input type='radio' className="h-5 w-5" value='light' checked={themeOption==='light'} onChange={(e) => handleThemeChange(e)}/>
                     <span className="ml-3">普通模式</span>
                 </label>
                 <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5"/>
+                    <input type='radio' className="h-5 w-5" value='dark' checked={themeOption==='dark'} onChange={(e) => handleThemeChange(e)}/>
                     <span className="ml-3">暗黑模式</span>
                 </label>
                 <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5"/>
+                    <input type='radio' className="h-5 w-5" value='follow' checked={themeOption==='follow'} onChange={(e) => handleThemeChange(e)}/>
                     <span className="ml-3">跟随系统</span>
                 </label>
 
             </div>
             {
                 showAvatars && (
-                    <Modal contentStyle="fixed flex flex-col items-center rounded-lg justify-center shadow-md top-0 h-full left-0 bg-white w-full z-[100]" backdropStyle=''>
+                    <Modal contentStyle="fixed flex flex-col items-center rounded-lg justify-center shadow-md top-0 h-full left-0 bg-white dark:bg-neutral-900 w-full z-[100]" backdropStyle=''>
                         <div className="flex items-center text-xl h-[15%]">头像选择</div>
-                        <div className="flex justify-center items-center w-11/12 flex-1 mb-5 flex-wrap overflow-y-auto border-slate-100 border-y-[1px] shadow-inner">
+                        <div className="flex justify-center items-center w-11/12 flex-1 mb-5 flex-wrap overflow-y-auto border-slate-100 dark:border-gray-600 border-y-[1px] shadow-inner dark:shadow-slate-800">
                             <input
                                 type="file"
                                 accept="image/*" // 只接受图片文件
@@ -145,7 +164,7 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
                             />
                             <div className="m-4">
                                 <GameButton classes={"!h-14 !w-14 !rounded-full border-2"} onClick={triggleFileInput}>
-                                    <AddIcon className={"h-1/2 w-1/2"} />
+                                    <AddIcon className={"h-1/2 w-1/2 stroke-black dark:stroke-white"} />
                                 </GameButton>
                             </div>
                             {
@@ -174,7 +193,7 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
         <div className="flex flex-col justify-center items-center h-24">
             <GameButton
                 onClick={shouldStartDisable ? handleShowUserPanel : handleStart}
-                classes={`w-24 !h-10 text-lg font-bold drop-shadow-md text-gray-700 ${shouldStartDisable ? "bg-red-200" : "bg-blue-200"}`}
+                classes={`w-24 !h-10 text-lg font-bold drop-shadow-md text-gray-700 dark:text-white ${shouldStartDisable ? "bg-red-200 dark:bg-red-500" : "bg-blue-200 dark:bg-blue-500"}`}
             >
                 {shouldStartDisable ? "用户设置" : "开始游戏"}
             </GameButton>
@@ -182,7 +201,7 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
     )
 }
 
-export default function Home({ setCurrPage }) {
+export default function Home({ theme, setTheme, setCurrPage }) {
     const [showUserPanel, setShowUserPanel] = useState(false)
     const [showAvatars, setShowAvatars] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
@@ -225,14 +244,14 @@ export default function Home({ setCurrPage }) {
     return (
         <>
             {isLoading && (
-                <div className="fixed top-0 left-0 w-full h-full bg-slate-100 flex items-center justify-center z-[200]">
+                <div className="fixed top-0 left-0 w-full h-full bg-slate-100 dark:bg-slate-600 flex items-center justify-center z-[200]">
                     <div className="text-red-500 text-2xl">加载中...</div>
                 </div>
             )}
             <div className="flex justify-evenly items-center h-screen w-screen">
                 <div className={`fixed top-3 right-4 ${showUserPanel ? 'z-[101]' : ''}`}>
                     <GameButton classes="!w-8 !h-8" onClick={showAvatars ? handleCloseAvatars : handleShowUserPanel}>
-                        {showUserPanel ? <CloseIcon className={"w-full h-full"} /> : <UserSettingIcon className={"w-full h-full"} />}
+                        {showUserPanel ? <TimesIcon className={"w-full h-full dark:fill-white"} /> : <UserSettingIcon className={"w-full h-full dark:fill-white"} />}
                     </GameButton>
                 </div>
                 <div className="flex flex-col justify-evenly items-center flex-1 h-full">
@@ -243,7 +262,7 @@ export default function Home({ setCurrPage }) {
                 {
                     (
                         <>
-                            <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 right-0 flex w-[30%] shadow-md rounded-md bg-white h-full justify-center items-center z-[100]`}>
+                            <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 right-0 flex w-[30%] shadow-md dark:shadow-slate-300 rounded-md bg-white dark:bg-neutral-900 h-full justify-center items-center z-[100]`}>
                                 <UserProfilePanel
                                     avatar={playerAvatar}
                                     username={playerName}
@@ -251,6 +270,8 @@ export default function Home({ setCurrPage }) {
                                     handleAvatarSelected={handleAvatarSelected}
                                     showAvatars={showAvatars}
                                     handleShowAvatars={handleShowAvatars}
+                                    theme={theme}
+                                    setTheme={setTheme}
                                 />
                             </div>
                             {showUserPanel && <BackDrop classes={"backdrop backdrop-brightness-50"} onClick={handleCloseUserPanel} />}

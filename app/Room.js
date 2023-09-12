@@ -44,18 +44,20 @@ function GameAvater({ imgUrl, playerState, playerTeam, playerRank, size = "sm", 
 function ScoreContent({ playerScore }) {
     const scoreContent = (
         <>
-            <span className="text-yellow-600">{playerScore ? playerScore : '0'}</span>
+            <span className="text-yellow-600 dark:text-yellow-400">{playerScore ? playerScore : '0'}</span>
         </>
     )
     return (
-        <CircleContent circleTitle={"分"} circleChild={scoreContent} titleBgColor={'bg-cyan-100'} circleSize="small" contentSize="small" />
+        <CircleContent circleTitle={"分"} titleBgColor={'bg-cyan-100 dark:bg-cyan-800'} circleSize="small" contentSize="small">
+            {scoreContent}
+        </CircleContent>
     )
 }
 
 
 function GameBasicInfo({ playerName, playerAvatar, playerState, playerTeam, playerRank, finalScore }) {
     return (
-        <div className="flex flex-col w-14 items-center justify-between rounded-t-full rounded-md bg-white bg-opacity-30">
+        <div className="flex flex-col w-14 items-center justify-between rounded-t-full rounded-md bg-white dark:bg-neutral-500 bg-opacity-30">
             <GameAvater imgUrl={playerAvatar} playerState={playerState} playerTeam={playerTeam} playerRank={playerRank} />
             <div className="flex justify-center items-center h-4 text-xs w-[90%] my-1">
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">{playerName || '无名称'}</span>
@@ -95,7 +97,7 @@ function ValueCards({ shouldShowAll, valueCards, resetShowValueCardsPlayerId }) 
                 )}
             </div>
             {showAllFinal && (
-                <Modal contentStyle={`fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-300 bg-opacity-80 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 ${showAllFinal ? 'z-[90]' : 'z-[60]'}`} backdropStyle={`backdrop ${showAllFinal ? '!z-[89]' : '!z-[59]'} backdrop-blur-md`} onClose={closeShowAll}>
+                <Modal contentStyle={`fixed flex rounded-lg justify-center shadow-md left-1/2 top-1/2 bg-slate-300/80 bg-slate-600/30 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 ${showAllFinal ? 'z-[90]' : 'z-[60]'}`} backdropStyle={`backdrop ${showAllFinal ? '!z-[89]' : '!z-[59]'} backdrop-blur-md`} onClose={closeShowAll}>
                     <div className='w-full h-full flex flex-col justify-between items-center'>
                         <div className="flex w-full h-[18%] items-center justify-center pr-1">
                             <div className="flex-1"></div>
@@ -104,7 +106,7 @@ function ValueCards({ shouldShowAll, valueCards, resetShowValueCardsPlayerId }) 
                             </div>
                             <div className="flex justify-end items-center flex-1">
                                 <GameButton onClick={closeShowAll} classes={"w-8 h-8"}>
-                                    <CloseIcon className={"w-full h-full"} />
+                                    <TimesIcon className={"w-full h-full dark:fill-white"} />
                                 </GameButton>
                             </div>
                         </div>
@@ -200,18 +202,14 @@ function GameCardsOut({ right, left, top, friend_card }) {
 }
 
 
-function PlayerExitModal({ setIsShowExit, setCurrPage }) {
-    function handleOk() {
-        setCurrPage("game")
-    }
-
+function PlayerExitModal({ setIsShowExit, setCurrPage, handleExit }) {
     function handleCancel() {
         setIsShowExit(false)
     }
 
     return (
         <Modal contentStyle="fixed shadow-lg flex flex-col justify-center items-center top-1/2 left-1/2 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]" backdropStyle="backdrop backdrop-brightness-75 !z-[99]">
-            <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br from-red-100 via-red-50 to-red-100">
+            <div className="flex rounded-lg h-full w-full flex-col justify-around items-center bg-gradient-to-br dark:from-neutral-700 dark:via-neutral-700 dark:to-neutral-700 from-red-100 via-red-50 to-red-100">
                 <div className="w-11/12 text-red-500 h-1/3 text-xl font-bold flex items-center">
                     ❗️用户离线
                 </div>
@@ -220,8 +218,8 @@ function PlayerExitModal({ setIsShowExit, setCurrPage }) {
                 </div>
                 <div className="w-10/12 flex items-center justify-end h-1/3">
                     <div className="flex items-center gap-3">
-                        <GameButton classes="bg-red-200 text-rose-700 !h-10 w-24 !font-normal" onClick={handleOk}>退出房间</GameButton>
-                        <GameButton classes="bg-blue-500 text-white !h-10 w-24 !font-normal" onClick={handleCancel}>继续等待</GameButton>
+                        <GameButton classes="bg-red-400 dark:bg-red-800 text-gray-100 dark:text-gray-300 !h-10 w-24 !font-normal" onClick={handleExit}>退出房间</GameButton>
+                        <GameButton classes="bg-blue-400 dark:bg-blue-800 text-white !h-10 w-24 !font-normal" onClick={handleCancel}>继续等待</GameButton>
                     </div>
                 </div>
             </div>
@@ -256,7 +254,7 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
     }, [handleShowLast, message])
 
     return (
-        <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-1/3 h-1/2 lg:h-1/3 bg-slate-700 bg-opacity-50 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
+        <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-1/3 h-1/2 lg:h-1/3 bg-slate-700/50 dark:bg-neutral-900/80 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
             <div className='h-full flex flex-col'>
                 <div className='flex-grow flex-col mb-1 border-red-100 overflow-hidden overflow-y-auto' style={{ WebkitOverflowScrolling: 'touch' }} ref={messageContentRef}>
                     {
@@ -274,13 +272,13 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
                 <div className='flex justify-center items-end mb-2 w-full'>
                     <div className='flex w-full justify-between'>
                         <input
-                            className='pl-2 mr-2 flex-1 rounded-md text-black border-2 focus:border-red-200 focus:outline-none'
+                            className='pl-2 mr-2 flex-1 rounded-md text-black border-[1px] dark:border-gray-300 focus:border-red-200 focus:dark:border-red-500 focus:outline-none dark:bg-neutral-500 dark:text-white'
                             placeholder='输入聊天内容'
                             value={message}
                             onChange={handleInputChanged}
                             maxLength={20}
                         />
-                        <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-200 text-black'}`} onClick={handleSendMessage}>
+                        <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-200 dark:bg-red-500 dark:text-white text-black'}`} onClick={handleSendMessage}>
                             发送
                         </GameButton>
                     </div>
@@ -307,7 +305,7 @@ function RoomNumberCard({ roomNumber }) {
         <>
             {roomNumber}
             <GameButton onClick={copyRoomNumber} classes={"active:!transform-none"}>
-                {isCopyed ? <CheckedIcon className={"h-5 w-5"} /> : <CopyIcon className={"h-5 w-5"} />}
+                {isCopyed ? <CheckedIcon className={"h-5 w-5 dark:stroke-white"} /> : <CopyIcon className={"h-5 w-5 dark:fill-white"} />}
             </GameButton>
         </>
     )
@@ -344,8 +342,8 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                     src={`/pokers/${gameInfo.friend_card}_small.svg`}
                     className="w-7"
                 />
-                <TimesIcon />
-                <span className="text-violet-800 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
+                <TimesIcon className={"w-5 h-5 dark:fill-white"}/>
+                <span className="text-violet-800 dark:text-violet-400 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
             </div>
         )
     }, [gameInfo.friend_card, gameInfo.friend_card_cnt])
@@ -395,8 +393,12 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
     return (
         <div className={`flex mt-1 px-5 pt-1 w-screen items-start justify-between ${height}`}>
             <div className="flex w-[30%] justify-start gap-2">
-                <CircleContent circleTitle={'房'} circleChild={<RoomNumberCard roomNumber={userInfo.room_number} />} titleBgColor={'bg-cyan-100'} />
-                <CircleContent circleTitle={'朋'} circleChild={friend_card} titleBgColor={'bg-red-100'} />
+                <CircleContent circleTitle={'房'} circleChild={<RoomNumberCard roomNumber={userInfo.room_number} />} titleBgColor={'bg-cyan-100 dark:bg-cyan-800'}>
+                    <RoomNumberCard roomNumber={userInfo.room_number} />
+                </CircleContent>
+                <CircleContent circleTitle={'朋'} titleBgColor={'bg-red-100 dark:bg-red-800'}>
+                    {friend_card}
+                </CircleContent>
             </div>
             <div className="flex flex-1 justify-center">
                 <div className="flex w-24">
@@ -422,16 +424,16 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                 </div>
             </div>
             <div className='w-[30%] h-10 flex justify-end'>
-                <GameButton classes={`${isShowMessage ? "bg-red-300" : "bg-white"} relative !w-20 !h-full border-2 border-red-300 mr-2`} onClick={handleShowMessage}>
+                <GameButton classes={`${isShowMessage ? "bg-red-300 dark:bg-red-500" : "bg-white dark:bg-neutral-800"} relative !w-20 !h-full border-2 border-red-300 dark:border-red-500 mr-2`} onClick={handleShowMessage}>
                     <div className='flex justify-center gap-1 items-center'>
-                        <MessageIcon className={"h-5 w-5"} />
+                        <MessageIcon className={"h-5 w-5 dark:fill-white"} />
                         <span>消息</span>
                     </div>
                     {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
                 </GameButton>
-                <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500'} onClick={handleExit}>
+                <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500 dark:bg-neutral-800'} onClick={handleExit}>
                     <div className='flex justify-center gap-1 items-center'>
-                        <LogoutIcon className={"h-5 w-5"} />
+                        <LogoutIcon className={"h-5 w-5 dark:fill-white"} />
                         <span>退出</span>
                     </div>
                 </GameButton>
@@ -558,14 +560,14 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
 
 
             // TODO: 方便快速测试
-            // if (selectedCard.length >= 21) {
-            //     result = {
-            //         status: 1,
-            //         raw_cards: [],
-            //         cards_info: [],
-            //         cards_value: 0
-            //     }
-            // }
+            if (selectedCard.length >= 21) {
+                result = {
+                    status: 1,
+                    raw_cards: [],
+                    cards_info: [],
+                    cards_value: 0
+                }
+            }
 
             if (result.status === -1 || result.status === 0) {
                 setNotification(() => ({ msg: result.msg }))
@@ -684,6 +686,12 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
         }
     }, [gameInfo.state, gameInfo.exited_player_id])
 
+    function handleExit() {
+        socket.emit("exit")
+        initUserInfo()
+        setCurrPage("game")
+    }
+
     const firendHelpToast = useMemo(() => {
         if (gameInfo.friend_help_info && gameInfo.friend_help_info.is_friend_help) {
             return (
@@ -717,7 +725,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
 
     switch (player_info.state) {
         case PlayerState.InGame:
-            content = <GameButton classes={"bg-red-200 bg-red-200 border-[1px] border-red-400"} onClick={handlePrepare}>准备</GameButton>
+            content = <GameButton classes={"bg-red-200 bg-red-200 border-[1px] border-red-400 dark:bg-red-700 dark:border-red-300"} onClick={handlePrepare}>准备</GameButton>
             break
         case PlayerState.Prepared:
             content = <span>已准备</span>
@@ -725,9 +733,9 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
         case PlayerState.RoundStart:
             content = (
                 <div className="flex gap-3 justify-between">
-                    <GameButton classes={"bg-gray-100 border-[1px] border-gray-400"} onClick={handleSelectAll}>全选</GameButton>
-                    <GameButton classes={"bg-red-200 border-[1px] border-red-400"} onClick={handlePass}>跳过</GameButton>
-                    <GameButton classes={"bg-blue-300 border-[1px] border-blue-400"} onClick={handleGo}>出牌</GameButton>
+                    <GameButton classes={"bg-gray-100 border-[1px] border-gray-400 dark:bg-gray-700 dark:border-gray-400"} onClick={handleSelectAll}>全选</GameButton>
+                    <GameButton classes={"bg-red-200 border-[1px] border-red-400 dark:bg-red-700 dark:border-red-300"} onClick={handlePass}>跳过</GameButton>
+                    <GameButton classes={"bg-blue-300 border-[1px] border-blue-400 dark:bg-blue-700 dark:border-blue-300"} onClick={handleGo}>出牌</GameButton>
                 </div>
             )
             break
@@ -743,7 +751,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
             content = <CardsPanel cards={render_out_cards} size="small" />
             break
         case PlayerState.GameEnd:
-            content = <GameButton classes={"w-20 bg-red-200 border-[1px] border-red-400"} onClick={handleNextRound}>再来一局</GameButton>
+            content = <GameButton classes={"w-20 bg-red-200 border-[1px] border-red-400 dark:bg-red-400"} onClick={handleNextRound}>再来一局</GameButton>
             break
         default:
             content = null
@@ -773,7 +781,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
             </div>
             {notification.msg && <Toast message={notification} duration={4000} color="error" />}
             {isShowExit && (
-                <PlayerExitModal setIsShowExit={setIsShowExit} setCurrPage={setCurrPage}/>
+                <PlayerExitModal setIsShowExit={setIsShowExit} setCurrPage={setCurrPage} handleExit={handleExit}/>
             )}
             {firendHelpToast}
         </div>
@@ -787,7 +795,7 @@ function NumberSelectPanel({ selectedNumber, onNumberSelected }) {
             {numbers.map((number, i) => (
                 <GameButton
                     key={i}
-                    classes={`${number ? 'col-span-1' : 'col-span-3'} !w-full !h-full !rounded-md text-gray-700 ${number == selectedNumber ? 'shadow-inner bg-amber-100' : 'shadow-md bg-amber-300'}`}
+                    classes={`${number ? 'col-span-1' : 'col-span-3'} !w-full !h-full !rounded-md text-gray-700 dark:text-white ${number == selectedNumber ? 'shadow-inner bg-amber-100 dark:bg-[#342e0b]' : 'shadow-md dark:bg-[#655413] bg-amber-300'}`}
                     onClick={() => onNumberSelected(number)}
                 >
                     {number ? number : "重置"}
@@ -854,16 +862,15 @@ function JokerSubstituter({ jokerCards, handleJokerSubstitute, handleCloseModal 
                 </div>
                 <div className="flex justify-end items-center flex-1">
                     <button className="flex items-center justify-end w-7 h-7" onClick={handleCloseModal}>
-                        <CloseIcon className={"w-full h-full"} />
-                        {/* <Image src="/close.svg" width={20} height={20} alt="" className="w-5/12"/> */}
+                        <TimesIcon className={"w-full h-full dark:fill-white"} />
                     </button>
                 </div>
             </div>
             <div className="flex justify-evenly w-full items-center h-[85%] pb-1">
-                <div className="flex justify-center w-1/2 h-full m-1 items-center bg-amber-50 rounded-md">
+                <div className="flex justify-center w-1/2 h-full m-1 items-center bg-amber-50 dark:bg-yellow-800/40 rounded-md">
                     <SubstituteJokerCards jokerCards={jokerCards} selectedCard={selectedCard} handleCardChange={handleCardChange} handleCloseModal={handleCloseModal} />
                 </div>
-                <div className="flex justify-center w-1/2 h-full mr-1 items-center bg-amber-50 rounded-md">
+                <div className="flex justify-center w-1/2 h-full mr-1 items-center bg-amber-50 dark:bg-yellow-800/40 rounded-md">
                     <NumberSelectPanel selectedNumber={selectedNumber} onNumberSelected={handleNumberSelected} />
                 </div>
             </div>
@@ -944,57 +951,55 @@ function GameFooter({ setShowValueCardsPlayerId }) {
 
     return (
         <>
-            <div className="bg-black bg-opacity-5 w-screen h-7 fixed left-0 bottom-0 z-0"></div>
+            <div className=" bg-transparent/10 dark:bg-black w-screen h-7 fixed left-0 bottom-0 z-0"></div>
             <div className="fixed bottom-0 flex w-screen px-5 z-10 h-7">
                 <div className="flex w-full h-full items-center justify-between">
                     <div className="flex h-full gap-3 items-center">
                         <div className='self-end'>
                             <GameAvater imgUrl={player_info.player_avatar} playerState={player_info.state} playerTeam={player_info.team} playerRank={player_info.rank} size='md' />
                         </div>
-                        <CircleContent circleTitle={"名"} circleChild={userInfo.player_name} titleBgColor={'bg-cyan-100'} circleSize={"small"} />
+                        <CircleContent circleTitle={"名"} titleBgColor={'bg-cyan-100 dark:bg-cyan-800'} circleSize={"small"}>
+                            <span className='whitespace-nowrap text-ellipsis overflow-hidden'>{userInfo.player_name}</span>
+                        </CircleContent>
                         <ScoreContent playerScore={player_info.global_score} />
                     </div>
                     <div className="flex w-1/6 items-center gap-2 justify-center mr-4">
                         {selected_joker_cards.length > 0 && (
-                            // <div className="flex w-1/12 items-center justify-center mr-4">
                             <GameButton
                                 onClick={handleShowJokerSubstitute}
-                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200"
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-amber-200 dark:bg-[#655413] dark:text-white"
                             >
                                 替换王牌
                             </GameButton>
-                            // </div>
                         )}
                         {player_info.state == PlayerState.GameEnd && (
-                            // <div className="flex items-end">
                             <GameButton
                                 onClick={handleshowEndModal}
-                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-indigo-300"
+                                classes="!rounded-md shadow-md text-gray-600 text-sm !h-6 !w-full bg-indigo-300 dark:bg-indigo-700 dark:text-white"
                             >
                                 显示结果
                             </GameButton>
-                            // </div>
                         )}
 
                     </div>
                 </div>
             </div>
             {showJokerSubs && (
-                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100 bg-opacity-40 backdrop-blur-sm h-56 w-96 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
+                <Modal contentStyle="fixed flex rounded-lg justify-center shadow-md top-[40%] left-1/2 bg-slate-100/40 dark:bg-neutral-600/40 backdrop-blur-sm h-56 w-96 -translate-x-1/2 -translate-y-1/2 z-[70]" backdropStyle="backdrop !z-[69] backdrop-brightness-75">
                     <JokerSubstituter jokerCards={selected_joker_cards} handleJokerSubstitute={handleJokerSubstitute} handleCloseModal={handleCloseModal} />
                 </Modal>
             )}
             {showEndModal && (
                 <Modal contentStyle="fixed flex flex-col justify-center top-1/2 left-1/2 w-1/2 h-[60%] lg:h-[40%] -translate-x-1/2 -translate-y-1/2 z-[80]" backdropStyle="backdrop !z-[79] backdrop-brightness-[40%]">
-                    <div className="flex flex-col h-full rounded-lg bg-zinc-200/80 backdrop-blur-sm justify-center items-center w-full">
+                    <div className="flex flex-col h-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800/80 backdrop-blur-sm justify-center items-center w-full">
                         <div className="flex w-full h-[10%]">
                             <div className="w-1/4"></div>
                             <div className="flex-1 flex justify-center">
-                                <span className=" text-gray-800 font-extrabold -mt-4 text-3xl">结算</span>
+                                <span className=" text-gray-800 dark:text-gray-200 font-extrabold -mt-4 text-3xl">结算</span>
                             </div>
                             <div className='w-1/4 flex justify-end'>
                                 <GameButton onClick={hanleColseEndModal} classes="!w-8 !h-8">
-                                    <CloseIcon className={"w-full h-full"} />
+                                    <TimesIcon className={"w-full h-full dark:fill-white"} />
                                 </GameButton>
                             </div>
                         </div>
@@ -1002,12 +1007,12 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                             <div className="flex w-full">
                                 <span className="flex flex-1"></span>
                                 {["昵称", "输赢", "赏值", "分数", "总分"].map(title => (
-                                    <span key={title} className="flex w-[18%] justify-center text-amber-500 font-bold">{title}</span>
+                                    <span key={title} className="flex w-[18%] justify-center text-amber-500 dark:text-amber-300 font-bold">{title}</span>
                                 ))}
                             </div>
                             {game_result.map(
                                 player => (
-                                    <div key={player.player_id} className={`flex w-full text-blue-800 py-1 ${player.player_id == userInfo.player_id ? "bg-blue-100 rounded-md bg-opacity-80 font-bold" : ""}`}>
+                                    <div key={player.player_id} className={`flex w-full text-blue-800 dark:text-blue-300 py-1 ${player.player_id == userInfo.player_id ? "bg-blue-100/80 dark:bg-neutral-700/80 rounded-md font-bold" : ""}`}>
                                         <div className='flex flex-1 justify-end items-center'>
                                             <Image src={player.player_avatar} width={30} height={30} alt="" className="w-6 h-6 mr-1 rounded-full" />
                                         </div>
@@ -1015,21 +1020,21 @@ function GameFooter({ setShowValueCardsPlayerId }) {
                                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{player.player_name}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300' : (player.normal_score < 0 ? 'bg-rose-300' : '')}`}>{player.normal_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.normal_score > 0 ? 'bg-emerald-300 dark:bg-emerald-700' : (player.normal_score < 0 ? 'bg-rose-300 dark:bg-rose-800' : '')}`}>{player.normal_score}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
                                             {player.value_score}
                                             {player.value_score > 0 && (
                                                 <GameButton classes={"!w-5 h-full p-0"} onClick={() => setShowValueCardsPlayerId(player.player_id)}>
-                                                    <InfoIcon className={"w-full h-full"} />
+                                                    <InfoIcon className={"w-full h-full dark:fill-white"} />
                                                 </GameButton>)
                                             }
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300' : (player.final_score < 0 ? 'bg-rose-300' : '')}`}>{player.final_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.final_score > 0 ? 'bg-emerald-300 dark:bg-emerald-700' : (player.final_score < 0 ? 'bg-rose-300 dark:bg-rose-800' : '')}`}>{player.final_score}</span>
                                         </div>
                                         <div className={`flex w-[18%] justify-center items-center`}>
-                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300' : (player.global_score < 0 ? 'bg-rose-300' : '')}`}>{player.global_score}</span>
+                                            <span className={`rounded-xl w-2/3 flex items-center justify-center ${player.global_score > 0 ? 'bg-emerald-300 dark:bg-emerald-700' : (player.global_score < 0 ? 'bg-rose-300 dark:bg-rose-800' : '')}`}>{player.global_score}</span>
                                         </div>
                                     </div>
                                 )
@@ -1083,7 +1088,7 @@ export default function Room({ setCurrPage }) {
     }
 
     return (
-        <div className="flex flex-col justify-between items-center h-screen bg-blue-100">
+        <div className="flex flex-col justify-between items-center h-screen bg-blue-100 dark:bg-neutral-800">
             <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
             <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
             <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage}/>

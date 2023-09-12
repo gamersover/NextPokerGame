@@ -17,7 +17,7 @@ function GameCard({ id, name, isSelected, isFriendCard, handleMouseUp, handleMou
                 src={`/pokers/${name}.svg`}
                 width={20}
                 height={20}
-                className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isFriendCard ? 'border-red-400 rounded border-[1px]' : ''} ${isSelected ? '-translate-y-3' : ''}`}
+                className={`shadow-md ${imageWidth} ${marginLeft} h-auto transition-transform ${isFriendCard ? 'border-red-400 dark:border-red-800 rounded border-[1px]' : ''} ${isSelected ? '-translate-y-3' : ''}`}
                 style={{ zIndex: id }}
                 alt=""
                 onPointerDown={(e) => handleDown(e)}

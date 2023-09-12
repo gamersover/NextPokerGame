@@ -146,10 +146,6 @@ img {
   animation: fade-in 8s;
 }
 
-.game-body {
-  @apply bg-blue-50 fixed w-full h-full overflow-hidden
-}
-
 .game-button {
   @apply rounded-lg font-medium py-2 px-2
 }
