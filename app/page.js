@@ -26,7 +26,7 @@ export default function App() {
     return (
         <DataProvider>
             <body className={`${theme}`}>
-                <div className="bg-blue-50 fixed w-full h-full overflow-hidden dark:text-white dark:bg-black">
+                <div className="bg-blue-50 fixed w-full h-full overflow-hidde dark:text-gray-200 dark:bg-black">
                     {renderPage()}
                 </div>
             </body>

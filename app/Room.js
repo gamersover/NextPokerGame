@@ -233,6 +233,12 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
     const [isSending, setIsSending] = useState(false)
     const messageContentRef = useRef(null)
 
+    const preserveMessages = [
+        "你牌打得也忒好了",
+        "搞快点 搞快点",
+        "快点啊，等得我花都谢了"
+    ]
+
     function handleInputChanged(e) {
         setMessage(e.target.value)
     }
@@ -254,33 +260,43 @@ function MessagePanel({ closePanel, sendMessage, messages, handleShowLast }) {
     }, [handleShowLast, message])
 
     return (
-        <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-1/3 h-1/2 lg:h-1/3 bg-slate-700/50 dark:bg-neutral-900/80 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
+        <Modal contentStyle="fixed flex flex-col px-2 top-12 right-28 w-5/12 h-[60%] lg:h-1/3 bg-slate-700/50 dark:bg-neutral-900/80 rounded-md text-sm text-white z-[50]" backdropStyle="backdrop !z-[49]" onClose={closePanel}>
             <div className='h-full flex flex-col'>
                 <div className='flex-grow flex-col mb-1 border-red-100 overflow-hidden overflow-y-auto' style={{ WebkitOverflowScrolling: 'touch' }} ref={messageContentRef}>
                     {
                         messages.map((msg, i) => {
                             return (
                                 <div key={i} className='flex items-center border-b-[1px] h-10'>
-                                    <span className='text-green-400'>{msg.player_name}：</span>
-                                    <span>{msg.msg}</span>
+                                    <span className='text-green-400 dark:text-green-700'>{msg.player_name}：</span>
+                                    <span className='dark:text-gray-300'>{msg.msg}</span>
                                 </div>
                             )
                         })
                     }
-                    <div className='flex justify-center text-gray-300 items-center pt-1 h-5'>无更多消息</div>
+                    <div className='flex justify-center text-gray-300 dark:text-gray-400 items-center pt-1 h-5'>无更多消息</div>
                 </div>
-                <div className='flex justify-center items-end mb-2 w-full'>
-                    <div className='flex w-full justify-between'>
-                        <input
-                            className='pl-2 mr-2 flex-1 rounded-md text-black border-[1px] dark:border-gray-300 focus:border-red-200 focus:dark:border-red-500 focus:outline-none dark:bg-neutral-500 dark:text-white'
-                            placeholder='输入聊天内容'
-                            value={message}
-                            onChange={handleInputChanged}
-                            maxLength={20}
-                        />
-                        <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-200 dark:bg-red-500 dark:text-white text-black'}`} onClick={handleSendMessage}>
-                            发送
-                        </GameButton>
+                <div className='flex flex-col justify-center items-end mb-2 w-full'>
+                    <div className='flex w-full mb-1 gap-1'>
+                        {preserveMessages.map((msg, i) => {
+                            return (
+                            <GameButton key={i} classes='bg-red-100 dark:bg-red-900 dark:text-gray-100 !h-auto !w-auto !rounded-md !p-1 !font-normal text-black !text-xs' onClick={() => { setMessage(msg) }}>
+                                {msg}
+                            </GameButton>)
+                        })}
+                    </div>
+                    <div className='flex justify-center items-end w-full'>
+                        <div className='flex w-full justify-between'>
+                            <input
+                                className='pl-2 mr-2 flex-1 rounded-md text-black border-[1px] dark:border-gray-300 focus:border-red-200 focus:dark:border-red-500 focus:outline-none dark:bg-neutral-500 dark:text-white'
+                                placeholder='输入聊天内容'
+                                value={message}
+                                onChange={handleInputChanged}
+                                maxLength={20}
+                            />
+                            <GameButton shouldDisable={isSending} classes={`${isSending ? 'bg-gray-300 text-gray-700 opacity-50' : 'bg-red-300 dark:bg-red-500 dark:text-white text-black'}`} onClick={handleSendMessage}>
+                                发送
+                            </GameButton>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -342,7 +358,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                     src={`/pokers/${gameInfo.friend_card}_small.svg`}
                     className="w-7"
                 />
-                <TimesIcon className={"w-5 h-5 dark:fill-white"}/>
+                <TimesIcon className={"w-5 h-5 dark:fill-white"} />
                 <span className="text-violet-800 dark:text-violet-400 font-bold text-lg">{gameInfo.friend_card_cnt}</span>
             </div>
         )
@@ -781,7 +797,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
             </div>
             {notification.msg && <Toast message={notification} duration={4000} color="error" />}
             {isShowExit && (
-                <PlayerExitModal setIsShowExit={setIsShowExit} setCurrPage={setCurrPage} handleExit={handleExit}/>
+                <PlayerExitModal setIsShowExit={setIsShowExit} setCurrPage={setCurrPage} handleExit={handleExit} />
             )}
             {firendHelpToast}
         </div>
@@ -1091,7 +1107,7 @@ export default function Room({ setCurrPage }) {
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100 dark:bg-neutral-800">
             <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
             <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
-            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage}/>
+            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
             <GameFooter setShowValueCardsPlayerId={setShowValueCardsPlayerId} />
         </div>
     )
