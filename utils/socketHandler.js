@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 import { SERVER_ADDR } from "./conf";
+import { rank_raw_cards } from "./card";
 
 
 function connectSocket(setConnectStatus, setSocket) {
@@ -26,7 +27,7 @@ function connectSocket(setConnectStatus, setSocket) {
 }
 
 
-function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification) {
+function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification, isReverse) {
     socket.on("join_room_global", (data) => {
         console.log("收到了join_room_global消息")
         if (data.status == 1) {
@@ -50,9 +51,10 @@ function handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotificati
 
     socket.on("game_start_global", (data) => {
         console.log("收到了game_start_global消息")
+        const all_cards = rank_raw_cards(data.user_info.all_cards, isReverse)
         setUserInfo((userInfo) => ({
             ...userInfo,
-            all_cards: data.user_info.all_cards.map((card, i) => ({
+            all_cards: all_cards.map((card, i) => ({
                 id: i,
                 name: card,
                 showName: card,

@@ -1,11 +1,12 @@
 "use client";
 
 import { GameButton, Modal, Toast, CloseIcon, BackIcon, TimesIcon } from "@/components";
-import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext } from "@/components/GameContext";
+import { GameInfoContext, SetSocketContext, SocketContext, UserInfoContext, GameSettingsContext } from "@/components/GameContext";
 import Image from "next/image";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { connectSocket, handleSocket } from "@/utils/socketHandler";
 import { useLocalStorage } from "@/utils/hooks";
+import { rank_raw_cards } from "@/utils/card";
 
 function HomeTitle() {
     return (
@@ -18,8 +19,9 @@ function HomeTitle() {
 function HomeButton({ handleJoin, setNotification, setCurrPage }) {
     const socket = useContext(SocketContext)
     const setSocket = useContext(SetSocketContext)
-    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
+    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
 
     function createRoom() {
         if (userInfo.room_number !== null) {
@@ -55,7 +57,7 @@ function HomeButton({ handleJoin, setNotification, setCurrPage }) {
                 }
             })
 
-            handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification)
+            handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification, gameSettings.isCardsOrderReverse)
             setSocket(socket)
         }
     }
@@ -241,8 +243,9 @@ export default function Game({ setCurrPage }) {
     const [showJoinpop, setShowJoinpop] = useState(false)
     const setSocket = useContext(SetSocketContext)
     const socket = useContext(SocketContext)
-    const [userInfo, setUserInfo, initUserInfo] = useContext(UserInfoContext)
+    const [userInfo, setUserInfo, initInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
+    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
     const [notification, setNotification] = useState({ msg: null, key: 0 })
     const [subsPlayers, setSubsPlayers] = useState({})
     const [subsPlayersID, setSubsPlayersID] = useState([])
@@ -332,6 +335,7 @@ export default function Game({ setCurrPage }) {
         socket.on("player_reconnect", data => {
             console.log("收到了player_reconnect消息")
             if (data.status == 1) {
+                const all_cards = rank_raw_cards(data.user_info.all_cards, gameSettings.isCardsOrderReverse)
                 setGameInfo((gameInfo) => ({
                     ...gameInfo,
                     players_info: data.players_info,
@@ -346,7 +350,7 @@ export default function Game({ setCurrPage }) {
                 }))
                 setUserInfo((userInfo) => ({
                     ...userInfo,
-                    all_cards: data.user_info.all_cards.map((card, i) => ({ id: i, name: card, showName: card, selected: false, isFriendCard: card.split("-").slice(0, 1)[0] == data.game_info.friend_card })),
+                    all_cards: all_cards.map((card, i) => ({ id: i + 1, name: card, showName: card, selected: false, isFriendCard: card.split("-").slice(0, 1)[0] == data.game_info.friend_card })),
                     player_id: data.user_info.player_id,
                     player_name: data.players_info[data.user_info.player_id].player_name,
                     room_number: data.game_info.room_number
@@ -359,7 +363,7 @@ export default function Game({ setCurrPage }) {
             }
         })
 
-        handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification)
+        handleSocket(socket, setSocket, setUserInfo, setGameInfo, setNotification, gameSettings.isCardsOrderReverse)
         setSocket(socket)
     }, [socket, userInfo])
 
@@ -367,7 +371,7 @@ export default function Game({ setCurrPage }) {
         <div className="flex flex-col justify-evenly items-center h-screen">
             <div className="fixed flex items-center top-3 left-4">
                 <GameButton classes={"!h-8 !w-8"} onClick={() => setCurrPage("home")}>
-                    <BackIcon className={"h-full w-full dark:fill-white"}/>
+                    <BackIcon className={"h-full w-full dark:fill-white"} />
                 </GameButton>
             </div>
             <div className="fixed flex items-center w-32 bg-opacity-10 h-10 top-2 right-2">

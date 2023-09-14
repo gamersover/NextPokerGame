@@ -5,6 +5,7 @@ export const SocketContext = createContext(null)
 export const SetSocketContext = createContext(null)
 export const UserInfoContext = createContext(null)
 export const GameInfoContext = createContext(null)
+export const GameSettingsContext = createContext(null)
 
 
 function DataProvider({ children }) {
@@ -15,21 +16,13 @@ function DataProvider({ children }) {
         player_avatar: -1,
         player_id: null,
         score: 0,
-        all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
+        all_cards: [].map((card) => ({ name: card, showName: card, selected: false })),
         out_cards: [],
     })
-
-    function initUserInfo() {
-        setUserInfo({
-            room_number: null,
-            player_name: userInfo.player_name,
-            player_avatar: userInfo.player_avatar,
-            player_id: null,
-            score: 0,
-            all_cards: [].map((card) => ({name: card, showName: card, selected: false})),
-            out_cards: []
-        })
-    }
+    const [gameSettings, setGameSettings] = useState({
+        isMusicOn: true,
+        isCardsOrderReverse: false
+    })
 
     const [gameInfo, setGameInfo] = useState({
         host_id: null,
@@ -45,12 +38,39 @@ function DataProvider({ children }) {
         exited_player_id: null
     })
 
+    function initInfo() {
+        setUserInfo({
+            room_number: null,
+            player_name: userInfo.player_name,
+            player_avatar: userInfo.player_avatar,
+            player_id: null,
+            score: 0,
+            all_cards: [].map((card) => ({ name: card, showName: card, selected: false })),
+            out_cards: []
+        })
+        setGameInfo({
+            host_id: null,
+            players_info: null,
+            curr_player_id: null,
+            friend_card: null,
+            friend_card_cnt: 2,
+            last_valid_cards_info: null,
+            is_start: null, // 是否为首个出牌用户
+            state: GameState.GameNotStart,
+            friend_help_info: null,
+            messages: [],
+            exited_player_id: null
+        })
+    }
+
     return (
-        <UserInfoContext.Provider value={[userInfo, setUserInfo, initUserInfo]}>
+        <UserInfoContext.Provider value={[userInfo, setUserInfo, initInfo]}>
             <GameInfoContext.Provider value={[gameInfo, setGameInfo]}>
                 <SocketContext.Provider value={socket}>
                     <SetSocketContext.Provider value={setSocket}>
-                        {children}
+                        <GameSettingsContext.Provider value={[gameSettings, setGameSettings]}>
+                            {children}
+                        </GameSettingsContext.Provider>
                     </SetSocketContext.Provider>
                 </SocketContext.Provider>
             </GameInfoContext.Provider>

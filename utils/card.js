@@ -18,7 +18,7 @@ const CARDS_RANK = {
 
 const NORMAL_CARDS = new Set(['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'])
 const SPECIAL_CARDS = new Set(['XW', 'DW'])
-const COLORS = { '红桃': 'r', '方块': 'r', '梅花': 'b', '黑桃': 'b' }
+const COLORS = { '红桃': 'r1', '方块': 'r2', '梅花': 'b1', '黑桃': 'b2' }
 
 const CardsType = {
     NOT_VALID: 0,
@@ -116,7 +116,7 @@ function get_card_rank(card) {
 
 function get_card_color(card) {
     if (card.includes("_")) {
-        return COLORS[card.split("_")[1]]
+        return COLORS[card.split("_")[1]][0]
     }
     return null
 }
@@ -202,14 +202,48 @@ function get_cards_info(cards) {
     return new CardsInfo(CardsType.NOT_VALID)
 }
 
-function rank_raw_cards(raw_out_cards) {
-    // let out_cards = raw_out_cards.split(" ")
+function rank_raw_cards(raw_out_cards, desc = false) {
 
-    raw_out_cards.sort(
-        (a, b) => {
-            return get_card_rank(a.split("-").slice(-1)[0]) - get_card_rank(b.split("-").slice(-1)[0])
+    function get_card_info(card) {
+        let name = null, color = null, rank = null, joker = null
+        if(card.includes("_")) {
+            [name, color] = card.split("_")
+            rank = CARDS_RANK[name]
+            color = COLORS[color]
         }
-    )
+        else if (card.includes("-")){
+            [joker, name] = card.split("-")
+            rank = CARDS_RANK[name]
+            color = joker === "XW" ? "z1" : "z2"
+        }
+        else {
+            rank = CARDS_RANK[card]
+            color = card === "XW" ? "z1" : "z2"
+        }
+        return [rank, color]
+    }
+
+    raw_out_cards.sort((a, b) => {
+        const [aRank, aColor] = get_card_info(a)
+        const [bRank, bColor] = get_card_info(b)
+
+        if (aRank < bRank) {
+            return -1
+        }
+        if (aRank > bRank) {
+            return 1
+        }
+        if (aColor < bColor) {
+            return -1
+        }
+        if (aColor > bColor) {
+            return 1
+        }
+        return 0
+    })
+    if (desc) {
+        raw_out_cards.reverse()
+    }
     return raw_out_cards
 }
 
@@ -312,6 +346,7 @@ function get_cards_value(raw_cards) {
 
 export {
     is_valid_out_cards,
+    rank_raw_cards,
     OutState,
     SPECIAL_CARDS
 }

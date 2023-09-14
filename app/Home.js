@@ -1,9 +1,10 @@
 "use client";
 
 import { GameButton, Modal, BackDrop, CloseIcon, UserSettingIcon, AddIcon, TimesIcon } from "@/components"
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import NextImage from "next/image"
 import { useLocalStorage } from "@/utils/hooks";
+import { GameSettingsContext } from "@/components/GameContext";
 
 function HomeTitle() {
     return (
@@ -21,7 +22,7 @@ function HomeImage() {
     )
 }
 
-function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars, theme, setTheme }) {
+function UserSettingPanel({ avatar, username, handleUserNameChanged, handleAvatarSelected, showAvatars, handleShowAvatars, theme, setTheme, gameSettings, setGameSettings }) {
     const imageList = Array.from(new Array(50)).map((_, index) => {
         return `/avatars/Avatars Set Flat Style-${String(index + 1).padStart(2, '0')}.png`
     })
@@ -105,50 +106,75 @@ function UserProfilePanel({ avatar, username, handleUserNameChanged, handleAvata
         }
     }, [themeOption, setTheme])
 
-    return (
-        <div className="flex flex-col items-center justify-evenly h-full w-full">
-            <div className="text-2xl flex items-center h-16">设置</div>
-            <div className="flex flex-col w-full gap-4 border-y-[1px] dark:border-gray-600 px-5 py-3">
-                <p className="text-lg font-bold">用户设置</p>
-                <div className="flex items-center w-full justify-between">
-                    <div>用户头像</div>
-                    <div className="flex justify-center items-center rounded-full h-8 w-8 border-2 border-slate-100" onClick={handleShowAvatars}>
-                        {
-                            avatar ? (
-                                <NextImage width={100} height={100} alt='' src={avatar} className="h-full w-full rounded-full bg-slate-100" />
-                            ) : "选择头像"
-                        }
-                    </div>
-                </div>
-                <div className="flex items-center w-full justify-between">
-                    <div>用户名</div>
-                    <div className="flex w-32 flex-col items-end justify-center">
-                        <input
-                            type="text"
-                            placeholder="请输入用户名"
-                            value={username}
-                            onChange={(e) => handleInputChanged(e)}
-                            className={`w-full text-right border-r-2 border-transparent ${showInputError ? 'focus:border-red-500' : 'focus:border-blue-500'} focus:outline-none bg-transparent`}
-                        />
-                        {/* <span className="text-red-500 text-xs h-1/3 pt-1">{showInputError ? "用户名长度已至限" : ""}</span> */}
-                    </div>
-                </div>
-            </div>
-            <div className="flex flex-col w-full gap-4 flex-1 px-5 py-3">
-                <p className="text-lg font-bold">主题设置</p>
-                <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5" value='light' checked={themeOption==='light'} onChange={(e) => handleThemeChange(e)}/>
-                    <span className="ml-3">普通模式</span>
-                </label>
-                <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5" value='dark' checked={themeOption==='dark'} onChange={(e) => handleThemeChange(e)}/>
-                    <span className="ml-3">暗黑模式</span>
-                </label>
-                <label className="flex items-center">
-                    <input type='radio' className="h-5 w-5" value='follow' checked={themeOption==='follow'} onChange={(e) => handleThemeChange(e)}/>
-                    <span className="ml-3">跟随系统</span>
-                </label>
+    function ToggleMusic() {
+        setGameSettings({ ...gameSettings, isMusicOn: !gameSettings.isMusicOn })
+    }
 
+    function ToggleCardsOrder() {
+        setGameSettings({ ...gameSettings, isCardsOrderReverse: !gameSettings.isCardsOrderReverse })
+    }
+
+    return (
+        <div className="flex flex-col items-center h-full w-full">
+            <div className="text-2xl absolute top-0 flex justify-center w-full items-center h-12 border-b-2 dark:border-gray-900 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md">设置</div>
+            <div className="flex flex-col w-full pt-12 overflow-hidden overflow-y-scroll">
+                <div className="flex flex-col w-full gap-4 border-b-[1px] dark:border-gray-600 px-5 py-3">
+                    <p className="text-lg font-bold">用户设置</p>
+                    <div className="flex items-center w-full justify-between">
+                        <div>用户头像</div>
+                        <div className="flex justify-center items-center rounded-full h-8 w-8 border-2 border-slate-100" onClick={handleShowAvatars}>
+                            {
+                                avatar ? (
+                                    <NextImage width={100} height={100} alt='' src={avatar} className="h-full w-full rounded-full bg-slate-100" />
+                                ) : "+"
+                            }
+                        </div>
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                        <div>用户名</div>
+                        <div className="flex w-32 flex-col items-end justify-center">
+                            <input
+                                type="text"
+                                placeholder="请输入用户名"
+                                value={username}
+                                onChange={(e) => handleInputChanged(e)}
+                                className={`w-full text-right border-r-2 border-transparent ${showInputError ? 'focus:border-red-500' : 'focus:border-blue-500'} focus:outline-none bg-transparent`}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-col w-full gap-4 flex-1 px-5 py-3 border-b-[1px] dark:border-gray-600">
+                    <p className="text-lg font-bold">游戏设置</p>
+                    <div className="flex items-center w-full justify-between">
+                        <div>音乐</div>
+                        <label className="relative inline-flex items-center">
+                            <input type="checkbox" value="" className="sr-only peer" checked={gameSettings.isMusicOn} onChange={ToggleMusic}/>
+                            <div className="w-11 h-6 bg-gray-200 rounded-full dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                        <div>牌序（从大到小）</div>
+                        <label className="relative inline-flex items-center">
+                            <input type="checkbox" value="" className="sr-only peer" checked={gameSettings.isCardsOrderReverse} onChange={ToggleCardsOrder}/>
+                            <div className="w-11 h-6 bg-gray-200 rounded-full dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+                <div className="flex flex-col w-full gap-4 flex-1 px-5 py-3">
+                    <p className="text-lg font-bold">主题设置</p>
+                    <label className="flex items-center">
+                        <input type='radio' className="h-5 w-5" value='light' checked={themeOption === 'light'} onChange={(e) => handleThemeChange(e)} />
+                        <span className="ml-3">普通模式</span>
+                    </label>
+                    <label className="flex items-center">
+                        <input type='radio' className="h-5 w-5" value='dark' checked={themeOption === 'dark'} onChange={(e) => handleThemeChange(e)} />
+                        <span className="ml-3">暗黑模式</span>
+                    </label>
+                    <label className="flex items-center">
+                        <input type='radio' className="h-5 w-5" value='follow' checked={themeOption === 'follow'} onChange={(e) => handleThemeChange(e)} />
+                        <span className="ml-3">跟随系统</span>
+                    </label>
+                </div>
             </div>
             {
                 showAvatars && (
@@ -193,7 +219,7 @@ function HomeButton({ shouldStartDisable, handleShowUserPanel, setCurrPage }) {
         <div className="flex flex-col justify-center items-center h-24">
             <GameButton
                 onClick={shouldStartDisable ? handleShowUserPanel : handleStart}
-                classes={`w-24 !h-10 text-lg font-bold drop-shadow-md text-gray-700 dark:text-white ${shouldStartDisable ? "bg-red-200 dark:bg-red-500" : "bg-blue-200 dark:bg-blue-500"}`}
+                classes={`w-24 !h-10 text-lg font-bold drop-shadow-md text-gray-700 dark:text-white ${shouldStartDisable ? "bg-red-200 dark:bg-red-400" : "bg-blue-200 dark:bg-blue-400"}`}
             >
                 {shouldStartDisable ? "用户设置" : "开始游戏"}
             </GameButton>
@@ -207,6 +233,7 @@ export default function Home({ theme, setTheme, setCurrPage }) {
     const [isLoading, setIsLoading] = useState(true)
     const [playerName, setPlayerName] = useLocalStorage("player_name", "")
     const [playerAvatar, setPlayerAvatar] = useLocalStorage("player_avatar", null)
+    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -263,7 +290,7 @@ export default function Home({ theme, setTheme, setCurrPage }) {
                     (
                         <>
                             <div className={`${showUserPanel ? "animate-right-in" : "animate-right-out"} fixed top-0 right-0 flex w-[30%] shadow-md dark:shadow-slate-300 rounded-md bg-white dark:bg-neutral-900 h-full justify-center items-center z-[100]`}>
-                                <UserProfilePanel
+                                <UserSettingPanel
                                     avatar={playerAvatar}
                                     username={playerName}
                                     handleUserNameChanged={handleUserNameChanged}
@@ -272,6 +299,8 @@ export default function Home({ theme, setTheme, setCurrPage }) {
                                     handleShowAvatars={handleShowAvatars}
                                     theme={theme}
                                     setTheme={setTheme}
+                                    gameSettings={gameSettings}
+                                    setGameSettings={setGameSettings}
                                 />
                             </div>
                             {showUserPanel && <BackDrop classes={"backdrop backdrop-brightness-50"} onClick={handleCloseUserPanel} />}
