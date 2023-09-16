@@ -1,6 +1,3 @@
-"use client";
-import { useState } from "react";
-
 export default function GameButton({ children, classes, onClick, shouldDisable = false }) {
     const disabled = shouldDisable
 

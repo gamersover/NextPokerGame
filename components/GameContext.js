@@ -1,11 +1,10 @@
 import { GameState } from "@/utils/tool";
-import { createContext, useId, useState } from "react";
+import { createContext, useState } from "react";
 
 export const SocketContext = createContext(null)
 export const SetSocketContext = createContext(null)
 export const UserInfoContext = createContext(null)
 export const GameInfoContext = createContext(null)
-export const GameSettingsContext = createContext(null)
 
 
 function DataProvider({ children }) {
@@ -18,10 +17,6 @@ function DataProvider({ children }) {
         score: 0,
         all_cards: [].map((card) => ({ name: card, showName: card, selected: false })),
         out_cards: [],
-    })
-    const [gameSettings, setGameSettings] = useState({
-        isMusicOn: true,
-        isCardsOrderReverse: false
     })
 
     const [gameInfo, setGameInfo] = useState({
@@ -68,9 +63,7 @@ function DataProvider({ children }) {
             <GameInfoContext.Provider value={[gameInfo, setGameInfo]}>
                 <SocketContext.Provider value={socket}>
                     <SetSocketContext.Provider value={setSocket}>
-                        <GameSettingsContext.Provider value={[gameSettings, setGameSettings]}>
-                            {children}
-                        </GameSettingsContext.Provider>
+                        {children}
                     </SetSocketContext.Provider>
                 </SocketContext.Provider>
             </GameInfoContext.Provider>

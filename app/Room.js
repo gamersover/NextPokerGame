@@ -1,12 +1,13 @@
 "use client";
 
 import { CardsPanel, CircleContent, CloseIcon, TimesIcon, GameButton, InfoIcon, Modal, Toast, LogoutIcon, MessageIcon, CopyIcon, CheckedIcon } from '@/components';
-import { GameInfoContext, GameSettingsContext, SocketContext, UserInfoContext } from '@/components/GameContext';
+import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
 import { GameState, PlayerState } from '@/utils/tool';
 import Image from 'next/image';
 import { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { SPECIAL_CARDS, is_valid_out_cards, rank_raw_cards } from '@/utils/card';
 import { OutState } from '@/utils/card';
+import { useLocalStorage } from '@/utils/hooks';
 
 
 function GameAvater({ imgUrl, playerState, playerTeam, playerRank, size = "sm", alt = '' }) {
@@ -331,7 +332,6 @@ function RoomNumberCard({ roomNumber }) {
 function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, setCurrPage }) {
     const [userInfo, setUserInfo, initInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
     const [newMessageCnt, setNewMessageCnt] = useState(0)
     const socket = useContext(SocketContext)
     const [isShowMessage, setIsShowMessage] = useState(false)
@@ -446,7 +446,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
                         <MessageIcon className={"h-5 w-5 dark:fill-white"} />
                         <span>消息</span>
                     </div>
-                    {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-900 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
+                    {newMessageCnt > 0 && <span className='absolute -top-2 -right-2 bg-red-500 dark:bg-red-900 text-white rounded-full w-5 h-5 flex items-center justify-center text-sm'>{newMessageCnt}</span>}
                 </GameButton>
                 <GameButton classes={'bg-white !w-20 !h-full border-2 border-lime-500 dark:border-lime-900 dark:bg-neutral-800'} onClick={handleExit}>
                     <div className='flex justify-center gap-1 items-center'>
@@ -460,10 +460,9 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
     )
 }
 
-function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId }) {
+function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, isCardsOrderReverse }) {
     const [userInfo, setUserInfo, initInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
 
     const [left_player_id, right_player_id, top_player_id] = useMemo(() => {
         const my_player_id = parseInt(userInfo.player_id)
@@ -514,7 +513,7 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
                     right={right_player_info}
                     top={top_player_info}
                     friend_card={gameInfo.friend_card}
-                    isReverse={gameSettings.isCardsOrderReverse}
+                    isReverse={isCardsOrderReverse}
                 />
             </div>
             <div className="flex w-24 mr-7">
@@ -543,10 +542,9 @@ function GameNeck({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId 
 }
 
 
-function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, setCurrPage }) {
+function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId, setCurrPage, isCardsOrderReverse }) {
     const [userInfo, setUserInfo, initInfo] = useContext(UserInfoContext)
     const [gameInfo, setGameInfo] = useContext(GameInfoContext)
-    const [gameSettings, setGameSettings] = useContext(GameSettingsContext)
     const [notification, setNotification] = useState({ msg: null })
     const socket = useContext(SocketContext)
     const [selectAll, setSelectAll] = useState(false)
@@ -737,7 +735,7 @@ function GameMain({ height, showValueCardsPlayerId, resetShowValueCardsPlayerId,
     let content = null
     let render_out_cards = []
     if (player_info.valid_cards) {
-        render_out_cards = rank_raw_cards(player_info.valid_cards, gameSettings.isCardsOrderReverse)
+        render_out_cards = rank_raw_cards(player_info.valid_cards, isCardsOrderReverse)
         render_out_cards = render_out_cards.map(card => ({ showName: card, isFriendCard: card.split("-").slice(0, 1)[0] == gameInfo.friend_card }))
     }
     else {
@@ -1071,6 +1069,8 @@ function GameFooter({ setShowValueCardsPlayerId }) {
 
 export default function Room({ setCurrPage }) {
     const [showValueCardsPlayerId, setShowValueCardsPlayerId] = useState(-1)
+    const [isCardsOrderReverse, setIsCardsOrderReverse] = useLocalStorage("cardsOrderReverse", false)
+
     useEffect(() => {
         let wakeLock = null;
 
@@ -1111,8 +1111,19 @@ export default function Room({ setCurrPage }) {
     return (
         <div className="flex flex-col justify-between items-center h-screen bg-blue-100 dark:bg-neutral-800">
             <GameHeader height='' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
-            <GameNeck height='flex-1' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} />
-            <GameMain height='h-44' showValueCardsPlayerId={showValueCardsPlayerId} resetShowValueCardsPlayerId={resetShowValueCardsPlayerId} setCurrPage={setCurrPage} />
+            <GameNeck
+                height='flex-1'
+                showValueCardsPlayerId={showValueCardsPlayerId}
+                resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}
+                isCardsOrderReverse={isCardsOrderReverse}
+            />
+            <GameMain
+                height='h-44'
+                showValueCardsPlayerId={showValueCardsPlayerId}
+                resetShowValueCardsPlayerId={resetShowValueCardsPlayerId}
+                setCurrPage={setCurrPage}
+                isCardsOrderReverse={isCardsOrderReverse}
+            />
             <GameFooter setShowValueCardsPlayerId={setShowValueCardsPlayerId} />
         </div>
     )

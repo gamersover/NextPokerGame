@@ -1,6 +1,6 @@
 # 四人纸牌
 
-个人学习前端写的一个纸牌游戏，没有使用任何UI组件，自己动手实现所有UI，用于学习，已
+个人学习前端写的一个纸牌游戏，没有使用任何UI组件，自己动手实现所有UI，用于学习
 
 * 前端部署
     使用[Vercel](https://vercel.com/)部署，域名 https://game.caoqinping.com/
@@ -23,3 +23,7 @@
 3. 扑克牌素材 https://tekeye.uk/playing_cards/svg-playing-cards
 4. 其他图片素材 https://www.svgrepo.com/
 5. svg编辑工具 https://pixelied.com/
+
+## 申明
+
+本项目仅用于学习目的，所有素材均来自网络，如有侵权请联系删除
