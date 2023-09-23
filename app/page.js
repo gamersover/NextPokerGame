@@ -20,7 +20,7 @@ export default function App() {
             audio.src = "/bgm.mp3"
             audio.loop = true
             audio.addEventListener("timeupdate", () => {
-                if (audio.currentTime >= 30) {
+                if (audio.currentTime >= 32) {
                     audio.currentTime = 0
                 }
             })
