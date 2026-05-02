@@ -11,7 +11,7 @@ const ScoreAlert = ({ scoreObj, duration }) => {
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [score, num_rounds]);
+    }, [score, num_rounds, duration]);
 
     return (
         <>

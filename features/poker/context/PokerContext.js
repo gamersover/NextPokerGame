@@ -1,4 +1,4 @@
-import { GameState } from "@/utils/tool";
+import { GameState } from "@/features/poker/lib/game-state";
 import { createContext, useState } from "react";
 
 export const SocketContext = createContext(null)

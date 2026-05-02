@@ -127,6 +127,24 @@ img {
   }
 }
 
+@keyframes bottom-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bottom-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
 .animate-right-out {
   animation: horizontal-out .5s forwards;
 }
@@ -141,6 +159,32 @@ img {
 
 .animate-top-out {
   animation: vertical-out .5s forwards;
+}
+
+.animate-bottom-in {
+  animation: bottom-in .35s cubic-bezier(.2, .9, .2, 1) forwards;
+}
+
+.animate-bottom-out {
+  animation: bottom-out .28s cubic-bezier(.4, 0, 1, 1) forwards;
+}
+
+.settings-sheet-in {
+  animation: bottom-in .35s cubic-bezier(.2, .9, .2, 1) forwards;
+}
+
+.settings-sheet-out {
+  animation: bottom-out .28s cubic-bezier(.4, 0, 1, 1) forwards;
+}
+
+@media (min-width: 640px) {
+  .settings-sheet-in {
+    animation: horizontal-in .5s forwards;
+  }
+
+  .settings-sheet-out {
+    animation: horizontal-out .5s forwards;
+  }
 }
 
 .animate-fade-in {

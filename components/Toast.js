@@ -16,7 +16,7 @@ const Toast = ({ message, color = "primary", duration = 2000 }) => {
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [message]);
+    }, [message, duration]);
 
     return (
         <div

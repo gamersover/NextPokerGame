@@ -1,7 +1,7 @@
 {
-    "name": "四人纸牌-找朋友",
-    "short_name": "四人纸牌",
-    "description": "一款四人纸牌游戏",
+    "name": "游戏大厅",
+    "short_name": "游戏大厅",
+    "description": "选择纸牌或同步方块开始游玩",
     "start_url": "/",
     "display": "fullscreen",
     "orientation": "landscape",

@@ -1,12 +1,14 @@
 "use client";
 
-import { CardsPanel, CircleContent, CloseIcon, TimesIcon, GameButton, InfoIcon, Modal, Toast, LogoutIcon, MessageIcon, CopyIcon, CheckedIcon } from '@/components';
-import { GameInfoContext, SocketContext, UserInfoContext } from '@/components/GameContext';
-import { GameState, PlayerState } from '@/utils/tool';
+import { CloseIcon, TimesIcon, GameButton, InfoIcon, Modal, Toast, LogoutIcon, MessageIcon, CopyIcon, CheckedIcon } from '@/components';
+import CardsPanel from '@/features/poker/components/CardsPanel';
+import CircleContent from '@/features/poker/components/CircleContent';
+import { GameInfoContext, SocketContext, UserInfoContext } from '@/features/poker/context/PokerContext';
+import { GameState, PlayerState } from '@/features/poker/lib/game-state';
 import Image from 'next/image';
 import { useContext, useState, useEffect, useMemo, useRef } from 'react';
-import { SPECIAL_CARDS, is_valid_out_cards, rank_raw_cards } from '@/utils/card';
-import { OutState } from '@/utils/card';
+import { SPECIAL_CARDS, is_valid_out_cards, rank_raw_cards } from '@/features/poker/lib/cards';
+import { OutState } from '@/features/poker/lib/cards';
 import { useLocalStorage } from '@/utils/hooks';
 
 
@@ -391,7 +393,7 @@ function GameHeader({ height, showValueCardsPlayerId, resetShowValueCardsPlayerI
         return () => {
             socket.off("send_message_global")
         }
-    }, [isShowMessage])
+    }, [isShowMessage, setGameInfo, socket])
 
     function handleShowLast(ref) {
         if (isShowMessage) {

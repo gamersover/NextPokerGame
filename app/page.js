@@ -1,11 +1,10 @@
 "use client"
 
 
-import DataProvider from "@/components/GameContext";
 import { useMemo, useState, useRef, useEffect } from "react";
-import Home from "./Home";
-import Game from "./Game";
-import Room from "./Room";
+import { Lobby } from "@/features/lobby";
+import { PokerGame, PokerProvider, PokerRoom } from "@/features/poker";
+import { SyncBlocksGame } from "@/features/sync-blocks";
 import { useLocalStorage } from "@/utils/hooks";
 
 export default function App() {
@@ -14,9 +13,20 @@ export default function App() {
     const [isMusicOn, setIsMusicOn] = useLocalStorage("music", false)
     const bgm = useRef(null)
 
-    function handleStart() {
+    useEffect(() => {
+        const pageTitles = {
+            home: "游戏大厅",
+            game: "四人纸牌-找朋友",
+            room: "四人纸牌-找朋友",
+            tvGame: "同步方块"
+        }
+
+        document.title = pageTitles[currPage] || "游戏大厅"
+    }, [currPage])
+
+    function handleStart(gameId = "cards") {
         const audio = bgm.current
-        if (isMusicOn) {
+        if (gameId === "cards" && isMusicOn) {
             audio.src = "/bgm.mp3"
             audio.loop = true
             audio.addEventListener("timeupdate", () => {
@@ -32,7 +42,7 @@ export default function App() {
         else {
             audio.pause()
         }
-        setCurrPage("game")
+        setCurrPage(gameId === "tv" ? "tvGame" : "game")
     }
 
     function handleBack() {
@@ -45,7 +55,7 @@ export default function App() {
 
     function renderPage() {
         if (currPage === "home") {
-            return <Home
+            return <Lobby
                 themeOption={themeOption}
                 setThemeOption={setThemeOption}
                 isMusicOn={isMusicOn}
@@ -54,10 +64,20 @@ export default function App() {
             />
         }
         else if (currPage === "game") {
-            return <Game setCurrPage={setCurrPage} handleBack={handleBack}/>
+            return <PokerGame
+                setCurrPage={setCurrPage}
+                handleBack={handleBack}
+                themeOption={themeOption}
+                setThemeOption={setThemeOption}
+                isMusicOn={isMusicOn}
+                setIsMusicOn={setIsMusicOn}
+            />
+        }
+        else if (currPage === "tvGame") {
+            return <SyncBlocksGame handleBack={handleBack}/>
         }
         else if (currPage === "room") {
-            return <Room setCurrPage={setCurrPage}/>
+            return <PokerRoom setCurrPage={setCurrPage}/>
         }
     }
 
@@ -76,13 +96,13 @@ export default function App() {
     }, [themeOption])
 
     return (
-        <DataProvider>
+        <PokerProvider>
             <body className={`${theme}`}>
                 <div className="bg-blue-50 fixed w-full h-full overflow-hidde dark:text-gray-200 dark:bg-black">
                     {renderPage()}
                 </div>
                 <audio ref={bgm}></audio>
             </body>
-        </DataProvider>
+        </PokerProvider>
     )
 }

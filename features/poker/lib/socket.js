@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
-import { SERVER_ADDR } from "./conf";
-import { rank_raw_cards } from "./card";
+import { SERVER_ADDR } from "./config";
+import { rank_raw_cards } from "./cards";
 
 
 function connectSocket(setConnectStatus, setSocket) {
