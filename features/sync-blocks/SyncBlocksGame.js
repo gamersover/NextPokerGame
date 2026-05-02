@@ -298,7 +298,7 @@ function ControlButton({ direction, onClick, active = false }) {
             type="button"
             title={direction}
             onClick={onClick}
-            className={`flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_9px_18px_rgba(15,23,42,.10)] transition hover:bg-white active:scale-95 ${active ? "scale-95 bg-white text-emerald-600 shadow-[inset_0_2px_5px_rgba(15,23,42,.08)]" : ""}`}
+            className={`flex h-[68px] w-[68px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_9px_18px_rgba(15,23,42,.10)] transition hover:bg-white active:scale-95 sm:h-[56px] sm:w-[56px] ${active ? "scale-95 bg-white text-emerald-600 shadow-[inset_0_2px_5px_rgba(15,23,42,.08)]" : ""}`}
         >
             <ArrowIcon direction={direction} />
         </button>
@@ -310,8 +310,8 @@ function ActionButton({ title, onClick, active = false, variant = "default", chi
         ? "border-emerald-200 bg-emerald-300 text-emerald-950 shadow-[inset_0_1px_0_rgba(255,255,255,.55),0_12px_22px_rgba(16,185,129,.20)] hover:bg-emerald-200"
         : "border-slate-200 bg-slate-100 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,.90),0_10px_18px_rgba(15,23,42,.10)] hover:bg-white"
     const sizeClass = variant === "primary"
-        ? "h-[62px] w-[62px] rounded-full"
-        : "h-9 min-w-[72px] rounded-full px-4 text-[12px] font-black"
+        ? "h-[62px] w-[62px] rounded-full sm:h-[54px] sm:w-[54px]"
+        : "h-[36px] min-w-[72px] rounded-full px-4 text-[12px] font-black sm:h-[34px] sm:min-w-[64px]"
 
     return (
         <button
@@ -616,6 +616,7 @@ export default function TvGame({ handleBack }) {
             ? "text-rose-600"
             : "text-emerald-600"
     const matchedGoalKeys = getMatchedGoalKeys(sourcePieceGrids(sourcePieces), level.destination)
+    const playSurfaceWidthClass = "w-[min(94vw,calc(100dvh-360px),680px)] sm:w-[min(82vw,calc(100dvh-300px),580px)]"
 
     return (
         <div className="relative h-full w-full overflow-hidden bg-[#F3F6FA] text-slate-950">
@@ -630,7 +631,7 @@ export default function TvGame({ handleBack }) {
                     </button>
                     <div className="min-w-0 px-4 text-center">
                         <h1 className="truncate text-2xl font-black tracking-normal text-slate-950 sm:text-3xl">{level.name}</h1>
-                        <p className="mt-1 text-[10px] font-black uppercase tracking-[.18em] text-slate-500">
+                        <p className="mt-1 whitespace-nowrap text-[10px] font-black uppercase tracking-[.08em] text-slate-500 sm:tracking-[.18em]">
                             LEVEL {String(levelIndex + 1).padStart(2, "0")} / {LEVELS.length} · MOVES {moves} · <span className={statusTextClass}>{statusLabel}</span>
                         </p>
                     </div>
@@ -638,7 +639,7 @@ export default function TvGame({ handleBack }) {
                 </header>
 
                 <main className="relative flex flex-1 flex-col items-center justify-start gap-4 overflow-hidden pb-4 pt-3 sm:justify-center sm:pb-2 sm:pt-3">
-                    <section className="relative mt-16 w-[min(63vh,94vw,680px)] sm:mt-0 sm:w-[min(58vh,82vw,620px)]">
+                    <section className={`relative mt-16 sm:mt-0 ${playSurfaceWidthClass}`}>
                         <div className="relative aspect-square w-full overflow-hidden border border-slate-200 bg-white shadow-[0_22px_54px_rgba(15,23,42,.10)]" style={boardBackground}>
                                 <div
                                     className="absolute inset-0 z-0 opacity-100"
@@ -678,25 +679,26 @@ export default function TvGame({ handleBack }) {
                         />
                     )}
 
-                    <section className="mt-auto flex w-full max-w-[680px] shrink-0 items-center justify-between gap-8 rounded-[34px] border border-slate-200 bg-white px-8 py-5 shadow-[0_18px_42px_rgba(15,23,42,.10)] sm:mt-0">
-                        <div className="grid shrink-0 grid-cols-3 grid-rows-3 gap-2">
-                            <div />
-                            <ControlButton direction="up" active={activeControl === "up"} onClick={() => handleMove("up")} />
-                            <div />
-                            <ControlButton direction="left" active={activeControl === "left"} onClick={() => handleMove("left")} />
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 shadow-[inset_0_1px_3px_rgba(15,23,42,.08)]">
-                                <div className="h-3 w-3 rounded-full bg-slate-300" />
+                    <section className={`mt-auto flex shrink-0 items-center justify-between gap-[14px] rounded-[24px] border border-slate-200 bg-white px-[10px] py-[6px] shadow-[0_18px_42px_rgba(15,23,42,.10)] min-[520px]:gap-[16px] sm:mt-0 sm:rounded-[28px] sm:gap-[16px] sm:px-[14px] sm:py-[8px] ${playSurfaceWidthClass}`}>
+                        <div className="relative h-[174px] w-[174px] shrink-0 sm:h-[144px] sm:w-[144px]">
+                            <div className="absolute left-1/2 top-0 -translate-x-1/2">
+                                <ControlButton direction="up" active={activeControl === "up"} onClick={() => handleMove("up")} />
                             </div>
-                            <ControlButton direction="right" active={activeControl === "right"} onClick={() => handleMove("right")} />
-                            <div />
-                            <ControlButton direction="down" active={activeControl === "down"} onClick={() => handleMove("down")} />
-                            <div />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2">
+                                <ControlButton direction="left" active={activeControl === "left"} onClick={() => handleMove("left")} />
+                            </div>
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                                <ControlButton direction="right" active={activeControl === "right"} onClick={() => handleMove("right")} />
+                            </div>
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+                                <ControlButton direction="down" active={activeControl === "down"} onClick={() => handleMove("down")} />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex shrink-0 flex-col items-center justify-center gap-[8px] min-[780px]:flex-row min-[780px]:gap-[10px]">
                             <ActionButton title="重置" onClick={handleReset} active={activeControl === "reset"} variant="primary">
                                 <ResetIcon />
                             </ActionButton>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-[8px] min-[780px]:flex-row min-[780px]:gap-[10px]">
                                 <ActionButton title="上一关" onClick={handlePrevLevel} active={activeControl === "prev"}>
                                     上关
                                 </ActionButton>
