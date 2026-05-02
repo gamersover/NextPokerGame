@@ -119,7 +119,7 @@ function GameSelectCard({ title, subtitle, meta, tone, onClick, preview }) {
 
 function HomeButton({ handleStart }) {
     return (
-        <div className="grid w-full max-w-5xl grid-cols-1 gap-6 px-5 pb-8 sm:grid-cols-2 sm:px-8">
+        <div className="grid w-full max-w-5xl grid-cols-1 justify-items-center gap-6 px-5 pb-8 sm:grid-cols-2 sm:px-8">
             <GameSelectCard
                 title="四人纸牌-找朋友"
                 subtitle="四人组局，叫分找朋友，和队友配合赢下牌局。"
