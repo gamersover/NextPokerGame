@@ -11,63 +11,63 @@ const LEVELS = [
     {
         name: "双星启航",
         source: [[3, 2], [8, 2]],
-        traps: [],
+        bombs: [],
         barriers: [[3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5]],
         destination: [[3, 8], [8, 8]],
     },
     {
         name: "三点校准",
         source: [[2, 2], [8, 2], [5, 7]],
-        traps: [[5, 5], [6, 5]],
+        bombs: [[5, 5], [6, 5]],
         barriers: [[4, 3], [7, 3], [4, 7], [7, 7], [3, 5], [8, 5]],
         destination: [[2, 8], [7, 8], [5, 3]],
     },
     {
         name: "四点校准",
         source: [[1, 1], [10, 1], [1, 10], [10, 10]],
-        traps: [[5, 5], [6, 5], [5, 6], [6, 6]],
+        bombs: [[5, 5], [6, 5], [5, 6], [6, 6]],
         barriers: [[4, 0], [4, 1], [4, 2], [7, 9], [7, 10], [7, 11], [0, 4], [1, 4], [2, 4], [9, 7], [10, 7], [11, 7], [5, 3], [6, 8]],
         destination: [[2, 3], [8, 2], [3, 9], [9, 8]],
     },
     {
         name: "整列迁移",
         source: [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11]],
-        traps: [],
+        bombs: [],
         barriers: [[5, 5], [5, 6], [6, 5], [6, 6]],
         destination: [[10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 5], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10], [10, 11], [11, 0], [11, 1], [11, 2], [11, 3], [11, 4], [11, 5], [11, 6], [11, 7], [11, 8], [11, 9], [11, 10], [11, 11]],
     },
     {
         name: "双锁预演",
         source: [[1, 2], [7, 10], [8, 4]],
-        traps: [[5, 5], [6, 6], [5, 6], [6, 5], [2, 9]],
+        bombs: [[5, 5], [6, 6], [5, 6], [6, 5], [2, 9]],
         barriers: [[1, 6], [2, 6], [3, 6], [8, 6], [9, 6], [10, 6], [6, 1], [6, 2], [6, 3], [6, 8], [6, 9], [6, 10], [4, 4], [7, 7], [4, 7], [7, 4]],
         destination: [[3, 3], [3, 8], [8, 8]],
     },
     {
-        name: "陷阱门廊",
+        name: "炸弹门廊",
         source: [[1, 1], [9, 4], [5, 9]],
-        traps: [[5, 4], [6, 4], [5, 7], [6, 7]],
+        bombs: [[5, 4], [6, 4], [5, 7], [6, 7]],
         barriers: [[3, 3], [4, 3], [7, 3], [8, 3], [3, 8], [4, 8], [7, 8], [8, 8], [3, 4], [3, 5], [3, 6], [3, 7], [8, 4], [8, 5], [8, 6], [8, 7]],
         destination: [[2, 10], [6, 1], [10, 10]],
     },
     {
         name: "中庭",
         source: [[1, 10], [10, 1], [10, 10]],
-        traps: [[5, 5], [6, 5], [5, 6], [6, 6]],
+        bombs: [[5, 5], [6, 5], [5, 6], [6, 6]],
         barriers: [[3, 3], [4, 3], [7, 3], [8, 3], [3, 8], [4, 8], [7, 8], [8, 8], [3, 4], [3, 7], [8, 4], [8, 7], [4, 5], [7, 6]],
         destination: [[1, 1], [5, 8], [10, 6]],
     },
     {
         name: "双锁终局",
         source: [[0, 9], [1, 2], [7, 10], [8, 4]],
-        traps: [[5, 5], [6, 6], [5, 6], [6, 5], [2, 9]],
+        bombs: [[5, 5], [6, 6], [5, 6], [6, 5], [2, 9]],
         barriers: [[1, 6], [2, 6], [3, 6], [8, 6], [9, 6], [10, 6], [6, 1], [6, 2], [6, 3], [6, 8], [6, 9], [6, 10], [4, 4], [7, 7], [4, 7], [7, 4]],
         destination: [[3, 3], [8, 3], [3, 8], [8, 8]],
     },
     {
         name: "双门终局",
         source: [[2, 8], [5, 2], [9, 9]],
-        traps: [[6, 5], [5, 6]],
+        bombs: [[6, 5], [5, 6]],
         barriers: [[4, 1], [4, 2], [4, 3], [4, 8], [4, 9], [4, 10], [8, 1], [8, 2], [8, 3], [8, 8], [8, 9], [8, 10]],
         destination: [[1, 3], [6, 8], [10, 3]],
     },
@@ -145,10 +145,10 @@ function isInsideBoard(grid) {
 function moveSourcePieces(sourcePieces, level, action) {
     const ordered = getOrderedSourcePieces(sourcePieces, action)
     const barriers = createCellSet(level.barriers)
-    const traps = createCellSet(level.traps)
+    const bombs = createCellSet(level.bombs)
     let failed = false
     let blocked = false
-    const hitTrapKeys = []
+    const hitBombKeys = []
 
     for (let i = 0; i < ordered.length; i += 1) {
         const candidate = nextGrid(ordered[i].grid, action)
@@ -157,10 +157,10 @@ function moveSourcePieces(sourcePieces, level, action) {
             continue
         }
 
-        if (traps.has(gridKey(candidate))) {
+        if (bombs.has(gridKey(candidate))) {
             ordered[i].grid = candidate
             failed = true
-            hitTrapKeys.push(gridKey(candidate))
+            hitBombKeys.push(gridKey(candidate))
             continue
         }
 
@@ -177,7 +177,7 @@ function moveSourcePieces(sourcePieces, level, action) {
         sourcePieces: [...ordered].sort((a, b) => a.id - b.id),
         failed,
         blocked,
-        hitTrapKeys,
+        hitBombKeys,
     }
 }
 
@@ -204,27 +204,21 @@ function ResetIcon() {
     )
 }
 
-function MonsterIcon() {
+function BombIcon() {
     return (
         <svg aria-hidden="true" className="h-full w-full" viewBox="0 0 64 64">
-            <g transform="translate(32 32)">
-                <g>
-                <animateTransform attributeName="transform" type="scale" values="1;1.06;1" dur="1200ms" repeatCount="indefinite" additive="sum" />
-                <circle cx="0" cy="0" r="22" fill="#F43F5E" />
-                <circle cx="-8" cy="-7" r="4.5" fill="#FFF1F2" />
-                <circle cx="8" cy="-7" r="4.5" fill="#FFF1F2" />
-                <circle cx="-7" cy="-6" r="1.8" fill="#111827" />
-                <circle cx="7" cy="-6" r="1.8" fill="#111827" />
-                <path fill="#111827">
-                    <animate
-                        attributeName="d"
-                        dur="1200ms"
-                        repeatCount="indefinite"
-                        values="M-12 6C-7 15 7 15 12 6C8 19 -8 19 -12 6Z;M-14 4C-7 22 7 22 14 4C10 21 -10 21 -14 4Z;M-12 6C-7 15 7 15 12 6C8 19 -8 19 -12 6Z"
-                    />
-                </path>
-                <path d="M-7 7 -3 14 0 7 3 14 7 7" fill="#FFF1F2" opacity=".96" />
-                </g>
+            <g transform="translate(32 36)">
+                <circle cx="0" cy="0" r="19" fill="#1E293B" />
+                <circle cx="-6" cy="-6" r="5" fill="#334155" />
+                <line x1="8" y1="-19" x2="14" y2="-28" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="14" cy="-28" r="2.5" fill="#F59E0B">
+                    <animate attributeName="r" values="2.5;3.5;2.5" dur="600ms" repeatCount="indefinite" />
+                    <animate attributeName="fill" values="#F59E0B;#FCD34D;#F59E0B" dur="600ms" repeatCount="indefinite" />
+                </circle>
+                <line x1="14" y1="-28" x2="18" y2="-34" stroke="#FCD34D" strokeWidth="1.5" strokeLinecap="round" opacity=".8">
+                    <animate attributeName="opacity" values=".8;1;.8" dur="600ms" repeatCount="indefinite" />
+                    <animate attributeName="y2" values="-34;-37;-34" dur="600ms" repeatCount="indefinite" />
+                </line>
             </g>
         </svg>
     )
@@ -387,7 +381,7 @@ export default function TvGame({ handleBack }) {
     const [moves, setMoves] = useState(0)
     const [status, setStatus] = useState("playing")
     const [pendingStatus, setPendingStatus] = useState(null)
-    const [hitTrapKeys, setHitTrapKeys] = useState([])
+    const [hitBombKeys, setHitBombKeys] = useState([])
     const [pendingMergeKeys, setPendingMergeKeys] = useState([])
     const [mergeKeys, setMergeKeys] = useState([])
     const [activeControl, setActiveControl] = useState(null)
@@ -424,9 +418,10 @@ export default function TvGame({ handleBack }) {
             createTone(audioContext, { frequency: 659, endFrequency: 988, duration: 0.28, gain: 0.05, type: "sine", start: 0.18 })
             createTone(audioContext, { frequency: 1046, endFrequency: 1318, duration: 0.18, gain: 0.035, type: "triangle", start: 0.36 })
         }
-        else if (sound === "eaten") {
-            createTone(audioContext, { frequency: 180, endFrequency: 58, duration: 0.32, gain: 0.085, type: "sawtooth" })
-            createTone(audioContext, { frequency: 90, endFrequency: 42, duration: 0.18, gain: 0.06, type: "square", start: 0.05 })
+        else if (sound === "explode") {
+            createTone(audioContext, { frequency: 140, endFrequency: 38, duration: 0.38, gain: 0.12, type: "sawtooth" })
+            createTone(audioContext, { frequency: 260, endFrequency: 60, duration: 0.22, gain: 0.09, type: "square", start: 0.02 })
+            createTone(audioContext, { frequency: 480, endFrequency: 90, duration: 0.14, gain: 0.055, type: "triangle", start: 0.01 })
         }
         else if (sound === "blocked") {
             createTone(audioContext, { frequency: 95, endFrequency: 62, duration: 0.11, gain: 0.075, type: "triangle" })
@@ -453,7 +448,7 @@ export default function TvGame({ handleBack }) {
         setMoves(0)
         setStatus("playing")
         setPendingStatus(null)
-        setHitTrapKeys([])
+        setHitBombKeys([])
         setPendingMergeKeys([])
         setMergeKeys([])
         setIsClearCelebrationHidden(false)
@@ -503,7 +498,7 @@ export default function TvGame({ handleBack }) {
         setStatus("moving")
 
         if (next.failed) {
-            setHitTrapKeys(next.hitTrapKeys)
+            setHitBombKeys(next.hitBombKeys)
             setPendingMergeKeys([])
             setPendingStatus("failed")
         }
@@ -562,12 +557,12 @@ export default function TvGame({ handleBack }) {
                 playSound("merge")
             }
             else if (pendingStatus === "failed") {
-                playSound("eaten")
+                playSound("explode")
             }
             setPendingStatus(null)
             setPendingMergeKeys([])
             if (pendingStatus !== "failed") {
-                setHitTrapKeys([])
+                setHitBombKeys([])
             }
         }, MOVE_DURATION)
 
@@ -609,7 +604,7 @@ export default function TvGame({ handleBack }) {
     const boardBackground = {
         backgroundImage: "linear-gradient(180deg, #FFFFFF, #F8FAFC)",
     }
-    const statusLabel = status === "win" ? "已同步" : status === "failed" ? "捕获" : "进行中"
+    const statusLabel = status === "win" ? "已同步" : status === "failed" ? "爆炸" : "进行中"
     const statusTextClass = status === "win"
         ? "text-sky-600"
         : status === "failed"
@@ -654,9 +649,9 @@ export default function TvGame({ handleBack }) {
                                         <GoalIcon matched={matchedGoalKeys.includes(gridKey(grid))} />
                                     </BoardPiece>
                                 ))}
-                                {level.traps.map((grid) => (
-                                    <BoardPiece key={`trap-${gridKey(grid)}`} grid={grid} className={`trap-piece p-0.5 ${status === "failed" && hitTrapKeys.includes(gridKey(grid)) ? "monster-bite" : ""}`}>
-                                        <MonsterIcon />
+                                {level.bombs.map((grid) => (
+                                    <BoardPiece key={`bomb-${gridKey(grid)}`} grid={grid} className={`bomb-piece p-0.5 ${status === "failed" && hitBombKeys.includes(gridKey(grid)) ? "bomb-explode" : ""}`}>
+                                        <BombIcon />
                                     </BoardPiece>
                                 ))}
                                 {level.barriers.map((grid) => (
@@ -665,7 +660,7 @@ export default function TvGame({ handleBack }) {
                                     </BoardPiece>
                                 ))}
                                 {sourcePieces.map((piece) => (
-                                    <BoardPiece key={`source-${piece.id}`} grid={piece.grid} motion className={`source-piece p-0.5 ${matchedGoalKeys.includes(gridKey(piece.grid)) ? "source-complete" : ""} ${status === "failed" && hitTrapKeys.includes(gridKey(piece.grid)) ? "source-eaten" : ""} ${mergeKeys.includes(gridKey(piece.grid)) ? (status === "win" ? "source-merge" : "source-touch") : ""}`}>
+                                    <BoardPiece key={`source-${piece.id}`} grid={piece.grid} motion className={`source-piece p-0.5 ${matchedGoalKeys.includes(gridKey(piece.grid)) ? "source-complete" : ""} ${status === "failed" && hitBombKeys.includes(gridKey(piece.grid)) ? "source-blasted" : ""} ${mergeKeys.includes(gridKey(piece.grid)) ? (status === "win" ? "source-merge" : "source-touch") : ""}`}>
                                         <PlayerIcon matched={matchedGoalKeys.includes(gridKey(piece.grid))} />
                                     </BoardPiece>
                                 ))}
@@ -712,7 +707,7 @@ export default function TvGame({ handleBack }) {
                 <style jsx global>{`
                     .source-piece,
                     .goal-piece,
-                    .trap-piece {
+                    .bomb-piece {
                         transform-origin: center;
                     }
 
@@ -720,12 +715,12 @@ export default function TvGame({ handleBack }) {
                         filter: drop-shadow(0 0 10px rgba(52, 211, 153, .36));
                     }
 
-                    .source-eaten {
-                        animation: source-eaten 650ms cubic-bezier(.2,.9,.2,1) both;
+                    .source-blasted {
+                        animation: source-blasted 650ms cubic-bezier(.2,.9,.2,1) both;
                     }
 
-                    .monster-bite {
-                        animation: monster-bite 650ms cubic-bezier(.2,.9,.2,1) both;
+                    .bomb-explode {
+                        animation: bomb-explode 650ms cubic-bezier(.2,.9,.2,1) both;
                     }
 
                     .source-merge {
@@ -774,17 +769,19 @@ export default function TvGame({ handleBack }) {
                     .level-clear-spark-11 { --spark-x: 52px; --spark-y: -92px; --spark-delay: 310ms; background: #A78BFA; }
                     .level-clear-spark-12 { --spark-x: -58px; --spark-y: 72px; --spark-delay: 340ms; }
 
-                    @keyframes source-eaten {
+                    @keyframes source-blasted {
                         0% { transform: scale(1); opacity: 1; filter: none; }
-                        35% { transform: scale(.74); opacity: .9; filter: saturate(1.25); }
-                        100% { transform: scale(.08); opacity: 0; filter: saturate(1.4); }
+                        18% { transform: scale(1.35); opacity: 1; filter: brightness(2) saturate(0); }
+                        45% { transform: scale(.55); opacity: .7; filter: brightness(1.5); }
+                        100% { transform: scale(.06); opacity: 0; filter: brightness(1); }
                     }
 
-                    @keyframes monster-bite {
-                        0% { transform: scale(1); }
-                        28% { transform: scale(1.26); }
-                        56% { transform: scale(.92); }
-                        100% { transform: scale(1); }
+                    @keyframes bomb-explode {
+                        0% { transform: scale(1); filter: none; }
+                        20% { transform: scale(1.45); filter: brightness(2.2) saturate(0); }
+                        42% { transform: scale(.85); filter: brightness(1.4); }
+                        65% { transform: scale(1.12); filter: brightness(1.1); }
+                        100% { transform: scale(1); filter: none; }
                     }
 
                     @keyframes source-merge {
