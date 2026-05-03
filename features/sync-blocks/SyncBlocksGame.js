@@ -761,25 +761,25 @@ export default function TvGame({ handleBack }) {
         }
 
         if (sound === "merge") {
-            createTone(audioContext, { frequency: 420, endFrequency: 720, duration: 0.16, gain: 0.055, type: "sine" })
-            createTone(audioContext, { frequency: 720, endFrequency: 1080, duration: 0.18, gain: 0.045, type: "triangle", start: 0.08 })
+            createTone(audioContext, { frequency: 420, endFrequency: 720, duration: 0.16, gain: 0.108, type: "sine" })
+            createTone(audioContext, { frequency: 720, endFrequency: 1080, duration: 0.18, gain: 0.09, type: "triangle", start: 0.08 })
         }
         else if (sound === "win") {
-            createTone(audioContext, { frequency: 392, endFrequency: 588, duration: 0.22, gain: 0.06, type: "sine" })
-            createTone(audioContext, { frequency: 523, endFrequency: 784, duration: 0.24, gain: 0.055, type: "triangle", start: 0.08 })
-            createTone(audioContext, { frequency: 659, endFrequency: 988, duration: 0.28, gain: 0.05, type: "sine", start: 0.18 })
-            createTone(audioContext, { frequency: 1046, endFrequency: 1318, duration: 0.18, gain: 0.035, type: "triangle", start: 0.36 })
+            createTone(audioContext, { frequency: 392, endFrequency: 588, duration: 0.22, gain: 0.118, type: "sine" })
+            createTone(audioContext, { frequency: 523, endFrequency: 784, duration: 0.24, gain: 0.108, type: "triangle", start: 0.08 })
+            createTone(audioContext, { frequency: 659, endFrequency: 988, duration: 0.28, gain: 0.098, type: "sine", start: 0.18 })
+            createTone(audioContext, { frequency: 1046, endFrequency: 1318, duration: 0.18, gain: 0.068, type: "triangle", start: 0.36 })
         }
         else if (sound === "explode") {
-            createTone(audioContext, { frequency: 140, endFrequency: 38, duration: 0.38, gain: 0.12, type: "sawtooth" })
-            createTone(audioContext, { frequency: 260, endFrequency: 60, duration: 0.22, gain: 0.09, type: "square", start: 0.02 })
-            createTone(audioContext, { frequency: 480, endFrequency: 90, duration: 0.14, gain: 0.055, type: "triangle", start: 0.01 })
+            createTone(audioContext, { frequency: 140, endFrequency: 38, duration: 0.38, gain: 0.055, type: "sawtooth" })
+            createTone(audioContext, { frequency: 260, endFrequency: 60, duration: 0.22, gain: 0.04, type: "square", start: 0.02 })
+            createTone(audioContext, { frequency: 480, endFrequency: 90, duration: 0.14, gain: 0.024, type: "triangle", start: 0.01 })
         }
         else if (sound === "blocked") {
-            createTone(audioContext, { frequency: 95, endFrequency: 62, duration: 0.11, gain: 0.075, type: "triangle" })
+            createTone(audioContext, { frequency: 95, endFrequency: 62, duration: 0.11, gain: 0.145, type: "triangle" })
         }
         else if (sound === "press") {
-            createTone(audioContext, { frequency: 520, endFrequency: 390, duration: 0.055, gain: 0.03, type: "triangle" })
+            createTone(audioContext, { frequency: 520, endFrequency: 390, duration: 0.055, gain: 0.068, type: "triangle" })
         }
     }, [getAudioContext])
 

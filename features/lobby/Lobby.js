@@ -21,7 +21,7 @@ function TvGamePreview() {
     const sources = [[1, 1], [4, 1]]
     const goals = [[1, 4], [4, 4]]
     const walls = [[1, 3], [2, 3], [3, 3], [4, 3]]
-    const monsters = [[3, 2]]
+    const bombs = [[3, 2]]
 
     return (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,#E9F8F3,#EFF6FF_48%,#FFF7ED)]">
@@ -32,7 +32,7 @@ function TvGamePreview() {
                     const isSource = sources.some(([cx, cy]) => cx === x && cy === y)
                     const isGoal = goals.some(([cx, cy]) => cx === x && cy === y)
                     const isWall = walls.some(([cx, cy]) => cx === x && cy === y)
-                    const isMonster = monsters.some(([cx, cy]) => cx === x && cy === y)
+                    const isBomb = bombs.some(([cx, cy]) => cx === x && cy === y)
                     return (
                         <div
                             key={index}
@@ -40,10 +40,15 @@ function TvGamePreview() {
                         >
                             {isGoal && <div className="h-4 w-4 rounded-full border-[3px] border-emerald-400" />}
                             {isWall && <div className="h-5 w-5 rounded-full bg-slate-400" />}
-                            {isMonster && (
-                                <div className="relative h-6 w-6 rounded-full bg-rose-500">
-                                    <div className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-white" />
-                                    <div className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-white" />
+                            {isBomb && (
+                                <div className="relative h-6 w-6">
+                                    <div className="absolute bottom-0 left-1/2 h-5 w-5 -translate-x-1/2 rounded-full bg-slate-800 shadow-[0_0_0_3px_rgba(15,23,42,.08)]">
+                                        <div className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-slate-500/80" />
+                                    </div>
+                                    <div className="absolute right-1 top-0 h-3 w-3">
+                                        <div className="absolute left-0 top-2 h-2 w-2 rotate-45 border-l-2 border-t-2 border-slate-500" />
+                                        <div className="absolute right-0 top-0 h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,.9)]" />
+                                    </div>
                                 </div>
                             )}
                             {isSource && <div className="h-5 w-5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,.18)]" />}
@@ -130,7 +135,7 @@ function HomeButton({ handleStart }) {
             />
             <GameSelectCard
                 title="同步方块"
-                subtitle="同步移动红色方块，避开怪物陷阱，点亮全部目标。"
+                subtitle="同步移动绿色方块，避开炸弹，点亮全部目标。"
                 meta="Puzzle"
                 tone="sync"
                 onClick={() => handleStart("tv")}
