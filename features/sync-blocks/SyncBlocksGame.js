@@ -1,6 +1,7 @@
 "use client";
 
 import { BackIcon } from "@/components";
+import { useLocalStorage } from "@/utils/hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const GRID_NUM = 12
@@ -200,6 +201,14 @@ function ResetIcon() {
     return (
         <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
             <path d="M12 5a7 7 0 1 1-6.19 3.74l-2.2.57A9.01 9.01 0 1 0 12 3V1L7.8 4.25 12 7.5V5Z" fill="currentColor" />
+        </svg>
+    )
+}
+
+function ModeIcon() {
+    return (
+        <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
+            <path d="M4 7.5A3.5 3.5 0 0 1 7.5 4H16a4 4 0 0 1 0 8H8a2 2 0 0 0 0 4h8.1l-2.05-2.05L16 12l5.4 5.4L16 22l-1.95-1.95L16.1 18H8a4 4 0 0 1 0-8h8a2 2 0 0 0 0-4H7.5A1.5 1.5 0 0 0 6 7.5V9H4V7.5Z" fill="currentColor" />
         </svg>
     )
 }
@@ -412,20 +421,223 @@ function ControlButton({ direction, onClick, active = false }) {
     )
 }
 
+function DirectionPad({ activeControl, onMove }) {
+    return (
+        <div className="relative h-[174px] w-[174px] shrink-0 sm:h-[144px] sm:w-[144px]">
+            <div className="absolute left-1/2 top-0 -translate-x-1/2">
+                <ControlButton direction="up" active={activeControl === "up"} onClick={() => onMove("up")} />
+            </div>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2">
+                <ControlButton direction="left" active={activeControl === "left"} onClick={() => onMove("left")} />
+            </div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                <ControlButton direction="right" active={activeControl === "right"} onClick={() => onMove("right")} />
+            </div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+                <ControlButton direction="down" active={activeControl === "down"} onClick={() => onMove("down")} />
+            </div>
+        </div>
+    )
+}
+
+function TouchPad({ onMove }) {
+    const pointerStartRef = useRef(null)
+    const canvasRef = useRef(null)
+    const visualRef = useRef({ x: 0.5, y: 0.5, strength: 0, angle: 0 })
+
+    const drawTouchPad = useCallback(() => {
+        const canvas = canvasRef.current
+        if (!canvas) {
+            return
+        }
+
+        const rect = canvas.getBoundingClientRect()
+        const dpr = window.devicePixelRatio || 1
+        const width = Math.max(1, Math.round(rect.width * dpr))
+        const height = Math.max(1, Math.round(rect.height * dpr))
+
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width
+            canvas.height = height
+        }
+
+        const ctx = canvas.getContext("2d")
+        const visual = visualRef.current
+        ctx.clearRect(0, 0, width, height)
+
+        const cx = width / 2
+        const cy = height / 2
+        const baseRadius = Math.max(width, height) * 0.72
+        const base = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius)
+        base.addColorStop(0, "rgba(52, 211, 153, 0.18)")
+        base.addColorStop(0.58, "rgba(56, 189, 248, 0.09)")
+        base.addColorStop(1, "rgba(52, 211, 153, 0.04)")
+        ctx.fillStyle = base
+        ctx.fillRect(0, 0, width, height)
+
+        if (visual.strength <= 0.01) {
+            return
+        }
+
+        const px = visual.x * width
+        const py = visual.y * height
+        const strength = visual.strength
+        const pressureRadius = Math.max(width, height) * (0.32 + strength * 0.08)
+
+        ctx.save()
+        ctx.globalCompositeOperation = "screen"
+        ctx.translate(px, py)
+        ctx.rotate(visual.angle)
+        ctx.scale(1 + strength * 0.55, 0.88 + strength * 0.05)
+        const pressure = ctx.createRadialGradient(0, 0, 0, 0, 0, pressureRadius)
+        pressure.addColorStop(0, `rgba(52, 211, 153, ${0.13 + strength * 0.1})`)
+        pressure.addColorStop(0.46, `rgba(56, 189, 248, ${0.06 + strength * 0.08})`)
+        pressure.addColorStop(1, "rgba(52, 211, 153, 0)")
+        ctx.fillStyle = pressure
+        ctx.fillRect(-pressureRadius, -pressureRadius, pressureRadius * 2, pressureRadius * 2)
+        ctx.restore()
+
+        ctx.save()
+        ctx.globalCompositeOperation = "multiply"
+        ctx.translate(px, py)
+        ctx.rotate(visual.angle)
+        const dent = ctx.createRadialGradient(0, 0, 0, 0, 0, pressureRadius * 0.9)
+        dent.addColorStop(0, `rgba(15, 23, 42, ${0.018 + strength * 0.018})`)
+        dent.addColorStop(0.5, "rgba(15, 23, 42, 0.01)")
+        dent.addColorStop(1, "rgba(15, 23, 42, 0)")
+        ctx.fillStyle = dent
+        ctx.fillRect(-pressureRadius, -pressureRadius, pressureRadius * 2, pressureRadius * 2)
+        ctx.restore()
+    }, [])
+
+    useEffect(() => {
+        drawTouchPad()
+        window.addEventListener("resize", drawTouchPad)
+        return () => window.removeEventListener("resize", drawTouchPad)
+    }, [drawTouchPad])
+
+    function updateTouchGlow(event) {
+        const start = pointerStartRef.current
+        if (!start) {
+            return
+        }
+
+        const rect = event.currentTarget.getBoundingClientRect()
+        const dx = event.clientX - start.x
+        const dy = event.clientY - start.y
+        const distance = Math.hypot(dx, dy)
+        const pressure = event.pressure || 0
+        visualRef.current = {
+            x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+            y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)),
+            strength: Math.min(1, Math.max(distance / Math.max(rect.width, rect.height) * 1.45, pressure)),
+            angle: Math.atan2(dy, dx),
+        }
+        drawTouchPad()
+    }
+
+    function handlePointerDown(event) {
+        const rect = event.currentTarget.getBoundingClientRect()
+        pointerStartRef.current = {
+            id: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+        }
+        event.currentTarget.setPointerCapture(event.pointerId)
+        visualRef.current = {
+            x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+            y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)),
+            strength: Math.max(0.22, event.pressure || 0),
+            angle: 0,
+        }
+        drawTouchPad()
+    }
+
+    function handlePointerMove(event) {
+        updateTouchGlow(event)
+    }
+
+    function handlePointerUp(event) {
+        const start = pointerStartRef.current
+        pointerStartRef.current = null
+        if (!start || start.id !== event.pointerId) {
+            return
+        }
+
+        const dx = event.clientX - start.x
+        const dy = event.clientY - start.y
+        const absX = Math.abs(dx)
+        const absY = Math.abs(dy)
+
+        visualRef.current = { x: 0.5, y: 0.5, strength: 0, angle: 0 }
+        drawTouchPad()
+
+        if (Math.max(absX, absY) < 24) {
+            return
+        }
+
+        if (absX > absY) {
+            onMove(dx > 0 ? "right" : "left")
+        }
+        else {
+            onMove(dy > 0 ? "down" : "up")
+        }
+
+    }
+
+    function handlePointerCancel() {
+        pointerStartRef.current = null
+        visualRef.current = { x: 0.5, y: 0.5, strength: 0, angle: 0 }
+        drawTouchPad()
+    }
+
+    return (
+        <div
+            role="application"
+            aria-label="滑动操作区"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            className="relative flex h-full w-full touch-none select-none flex-col items-center justify-center gap-2 overflow-hidden rounded-[22px] text-slate-500"
+        >
+            <canvas
+                aria-hidden="true"
+                ref={canvasRef}
+                className="pointer-events-none absolute inset-0 h-full w-full"
+            />
+            <div className="relative grid h-16 w-16 grid-cols-3 grid-rows-3 text-slate-400">
+                <div className="col-start-2 flex items-center justify-center">
+                    <ArrowIcon direction="up" />
+                </div>
+                <div className="col-start-1 row-start-2 flex items-center justify-center">
+                    <ArrowIcon direction="left" />
+                </div>
+                <div className="col-start-3 row-start-2 flex items-center justify-center">
+                    <ArrowIcon direction="right" />
+                </div>
+                <div className="col-start-2 row-start-3 flex items-center justify-center">
+                    <ArrowIcon direction="down" />
+                </div>
+            </div>
+            <div className="relative text-[11px] font-black text-slate-400">
+                滑动控制
+            </div>
+        </div>
+    )
+}
+
 function ActionButton({ title, onClick, active = false, variant = "default", children }) {
     const variantClass = variant === "primary"
-        ? "border-emerald-200 bg-emerald-300 text-emerald-950 shadow-[inset_0_1px_0_rgba(255,255,255,.55),0_12px_22px_rgba(16,185,129,.20)] hover:bg-emerald-200"
+        ? "border-emerald-200 bg-emerald-100 text-emerald-700 shadow-[inset_0_1px_0_rgba(255,255,255,.55),0_10px_18px_rgba(16,185,129,.12)] hover:bg-emerald-50"
         : "border-slate-200 bg-slate-100 text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,.90),0_10px_18px_rgba(15,23,42,.10)] hover:bg-white"
-    const sizeClass = variant === "primary"
-        ? "h-[62px] w-[62px] rounded-full sm:h-[54px] sm:w-[54px]"
-        : "h-[36px] min-w-[72px] rounded-full px-4 text-[12px] font-black sm:h-[34px] sm:min-w-[64px]"
 
     return (
         <button
             type="button"
             title={title}
             onClick={onClick}
-            className={`flex items-center justify-center border transition active:scale-95 ${sizeClass} ${variantClass} ${active ? "scale-95 brightness-95" : ""}`}
+            className={`flex h-[40px] w-full min-w-0 items-center justify-center rounded-full border px-1 text-[11px] font-black transition active:scale-95 sm:h-[38px] sm:text-[12px] ${variantClass} ${active ? "scale-95 brightness-95" : ""}`}
         >
             {children}
         </button>
@@ -525,9 +737,9 @@ export default function TvGame({ handleBack }) {
     const [activeControl, setActiveControl] = useState(null)
     const [isClearCelebrationHidden, setIsClearCelebrationHidden] = useState(false)
     const [showFailureCard, setShowFailureCard] = useState(false)
+    const [controlMode, setControlMode] = useLocalStorage("sync-blocks-control-mode", "buttons")
     const audioContextRef = useRef(null)
     const controlFeedbackTimerRef = useRef(null)
-    const touchStartRef = useRef(null)
     const level = LEVELS[levelIndex]
 
     const getAudioContext = useCallback(() => {
@@ -612,6 +824,13 @@ export default function TvGame({ handleBack }) {
         playSound("press")
         resetLevel(levelIndex === LEVELS.length - 1 ? 0 : levelIndex + 1)
     }, [levelIndex, playSound, resetLevel, triggerControlFeedback])
+
+    const toggleControlMode = useCallback(() => {
+        const nextMode = controlMode === "touchpad" ? "buttons" : "touchpad"
+        triggerControlFeedback("mode")
+        playSound("press")
+        setControlMode(nextMode)
+    }, [controlMode, playSound, setControlMode, triggerControlFeedback])
 
     const goNextLevel = useCallback(() => {
         if (levelIndex === LEVELS.length - 1) {
@@ -774,28 +993,9 @@ export default function TvGame({ handleBack }) {
                     <div />
                 </header>
 
-                <main className="relative flex flex-1 flex-col items-center justify-start gap-4 overflow-hidden pb-4 pt-3 sm:justify-center sm:pb-2 sm:pt-3">
+                <main className="relative flex flex-1 flex-col items-center justify-start gap-3 overflow-hidden pb-4 pt-3 sm:justify-center sm:gap-4 sm:pb-2 sm:pt-3">
                     <section
-                        className={`relative mt-16 sm:mt-0 ${playSurfaceWidthClass}${status === "failed" ? " board-shake" : ""}`}
-                        onTouchStart={(e) => {
-                            const t = e.touches[0]
-                            touchStartRef.current = { x: t.clientX, y: t.clientY }
-                        }}
-                        onTouchEnd={(e) => {
-                            if (!touchStartRef.current) return
-                            const t = e.changedTouches[0]
-                            const dx = t.clientX - touchStartRef.current.x
-                            const dy = t.clientY - touchStartRef.current.y
-                            touchStartRef.current = null
-                            const absDx = Math.abs(dx)
-                            const absDy = Math.abs(dy)
-                            if (Math.max(absDx, absDy) < 12) return
-                            if (absDx > absDy) {
-                                handleMove(dx > 0 ? "right" : "left")
-                            } else {
-                                handleMove(dy > 0 ? "down" : "up")
-                            }
-                        }}
+                        className={`relative mt-12 sm:mt-0 ${playSurfaceWidthClass}${status === "failed" ? " board-shake" : ""}`}
                     >
                         <div className="relative aspect-square w-full overflow-hidden border border-slate-200 bg-white shadow-[0_22px_54px_rgba(15,23,42,.10)]" style={boardBackground}>
                                 <div
@@ -850,37 +1050,30 @@ export default function TvGame({ handleBack }) {
                         />
                     )}
 
-                    <p className={`block text-center text-[11px] font-medium text-slate-400 sm:hidden ${playSurfaceWidthClass}`}>
-                        在棋盘上滑动也可以控制移动
-                    </p>
-
-                    <section className={`mt-auto flex shrink-0 items-center justify-between gap-[14px] rounded-[24px] border border-slate-200 bg-white px-[10px] py-[6px] shadow-[0_18px_42px_rgba(15,23,42,.10)] min-[520px]:gap-[16px] sm:mt-0 sm:rounded-[28px] sm:gap-[16px] sm:px-[14px] sm:py-[8px] ${playSurfaceWidthClass}`}>
-                        <div className="relative h-[174px] w-[174px] shrink-0 sm:h-[144px] sm:w-[144px]">
-                            <div className="absolute left-1/2 top-0 -translate-x-1/2">
-                                <ControlButton direction="up" active={activeControl === "up"} onClick={() => handleMove("up")} />
-                            </div>
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2">
-                                <ControlButton direction="left" active={activeControl === "left"} onClick={() => handleMove("left")} />
-                            </div>
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                                <ControlButton direction="right" active={activeControl === "right"} onClick={() => handleMove("right")} />
-                            </div>
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
-                                <ControlButton direction="down" active={activeControl === "down"} onClick={() => handleMove("down")} />
-                            </div>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-center justify-center gap-[8px] min-[780px]:flex-row min-[780px]:gap-[10px]">
+                    <section className={`mt-auto flex shrink-0 flex-col gap-[8px] sm:mt-0 ${playSurfaceWidthClass}`}>
+                        <div className="grid grid-cols-4 items-center gap-[8px] rounded-[20px] border border-slate-200 bg-white px-[8px] py-[7px] shadow-[0_14px_32px_rgba(15,23,42,.08)] sm:rounded-[24px]">
+                            <ActionButton title={`切换为${controlMode === "touchpad" ? "按键" : "滑板"}操作`} onClick={toggleControlMode} active={activeControl === "mode"}>
+                                <span className="flex items-center justify-center gap-1">
+                                    <ModeIcon />
+                                    {controlMode === "touchpad" ? "按键" : "滑板"}
+                                </span>
+                            </ActionButton>
+                            <ActionButton title="上一关" onClick={handlePrevLevel} active={activeControl === "prev"}>
+                                上关
+                            </ActionButton>
+                            <ActionButton title="下一关" onClick={handleNextLevel} active={activeControl === "next"}>
+                                下关
+                            </ActionButton>
                             <ActionButton title="重置" onClick={handleReset} active={activeControl === "reset"} variant="primary">
                                 <ResetIcon />
                             </ActionButton>
-                            <div className="flex flex-col gap-[8px] min-[780px]:flex-row min-[780px]:gap-[10px]">
-                                <ActionButton title="上一关" onClick={handlePrevLevel} active={activeControl === "prev"}>
-                                    上关
-                                </ActionButton>
-                                <ActionButton title="下一关" onClick={handleNextLevel} active={activeControl === "next"}>
-                                    下关
-                                </ActionButton>
-                            </div>
+                        </div>
+                        <div className={`flex h-[190px] items-center justify-center overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(15,23,42,.10)] sm:h-[160px] sm:rounded-[26px] ${controlMode === "touchpad" ? "p-0" : "px-[10px] py-[8px]"}`}>
+                            {controlMode === "touchpad" ? (
+                                <TouchPad onMove={handleMove} />
+                            ) : (
+                                <DirectionPad activeControl={activeControl} onMove={handleMove} />
+                            )}
                         </div>
                     </section>
                 </main>
