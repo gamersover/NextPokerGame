@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const storage = {
     getItem(key, initialValue) {
@@ -17,6 +17,9 @@ const storage = {
     },
 
     setItem(key, value) {
+        if (typeof window === "undefined") {
+            return;
+        }
         window.localStorage.setItem(key, JSON.stringify(value))
     },
 };
@@ -24,15 +27,20 @@ const storage = {
 
 export function useLocalStorage(key, initialValue) {
     const [value, setValue] = useState(initialValue)
+    const [isInitialized, setIsInitialized] = useState(false)
 
     useEffect(() => {
         setValue(storage.getItem(key, initialValue))
+        setIsInitialized(true)
     }, [key, initialValue])
 
-    const setItem = (newValue) => {
-        setValue(newValue);
-        storage.setItem(key, newValue);
-    };
+    const setItem = useCallback((newValue) => {
+        setValue((currentValue) => {
+            const valueToStore = typeof newValue === "function" ? newValue(currentValue) : newValue
+            storage.setItem(key, valueToStore);
+            return valueToStore;
+        });
+    }, [key]);
 
-    return [value, setItem];
+    return [value, setItem, isInitialized];
 }

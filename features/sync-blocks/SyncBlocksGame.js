@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const GRID_NUM = 12
 const MOVE_DURATION = 180
 const RESULT_DURATION = 650
+const LAST_CLEARED_LEVEL_KEY = "sync-blocks-last-cleared-level-index"
 
 const LEVELS = [
     {
@@ -725,6 +726,10 @@ function BoardPiece({ grid, children, className = "", motion = false, zIndex = 1
     )
 }
 
+function clampLevelIndex(index) {
+    return Math.min(Math.max(index, 0), LEVELS.length - 1)
+}
+
 export default function TvGame({ handleBack }) {
     const [levelIndex, setLevelIndex] = useState(0)
     const [sourcePieces, setSourcePieces] = useState(createSourcePieces(LEVELS[0].source))
@@ -738,8 +743,10 @@ export default function TvGame({ handleBack }) {
     const [isClearCelebrationHidden, setIsClearCelebrationHidden] = useState(false)
     const [showFailureCard, setShowFailureCard] = useState(false)
     const [controlMode, setControlMode] = useLocalStorage("sync-blocks-control-mode", "buttons")
+    const [highestClearedLevelIndex, setHighestClearedLevelIndex, isProgressLoaded] = useLocalStorage(LAST_CLEARED_LEVEL_KEY, null)
     const audioContextRef = useRef(null)
     const controlFeedbackTimerRef = useRef(null)
+    const hasRestoredProgressRef = useRef(false)
     const level = LEVELS[levelIndex]
 
     const getAudioContext = useCallback(() => {
@@ -795,8 +802,9 @@ export default function TvGame({ handleBack }) {
     }, [])
 
     const resetLevel = useCallback((nextIndex = levelIndex) => {
-        setLevelIndex(nextIndex)
-        setSourcePieces(createSourcePieces(LEVELS[nextIndex].source))
+        const safeIndex = clampLevelIndex(nextIndex)
+        setLevelIndex(safeIndex)
+        setSourcePieces(createSourcePieces(LEVELS[safeIndex].source))
         setMoves(0)
         setStatus("playing")
         setPendingStatus(null)
@@ -806,6 +814,24 @@ export default function TvGame({ handleBack }) {
         setIsClearCelebrationHidden(false)
         setShowFailureCard(false)
     }, [levelIndex])
+
+    useEffect(() => {
+        if (!isProgressLoaded || hasRestoredProgressRef.current) {
+            return
+        }
+
+        hasRestoredProgressRef.current = true
+        if (highestClearedLevelIndex === null) {
+            return
+        }
+
+        const parsedLevelIndex = Number(highestClearedLevelIndex)
+        if (!Number.isFinite(parsedLevelIndex)) {
+            return
+        }
+
+        resetLevel(clampLevelIndex(Math.floor(parsedLevelIndex) + 1))
+    }, [highestClearedLevelIndex, isProgressLoaded, resetLevel])
 
     const handleReset = useCallback(() => {
         triggerControlFeedback("reset")
@@ -889,7 +915,17 @@ export default function TvGame({ handleBack }) {
                 d: "right",
             }
             const action = keyMap[event.key]
-            if (action) {
+            if (event.key === "Enter") {
+                if (status === "win" && !isClearCelebrationHidden) {
+                    event.preventDefault()
+                    goNextLevel()
+                }
+                else if (status === "failed" && showFailureCard) {
+                    event.preventDefault()
+                    handleReset()
+                }
+            }
+            else if (action) {
                 event.preventDefault()
                 handleMove(action)
             }
@@ -911,6 +947,11 @@ export default function TvGame({ handleBack }) {
             setMergeKeys(pendingMergeKeys)
             setStatus(pendingStatus || "playing")
             if (pendingStatus === "win") {
+                setHighestClearedLevelIndex((currentValue) => {
+                    const currentIndex = Number(currentValue)
+                    const safeCurrentIndex = Number.isFinite(currentIndex) ? currentIndex : -1
+                    return Math.max(safeCurrentIndex, levelIndex)
+                })
                 playSound("win")
             }
             else if (pendingMergeKeys.length > 0) {
@@ -927,7 +968,7 @@ export default function TvGame({ handleBack }) {
         }, MOVE_DURATION)
 
         return () => clearTimeout(timer)
-    }, [pendingMergeKeys, pendingStatus, playSound, status])
+    }, [levelIndex, pendingMergeKeys, pendingStatus, playSound, setHighestClearedLevelIndex, status])
 
     useEffect(() => {
         if (mergeKeys.length === 0 || status === "win") {
